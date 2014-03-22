@@ -11,25 +11,7 @@ class C.Word
   constructor: ->
 
 class C.Param extends C.Word
-  constructor: (@value = 0) ->
-    @beforeString = ""
-    @valueString = ""
-    @afterString = ""
-
-  setWithString: (string) ->
-    floatRegEx = /[-+]?[0-9]*\.?[0-9]+/
-    matches = string.match(floatRegEx)
-    if !matches or matches.length == 0
-      @beforeString = string
-      @valueString = ""
-      @afterString = ""
-    else
-      match = matches[0]
-      sides = string.split(match)
-      @beforeString = sides[0]
-      @valueString = match
-      @afterString = sides.slice(1).join(match)
-      @value = parseFloat(@valueString)
+  constructor: (@valueString = "0") ->
 
 class C.Op extends C.Word
   constructor: (@opString = "+") ->
@@ -45,7 +27,7 @@ class C.Placeholder extends C.Word
     else if _.contains(["+", "-", "*", "/"], @string)
       return new C.Op(@string)
     else if /[0-9]/.test(@string)
-      return new C.Param()
+      return new C.Param(@string)
     else
       return null
 
@@ -87,9 +69,9 @@ do ->
   line = new C.Line()
   editor.lines.push(line)
   words = line.wordList.words
-  words.push(new C.Param(3))
+  words.push(new C.Param("3"))
   words.push(new C.Op("+"))
-  words.push(new C.Param(5))
+  words.push(new C.Param("5"))
   words.push(new C.Placeholder("asdf"))
   editor.lines.push(new C.Line())
 

@@ -6,13 +6,25 @@ R.create "EditorView",
     {editor} = @props
     R.div {className: "editor"},
       editor.lines.map (line, index) ->
-        R.LineView {line, key: index}
+        R.LineView {line, editor, index, key: index}
 
 
 R.create "LineView",
+  handleKeyDown: (e) ->
+    {line, editor, index} = @props
+    if e.keyCode == 13 # enter
+      host = Selection.getHost()
+      lineHosts = @getDOMNode().querySelectorAll("[contenteditable]")
+      if _.last(lineHosts) == host
+        nextIndex = index + 1
+      else
+        nextIndex = index
+      nextLine = new C.Line()
+      editor.lines.splice(nextIndex, 0, nextLine)
+
   render: ->
-    {line} = @props
-    R.div {className: "line"},
+    {line, editor, index} = @props
+    R.div {className: "line", onKeyDown: @handleKeyDown},
       # R.div {className: "preview"},
       #   R.StackView {stack: line._evaluated}
       R.WordListView {wordList: line.wordList}
@@ -50,6 +62,9 @@ ContentEditableMixin = {
       if Selection.isAtStart()
         e.preventDefault()
         @handleBackspace?()
+
+    else if e.keyCode == 13 # enter
+      e.preventDefault()
 
     # enter, backspace, delete, up, down, shift+arrowkey
 
@@ -140,29 +155,23 @@ R.create "ParamView",
     el = @getDOMNode()
     string = el.textContent
 
-    @_preserveCursor = Selection.beforeSelection()?.toString().length
+    param.valueString = string
 
-    for childNode in _.toArray(el.childNodes)
-      el.removeChild(childNode) if childNode.nodeType != Node.ELEMENT_NODE
+  # html: ->
+  #   {param} = @props
+  #   string = param.valueString
 
-    el.childNodes[0].innerHTML = param.beforeString
-    el.childNodes[1].innerHTML = param.valueString
-    el.childNodes[2].innerHTML = param.afterString
-
-    param.setWithString(string)
-
-  componentDidUpdate: ->
-    {param} = @props
-    if @_preserveCursor
-      el = @getDOMNode()
-      range = document.createRange()
-      if @_preserveCursor <= param.beforeString.length
-        range.setStart(el.childNodes[0].firstChild, @_preserveCursor)
-
-      range.collapse(true)
-      Selection.set(range)
-      console.log @_preserveCursor
-      @_preserveCursor = null
+  #   floatRegEx = /[-+]?[0-9]*\.?[0-9]+/
+  #   matches = string.match(floatRegEx)
+  #   if !matches or matches.length == 0
+  #     return string
+  #   else
+  #     match = matches[0]
+  #     sides = string.split(match)
+  #     html = sides[0]
+  #     html += '<span class="paramValue">' + match + '</span>'
+  #     html += sides.slice(1).join(match)
+  #     return html
 
   render: ->
     {param, wordListView, index} = @props
@@ -172,66 +181,7 @@ R.create "ParamView",
       onInput: @handleInput
       onKeyDown: @handleKeyDown
     },
-      R.span {}, param.beforeString
-      R.span {className: "paramValue"}, param.valueString
-      R.span {}, param.afterString
-
-
-
-
-
-# R.create "ParamView",
-#   mixins: [ContentEditableMixin]
-#   handleInput: ->
-#     {param, wordListView, index} = @props
-#     string = @getDOMNode().textContent
-#     param.setWithString(string)
-
-#   componentWillUpdate: ->
-#     el = @getDOMNode()
-#     if Selection.getHost() == el
-#       @_selectStart = Selection.beforeSelection().toString().length
-#       @_selectEnd = @_selectStart + Selection.get().toString().length
-#     else
-#       @_selectStart = null
-#       @_selectEnd = null
-
-#   componentDidUpdate: ->
-#     return unless @_selectStart
-#     {param} = @props
-#     el = @getDOMNode()
-#     findPoint = (index) ->
-#       if index <= param.beforeString.length
-#         [el.childNodes[0], index]
-#       else if index <= param.beforeString.length + param.valueString.length
-#         [el.childNodes[1].firstChild, index - param.beforeString.length]
-#       else
-#         [el.childNodes[2], index - param.beforeString.length + param.valueString.length]
-#     console.log "here", el.innerHTML, findPoint(@_selectStart)
-#     range = document.createRange()
-#     range.setStart(findPoint(@_selectStart)...)
-#     range.setEnd(findPoint(@_selectEnd)...)
-#     Selection.set(range)
-#     Selection.setAtEnd(el)
-#     @_selectStart = null
-#     @_selectEnd = null
-
-
-#   html: ->
-#     {param} = @props
-#     """#{param.beforeString}<span class="paramValue">#{param.valueString}</span>#{param.afterString}"""
-
-#   render: ->
-#     {param, wordListView, index} = @props
-#     R.div {
-#       className: "word param"
-#       contentEditable: true
-#       onInput: @handleInput
-#       onKeyDown: @handleKeyDown
-#       dangerouslySetInnerHTML: {
-#         __html: @html()
-#       }
-#     }
+      param.valueString
 
 
 R.create "OpView",

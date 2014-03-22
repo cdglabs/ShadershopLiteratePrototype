@@ -301,30 +301,9 @@
   C.Param = (function(_super) {
     __extends(Param, _super);
 
-    function Param(value) {
-      this.value = value != null ? value : 0;
-      this.beforeString = "";
-      this.valueString = "";
-      this.afterString = "";
+    function Param(valueString) {
+      this.valueString = valueString != null ? valueString : "0";
     }
-
-    Param.prototype.setWithString = function(string) {
-      var floatRegEx, match, matches, sides;
-      floatRegEx = /[-+]?[0-9]*\.?[0-9]+/;
-      matches = string.match(floatRegEx);
-      if (!matches || matches.length === 0) {
-        this.beforeString = string;
-        this.valueString = "";
-        return this.afterString = "";
-      } else {
-        match = matches[0];
-        sides = string.split(match);
-        this.beforeString = sides[0];
-        this.valueString = match;
-        this.afterString = sides.slice(1).join(match);
-        return this.value = parseFloat(this.valueString);
-      }
-    };
 
     return Param;
 
@@ -363,7 +342,7 @@
       } else if (_.contains(["+", "-", "*", "/"], this.string)) {
         return new C.Op(this.string);
       } else if (/[0-9]/.test(this.string)) {
-        return new C.Param();
+        return new C.Param(this.string);
       } else {
         return null;
       }
@@ -436,9 +415,9 @@
     line = new C.Line();
     editor.lines.push(line);
     words = line.wordList.words;
-    words.push(new C.Param(3));
+    words.push(new C.Param("3"));
     words.push(new C.Op("+"));
-    words.push(new C.Param(5));
+    words.push(new C.Param("5"));
     words.push(new C.Placeholder("asdf"));
     return editor.lines.push(new C.Line());
   })();
@@ -527,8 +506,31 @@
 
   R.cx = React.addons.classSet;
 
+  R.DataForMixin = {
+    componentDidMount: function() {
+      var el;
+      el = this.getDOMNode();
+      if (el.dataFor == null) {
+        el.dataFor = [];
+      }
+      return el.dataFor.unshift(this);
+    },
+    componentWillUnmount: function() {
+      var el;
+      el = this.getDOMNode();
+      return delete el.dataFor;
+    }
+  };
+
   R.create = function(name, opts) {
     opts.displayName = name;
+    opts.name = function() {
+      return name;
+    };
+    if (opts.mixins == null) {
+      opts.mixins = [];
+    }
+    opts.mixins.unshift(R.DataForMixin);
     return R[name] = React.createClass(opts);
   };
 
@@ -637,6 +639,8 @@
       }, editor.lines.map(function(line, index) {
         return R.LineView({
           line: line,
+          editor: editor,
+          index: index,
           key: index
         });
       }));
@@ -644,11 +648,27 @@
   });
 
   R.create("LineView", {
+    handleKeyDown: function(e) {
+      var editor, host, index, line, lineHosts, nextIndex, nextLine, _ref;
+      _ref = this.props, line = _ref.line, editor = _ref.editor, index = _ref.index;
+      if (e.keyCode === 13) {
+        host = Selection.getHost();
+        lineHosts = this.getDOMNode().querySelectorAll("[contenteditable]");
+        if (_.last(lineHosts) === host) {
+          nextIndex = index + 1;
+        } else {
+          nextIndex = index;
+        }
+        nextLine = new C.Line();
+        return editor.lines.splice(nextIndex, 0, nextLine);
+      }
+    },
     render: function() {
-      var line;
-      line = this.props.line;
+      var editor, index, line, _ref;
+      _ref = this.props, line = _ref.line, editor = _ref.editor, index = _ref.index;
       return R.div({
-        className: "line"
+        className: "line",
+        onKeyDown: this.handleKeyDown
       }, R.WordListView({
         wordList: line.wordList
       }));
@@ -688,6 +708,8 @@
           e.preventDefault();
           return typeof this.handleBackspace === "function" ? this.handleBackspace() : void 0;
         }
+      } else if (e.keyCode === 13) {
+        return e.preventDefault();
       }
     },
     attemptAutoFocus: function() {
@@ -793,37 +815,11 @@
   R.create("ParamView", {
     mixins: [ContentEditableMixin],
     handleInput: function() {
-      var childNode, el, index, param, string, wordListView, _i, _len, _ref, _ref1, _ref2;
+      var el, index, param, string, wordListView, _ref;
       _ref = this.props, param = _ref.param, wordListView = _ref.wordListView, index = _ref.index;
       el = this.getDOMNode();
       string = el.textContent;
-      this._preserveCursor = (_ref1 = Selection.beforeSelection()) != null ? _ref1.toString().length : void 0;
-      _ref2 = _.toArray(el.childNodes);
-      for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
-        childNode = _ref2[_i];
-        if (childNode.nodeType !== Node.ELEMENT_NODE) {
-          el.removeChild(childNode);
-        }
-      }
-      el.childNodes[0].innerHTML = param.beforeString;
-      el.childNodes[1].innerHTML = param.valueString;
-      el.childNodes[2].innerHTML = param.afterString;
-      return param.setWithString(string);
-    },
-    componentDidUpdate: function() {
-      var el, param, range;
-      param = this.props.param;
-      if (this._preserveCursor) {
-        el = this.getDOMNode();
-        range = document.createRange();
-        if (this._preserveCursor <= param.beforeString.length) {
-          range.setStart(el.childNodes[0].firstChild, this._preserveCursor);
-        }
-        range.collapse(true);
-        Selection.set(range);
-        console.log(this._preserveCursor);
-        return this._preserveCursor = null;
-      }
+      return param.valueString = string;
     },
     render: function() {
       var index, param, wordListView, _ref;
@@ -833,9 +829,7 @@
         contentEditable: true,
         onInput: this.handleInput,
         onKeyDown: this.handleKeyDown
-      }, R.span({}, param.beforeString), R.span({
-        className: "paramValue"
-      }, param.valueString), R.span({}, param.afterString));
+      }, param.valueString);
     }
   });
 
