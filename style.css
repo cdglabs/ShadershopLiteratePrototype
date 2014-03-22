@@ -1,0 +1,84 @@
+html, body {
+  height: 100%;
+  overflow: hidden;
+  font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
+  font-size: 16px;
+  color: #333;
+}
+
+[contenteditable="true"]:active, [contenteditable="true"]:focus, button:active, button:focus {
+  outline: none;
+}
+
+canvas {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+
+
+
+
+
+.editor {
+  width: 300px;
+}
+
+.line {
+  margin: 12px 0px;
+  overflow: hidden;
+}
+
+.preview {
+  float: right;
+}
+
+.word {
+  display: inline-block;
+  padding: 6px 0px;
+}
+
+.param {
+  background-color: #cec;
+  padding-left: 6px;
+  padding-right: 6px;
+  border-radius: 6px;
+  color: #696;
+}
+.paramValue {
+  font-weight: bold;
+  color: #000;
+}
+
+.that {
+  background-color: #eee;
+  padding-left: 6px;
+  padding-right: 6px;
+  border-radius: 6px;
+}
+
+.placeholder {
+  padding-left: 6px;
+  padding-right: 6px;
+  color: #999;
+}
+
+.op {
+  cursor: default;
+  color: #000;
+  /*background-color: #eee;*/
+}
+
+.wordSpacer {
+  display: inline-block;
+  padding: 6px 3px;
+  color: #999;
+}
+
+
+.stackValue {
+  display: inline-block;
+  margin-right: 6px;
+  background-color: #aaa;
+}
