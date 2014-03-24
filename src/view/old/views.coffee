@@ -2,32 +2,36 @@ Selection = require("../Selection")
 
 
 R.create "EditorView",
+  propTypes: {
+    editor: C.Editor
+  }
   render: ->
-    {editor} = @props
     R.div {className: "editor"},
-      editor.lines.map (line, index) ->
-        R.LineView {line, editor, index, key: index}
+      @editor.lines.map (line, index) =>
+        R.LineView {line, index, key: index} # TODO: key should be line.__id
 
 
 R.create "LineView",
+  propTypes: {
+    line: C.Line
+    index: Number
+  }
+
   handleKeyDown: (e) ->
-    {line, editor, index} = @props
+    # TODO: This code should be in wordSpacerView
     if e.keyCode == 13 # enter
       host = Selection.getHost()
       lineHosts = @getDOMNode().querySelectorAll("[contenteditable]")
       if _.last(lineHosts) == host
-        nextIndex = index + 1
+        insertIndex = @index + 1
       else
-        nextIndex = index
-      nextLine = new C.Line()
-      editor.lines.splice(nextIndex, 0, nextLine)
+        insertIndex = @index
+      insertLine = new C.Line()
+      @lookup("editor").lines.splice(insertIndex, 0, insertLine)
 
   render: ->
-    {line, editor, index} = @props
     R.div {className: "line", onKeyDown: @handleKeyDown},
-      # R.div {className: "preview"},
-      #   R.StackView {stack: line._evaluated}
-      R.WordListView {wordList: line.wordList}
+      R.WordListView {wordList: @line.wordList}
 
 
 
@@ -80,15 +84,19 @@ ContentEditableMixin = {
 }
 
 R.create "WordView",
+  propTypes: {
+    word: C.Word
+    index: Number
+  }
+
   render: ->
-    {word, wordListView, index} = @props
-    if word instanceof C.Placeholder
-      R.PlaceholderView {placeholder: word, wordListView, index}
-    else if word instanceof C.Param
-      R.ParamView {param: word, wordListView, index}
-    else if word instanceof C.Op
-      R.OpView {op: word, wordListView, index}
-    else if word instanceof C.That
+    if @word instanceof C.Placeholder
+      R.PlaceholderView {placeholder: @word}
+    else if @word instanceof C.Param
+      R.ParamView {param: @word}
+    else if @word instanceof C.Op
+      R.OpView {op: @word}
+    else if @word instanceof C.That
       R.ThatView {}
 
 
@@ -120,6 +128,8 @@ R.create "WordSpacerView",
 
 
 R.create "PlaceholderView",
+  placeholder: -> @props.placeholder
+
   mixins: [ContentEditableMixin]
   handleInput: ->
     {placeholder, wordListView, index} = @props
@@ -149,6 +159,8 @@ R.create "PlaceholderView",
 
 
 R.create "ParamView",
+
+
   mixins: [ContentEditableMixin]
   handleInput: ->
     {param, wordListView, index} = @props
@@ -156,22 +168,6 @@ R.create "ParamView",
     string = el.textContent
 
     param.valueString = string
-
-  # html: ->
-  #   {param} = @props
-  #   string = param.valueString
-
-  #   floatRegEx = /[-+]?[0-9]*\.?[0-9]+/
-  #   matches = string.match(floatRegEx)
-  #   if !matches or matches.length == 0
-  #     return string
-  #   else
-  #     match = matches[0]
-  #     sides = string.split(match)
-  #     html = sides[0]
-  #     html += '<span class="paramValue">' + match + '</span>'
-  #     html += sides.slice(1).join(match)
-  #     return html
 
   render: ->
     {param, wordListView, index} = @props
@@ -185,10 +181,13 @@ R.create "ParamView",
 
 
 R.create "OpView",
+  propTypes: {
+    op: C.Op
+  }
+
   render: ->
-    {op, wordListView, index} = @props
     R.div {className: "word op"},
-      op.opString
+      @op.opString
 
 
 R.create "ThatView",

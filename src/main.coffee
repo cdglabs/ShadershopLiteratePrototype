@@ -1,4 +1,4 @@
-require("view/R")
+
 
 
 
@@ -12,6 +12,7 @@ class C.Word
 
 class C.Param extends C.Word
   constructor: (@valueString = "0") ->
+    @label = ""
 
 class C.Op extends C.Word
   constructor: (@opString = "+") ->
@@ -29,7 +30,7 @@ class C.Placeholder extends C.Word
     else if /[0-9]/.test(@string)
       return new C.Param(@string)
     else
-      return null
+      return this
 
 class C.Parens extends C.Word
   constructor: ->
@@ -61,6 +62,10 @@ class C.Editor
 
 
 
+require("view/R")
+
+
+
 
 
 
@@ -85,23 +90,26 @@ window.UI = UI = new class
   constructor: ->
     @autofocus = null
 
-  setAutoFocus: (match) ->
-    @autofocus = {
-      match
-    }
+  setAutoFocus: (opts) ->
+    opts.descendantOf ?= []
+    opts.props ?= {}
+    if !_.isArray(opts.descendantOf)
+      opts.descendantOf = [opts.descendantOf]
+    @autofocus = opts
 
-  attemptAutoFocus: (props) ->
-    return false if !@autofocus
-    matches = true
-    for own key, value of @autofocus.match
-      matches = false if props[key] != value
+  attemptAutoFocus: (textFieldView) ->
+    return false unless @autofocus
 
-    if matches
-      @autofocus = null
-      return true
-    else
-      return false
+    matchesDescendantOf = _.every @autofocus.descendantOf, (ancestorView) =>
+      textFieldView.lookupView(ancestorView)
+    return false unless matchesDescendantOf
 
+    matchesProps = _.every @autofocus.props, (propValue, propName) =>
+      textFieldView.lookup(propName) == propValue
+    return false unless matchesProps
+
+    @autofocus = null
+    return true
 
 
 

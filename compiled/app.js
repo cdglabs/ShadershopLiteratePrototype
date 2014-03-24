@@ -287,8 +287,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     __slice = [].slice;
 
-  require("view/R");
-
   window.C = C = {};
 
   C.Word = (function() {
@@ -303,6 +301,7 @@
 
     function Param(valueString) {
       this.valueString = valueString != null ? valueString : "0";
+      this.label = "";
     }
 
     return Param;
@@ -344,7 +343,7 @@
       } else if (/[0-9]/.test(this.string)) {
         return new C.Param(this.string);
       } else {
-        return null;
+        return this;
       }
     };
 
@@ -408,6 +407,8 @@
 
   })();
 
+  require("view/R");
+
   window.editor = editor = new C.Editor();
 
   (function() {
@@ -427,32 +428,42 @@
       this.autofocus = null;
     }
 
-    _Class.prototype.setAutoFocus = function(match) {
-      return this.autofocus = {
-        match: match
-      };
+    _Class.prototype.setAutoFocus = function(opts) {
+      if (opts.descendantOf == null) {
+        opts.descendantOf = [];
+      }
+      if (opts.props == null) {
+        opts.props = {};
+      }
+      if (!_.isArray(opts.descendantOf)) {
+        opts.descendantOf = [opts.descendantOf];
+      }
+      return this.autofocus = opts;
     };
 
-    _Class.prototype.attemptAutoFocus = function(props) {
-      var key, matches, value, _ref;
+    _Class.prototype.attemptAutoFocus = function(textFieldView) {
+      var matchesDescendantOf, matchesProps;
       if (!this.autofocus) {
         return false;
       }
-      matches = true;
-      _ref = this.autofocus.match;
-      for (key in _ref) {
-        if (!__hasProp.call(_ref, key)) continue;
-        value = _ref[key];
-        if (props[key] !== value) {
-          matches = false;
-        }
-      }
-      if (matches) {
-        this.autofocus = null;
-        return true;
-      } else {
+      matchesDescendantOf = _.every(this.autofocus.descendantOf, (function(_this) {
+        return function(ancestorView) {
+          return textFieldView.lookupView(ancestorView);
+        };
+      })(this));
+      if (!matchesDescendantOf) {
         return false;
       }
+      matchesProps = _.every(this.autofocus.props, (function(_this) {
+        return function(propValue, propName) {
+          return textFieldView.lookup(propName) === propValue;
+        };
+      })(this));
+      if (!matchesProps) {
+        return false;
+      }
+      this.autofocus = null;
+      return true;
     };
 
     return _Class;
@@ -491,6 +502,43 @@
   document.styleSheets.start_autoreload(1000);
 
 }).call(this);
+}, "view/EditorView": function(exports, require, module) {(function() {
+  R.create("EditorView", {
+    propTypes: {
+      editor: C.Editor
+    },
+    render: function() {
+      return R.div({
+        className: "editor"
+      }, this.editor.lines.map((function(_this) {
+        return function(line, index) {
+          return R.LineView({
+            line: line,
+            index: index,
+            key: index
+          });
+        };
+      })(this)));
+    }
+  });
+
+}).call(this);
+}, "view/LineView": function(exports, require, module) {(function() {
+  R.create("LineView", {
+    propTypes: {
+      line: C.Line,
+      index: Number
+    },
+    render: function() {
+      return R.div({
+        className: "line"
+      }, R.WordListView({
+        wordList: this.line.wordList
+      }));
+    }
+  });
+
+}).call(this);
 }, "view/R": function(exports, require, module) {(function() {
   var R, key, value, _ref,
     __hasProp = {}.hasOwnProperty;
@@ -506,14 +554,41 @@
 
   R.cx = React.addons.classSet;
 
-  R.DataForMixin = {
+  R.UniversalMixin = {
+    ownerView: function() {
+      return this.props.__owner__;
+    },
+    lookup: function(keyName) {
+      var _ref1, _ref2;
+      return (_ref1 = this[keyName]) != null ? _ref1 : (_ref2 = this.ownerView()) != null ? _ref2.lookup(keyName) : void 0;
+    },
+    lookupView: function(viewName) {
+      var _ref1;
+      if (this === viewName || this.viewName() === viewName) {
+        return this;
+      }
+      return (_ref1 = this.ownerView()) != null ? _ref1.lookupView(viewName) : void 0;
+    },
+    setPropsOnSelf: function(nextProps) {
+      var propName, propValue, _results;
+      _results = [];
+      for (propName in nextProps) {
+        if (!__hasProp.call(nextProps, propName)) continue;
+        propValue = nextProps[propName];
+        _results.push(this[propName] = propValue);
+      }
+      return _results;
+    },
+    componentWillMount: function() {
+      return this.setPropsOnSelf(this.props);
+    },
+    componentWillUpdate: function(nextProps) {
+      return this.setPropsOnSelf(nextProps);
+    },
     componentDidMount: function() {
       var el;
       el = this.getDOMNode();
-      if (el.dataFor == null) {
-        el.dataFor = [];
-      }
-      return el.dataFor.unshift(this);
+      return el.dataFor != null ? el.dataFor : el.dataFor = this;
     },
     componentWillUnmount: function() {
       var el;
@@ -523,25 +598,345 @@
   };
 
   R.create = function(name, opts) {
+    var propName, propType, _ref1;
     opts.displayName = name;
-    opts.name = function() {
+    opts.viewName = function() {
       return name;
     };
+    if (opts.propTypes == null) {
+      opts.propTypes = {};
+    }
+    _ref1 = opts.propTypes;
+    for (propName in _ref1) {
+      if (!__hasProp.call(_ref1, propName)) continue;
+      propType = _ref1[propName];
+      if (propType === Number) {
+        propType = React.PropTypes.number;
+      } else if (propType === String) {
+        propType = React.PropTypes.string;
+      } else if (propType === Function) {
+        propType = React.PropTypes.func;
+      } else {
+        propType = React.PropTypes.instanceOf(propType);
+      }
+      opts.propTypes[propName] = propType.isRequired;
+    }
     if (opts.mixins == null) {
       opts.mixins = [];
     }
-    opts.mixins.unshift(R.DataForMixin);
+    opts.mixins.unshift(R.UniversalMixin);
     return R[name] = React.createClass(opts);
   };
 
   window.R = R;
 
-  require("./views");
+  require("./TextFieldView");
+
+  require("./EditorView");
+
+  require("./LineView");
 
   require("./WordListView");
 
+  require("./WordView");
+
+  require("./WordSpacerView");
+
+}).call(this);
+}, "view/TextFieldView": function(exports, require, module) {(function() {
+  var Selection, findAdjacentHost;
+
+  Selection = require("../Selection");
+
+  R.create("TextFieldView", {
+    propTypes: {
+      value: String,
+      className: String,
+      onInput: Function,
+      onBackSpace: Function
+    },
+    getDefaultProps: function() {
+      return {
+        value: "",
+        className: "",
+        onInput: function(newValue) {},
+        onBackSpace: function() {},
+        onEnter: function() {}
+      };
+    },
+    refresh: function() {
+      var el;
+      el = this.getDOMNode();
+      if (el.textContent !== this.value) {
+        el.textContent = this.value;
+      }
+      if (UI.attemptAutoFocus(this)) {
+        return Selection.setAtEnd(el);
+      }
+    },
+    componentDidMount: function() {
+      return this.refresh();
+    },
+    componentDidUpdate: function() {
+      return this.refresh();
+    },
+    handleInput: function() {
+      var el, newValue;
+      el = this.getDOMNode();
+      newValue = el.textContent;
+      return this.onInput(newValue);
+    },
+    handleKeyDown: function(e) {
+      var host, nextHost, previousHost;
+      host = Selection.getHost();
+      if (e.keyCode === 37) {
+        if (Selection.isAtStart()) {
+          previousHost = findAdjacentHost(host, -1);
+          if (previousHost) {
+            e.preventDefault();
+            return Selection.setAtEnd(previousHost);
+          }
+        }
+      } else if (e.keyCode === 39) {
+        if (Selection.isAtEnd()) {
+          nextHost = findAdjacentHost(host, 1);
+          if (nextHost) {
+            e.preventDefault();
+            return Selection.setAtStart(nextHost);
+          }
+        }
+      } else if (e.keyCode === 8) {
+        if (Selection.isAtStart()) {
+          e.preventDefault();
+          return this.onBackSpace();
+        }
+      } else if (e.keyCode === 13) {
+        e.preventDefault();
+        return this.onEnter();
+      }
+    },
+    render: function() {
+      return R.div({
+        className: this.className,
+        contentEditable: true,
+        onInput: this.handleInput,
+        onKeyDown: this.handleKeyDown
+      });
+    }
+  });
+
+  findAdjacentHost = function(el, direction) {
+    var hosts, index;
+    hosts = document.querySelectorAll("[contenteditable]");
+    hosts = _.toArray(hosts);
+    index = hosts.indexOf(el);
+    return hosts[index + direction];
+  };
+
 }).call(this);
 }, "view/WordListView": function(exports, require, module) {(function() {
+  R.create("WordListView", {
+    propTypes: {
+      wordList: C.WordList
+    },
+    insertPlaceholderBefore: function(index, string) {
+      var placeholder, word;
+      placeholder = new C.Placeholder(string);
+      word = placeholder.convert();
+      this.wordList.splice(index, 0, word);
+      return this.setAppropriateAutoFocus(index);
+    },
+    replaceWordAt: function(index, word) {
+      this.wordList.splice(index, 1, word);
+      return this.setAppropriateAutoFocus(index);
+    },
+    removeWordAt: function(index) {
+      this.wordList.splice(index, 1);
+      return this.setAutoFocusBefore(index);
+    },
+    setAppropriateAutoFocus: function(wordIndex) {
+      var editable, editableTypes, word;
+      word = this.wordList.words[wordIndex];
+      editableTypes = [C.Param, C.Placeholder];
+      editable = _.any(editableTypes, (function(_this) {
+        return function(type) {
+          return word instanceof type;
+        };
+      })(this));
+      if (editable) {
+        return this.setAutoFocusAt(wordIndex);
+      } else {
+        return this.setAutoFocusBefore(wordIndex + 1);
+      }
+    },
+    setAutoFocusAt: function(wordIndex) {
+      return UI.setAutoFocus({
+        descendantOf: this,
+        props: {
+          wordIndex: wordIndex
+        }
+      });
+    },
+    setAutoFocusBefore: function(wordIndex) {
+      return UI.setAutoFocus({
+        descendantOf: this,
+        props: {
+          wordSpacerIndex: wordIndex
+        }
+      });
+    },
+    render: function() {
+      var index, result, word, words, _i, _len;
+      words = this.wordList.words;
+      result = [];
+      for (index = _i = 0, _len = words.length; _i < _len; index = ++_i) {
+        word = words[index];
+        result.push(R.WordSpacerView({
+          wordSpacerIndex: index,
+          key: "spacer" + index
+        }));
+        result.push(R.WordView({
+          word: word,
+          wordIndex: index,
+          key: "word" + index
+        }));
+      }
+      result.push(R.WordSpacerView({
+        wordSpacerIndex: index,
+        key: "spacer" + index
+      }));
+      result = _.filter(result, function(instance) {
+        var nextWord, previousWord;
+        if ((index = instance.props.wordSpacerIndex) != null) {
+          previousWord = words[index - 1];
+          nextWord = words[index];
+          if (previousWord instanceof C.Placeholder || nextWord instanceof C.Placeholder) {
+            return false;
+          }
+        }
+        return true;
+      });
+      return R.div({
+        className: "wordList"
+      }, result);
+    }
+  });
+
+}).call(this);
+}, "view/WordSpacerView": function(exports, require, module) {(function() {
+  R.create("WordSpacerView", {
+    propTypes: {
+      wordSpacerIndex: Number
+    },
+    handleInput: function(newValue) {
+      var wordListView;
+      wordListView = this.lookupView("WordListView");
+      return wordListView.insertPlaceholderBefore(this.wordSpacerIndex, newValue);
+    },
+    handleBackSpace: function() {
+      var wordListView;
+      if (this.wordSpacerIndex === 0) {
+        return console.log("TODO: remove line");
+      } else {
+        wordListView = this.lookupView("WordListView");
+        return wordListView.removeWordAt(this.wordSpacerIndex - 1);
+      }
+    },
+    render: function() {
+      return R.TextFieldView({
+        className: "wordSpacer",
+        onInput: this.handleInput,
+        onBackSpace: this.handleBackSpace
+      });
+    }
+  });
+
+}).call(this);
+}, "view/WordView": function(exports, require, module) {(function() {
+  R.create("WordView", {
+    propTypes: {
+      word: C.Word,
+      wordIndex: Number
+    },
+    render: function() {
+      if (this.word instanceof C.Placeholder) {
+        return R.PlaceholderView({
+          placeholder: this.word
+        });
+      } else if (this.word instanceof C.Param) {
+        return R.ParamView({
+          param: this.word
+        });
+      } else if (this.word instanceof C.Op) {
+        return R.OpView({
+          op: this.word
+        });
+      } else if (this.word instanceof C.That) {
+        return R.ThatView({});
+      }
+    }
+  });
+
+  R.create("PlaceholderView", {
+    propTypes: {
+      placeholder: C.Placeholder
+    },
+    handleInput: function(newValue) {
+      var word, wordIndex, wordListView;
+      this.placeholder.string = newValue;
+      wordListView = this.lookupView("WordListView");
+      wordIndex = this.lookup("wordIndex");
+      if (newValue === "") {
+        wordListView.removeWordAt(wordIndex);
+        return;
+      }
+      word = this.placeholder.convert();
+      if (word !== this.placeholder) {
+        return wordListView.replaceWordAt(wordIndex, word);
+      }
+    },
+    render: function() {
+      return R.TextFieldView({
+        className: "word placeholder",
+        value: this.placeholder.string,
+        onInput: this.handleInput
+      });
+    }
+  });
+
+  R.create("ParamView", {
+    propTypes: {
+      param: C.Param
+    },
+    render: function() {
+      return R.TextFieldView({
+        className: "word param",
+        value: this.param.valueString
+      });
+    }
+  });
+
+  R.create("OpView", {
+    propTypes: {
+      op: C.Op
+    },
+    render: function() {
+      return R.div({
+        className: "word op"
+      }, this.op.opString);
+    }
+  });
+
+  R.create("ThatView", {
+    render: function() {
+      return R.div({
+        className: "word that"
+      }, "that");
+    }
+  });
+
+}).call(this);
+}, "view/old/WordListView": function(exports, require, module) {(function() {
   R.create("WordListView", {
     insertPlaceholderBefore: function(string, index) {
       var placeholder, word, wordList, _ref;
@@ -625,52 +1020,55 @@
   });
 
 }).call(this);
-}, "view/views": function(exports, require, module) {(function() {
+}, "view/old/views": function(exports, require, module) {(function() {
   var ContentEditableMixin, Selection, findAdjacentHost;
 
   Selection = require("../Selection");
 
   R.create("EditorView", {
+    propTypes: {
+      editor: C.Editor
+    },
     render: function() {
-      var editor;
-      editor = this.props.editor;
       return R.div({
         className: "editor"
-      }, editor.lines.map(function(line, index) {
-        return R.LineView({
-          line: line,
-          editor: editor,
-          index: index,
-          key: index
-        });
-      }));
+      }, this.editor.lines.map((function(_this) {
+        return function(line, index) {
+          return R.LineView({
+            line: line,
+            index: index,
+            key: index
+          });
+        };
+      })(this)));
     }
   });
 
   R.create("LineView", {
+    propTypes: {
+      line: C.Line,
+      index: Number
+    },
     handleKeyDown: function(e) {
-      var editor, host, index, line, lineHosts, nextIndex, nextLine, _ref;
-      _ref = this.props, line = _ref.line, editor = _ref.editor, index = _ref.index;
+      var host, insertIndex, insertLine, lineHosts;
       if (e.keyCode === 13) {
         host = Selection.getHost();
         lineHosts = this.getDOMNode().querySelectorAll("[contenteditable]");
         if (_.last(lineHosts) === host) {
-          nextIndex = index + 1;
+          insertIndex = this.index + 1;
         } else {
-          nextIndex = index;
+          insertIndex = this.index;
         }
-        nextLine = new C.Line();
-        return editor.lines.splice(nextIndex, 0, nextLine);
+        insertLine = new C.Line();
+        return this.lookup("editor").lines.splice(insertIndex, 0, insertLine);
       }
     },
     render: function() {
-      var editor, index, line, _ref;
-      _ref = this.props, line = _ref.line, editor = _ref.editor, index = _ref.index;
       return R.div({
         className: "line",
         onKeyDown: this.handleKeyDown
       }, R.WordListView({
-        wordList: line.wordList
+        wordList: this.line.wordList
       }));
     }
   });
@@ -728,28 +1126,24 @@
   };
 
   R.create("WordView", {
+    propTypes: {
+      word: C.Word,
+      index: Number
+    },
     render: function() {
-      var index, word, wordListView, _ref;
-      _ref = this.props, word = _ref.word, wordListView = _ref.wordListView, index = _ref.index;
-      if (word instanceof C.Placeholder) {
+      if (this.word instanceof C.Placeholder) {
         return R.PlaceholderView({
-          placeholder: word,
-          wordListView: wordListView,
-          index: index
+          placeholder: this.word
         });
-      } else if (word instanceof C.Param) {
+      } else if (this.word instanceof C.Param) {
         return R.ParamView({
-          param: word,
-          wordListView: wordListView,
-          index: index
+          param: this.word
         });
-      } else if (word instanceof C.Op) {
+      } else if (this.word instanceof C.Op) {
         return R.OpView({
-          op: word,
-          wordListView: wordListView,
-          index: index
+          op: this.word
         });
-      } else if (word instanceof C.That) {
+      } else if (this.word instanceof C.That) {
         return R.ThatView({});
       }
     }
@@ -785,6 +1179,9 @@
   });
 
   R.create("PlaceholderView", {
+    placeholder: function() {
+      return this.props.placeholder;
+    },
     mixins: [ContentEditableMixin],
     handleInput: function() {
       var converted, index, placeholder, string, wordListView, _ref;
@@ -834,12 +1231,13 @@
   });
 
   R.create("OpView", {
+    propTypes: {
+      op: C.Op
+    },
     render: function() {
-      var index, op, wordListView, _ref;
-      _ref = this.props, op = _ref.op, wordListView = _ref.wordListView, index = _ref.index;
       return R.div({
         className: "word op"
-      }, op.opString);
+      }, this.op.opString);
     }
   });
 

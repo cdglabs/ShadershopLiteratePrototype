@@ -1,57 +1,67 @@
 R.create "WordListView",
-  insertPlaceholderBefore: (string, index) ->
-    {wordList} = @props
+  propTypes: {
+    wordList: C.WordList
+  }
+
+  insertPlaceholderBefore: (index, string) ->
     placeholder = new C.Placeholder(string)
-    word = placeholder.convert() ? placeholder
-    wordList.splice(index, 0, word)
-    @setAutoFocus(index)
+    word = placeholder.convert()
+    @wordList.splice(index, 0, word)
+    @setAppropriateAutoFocus(index)
+
+  replaceWordAt: (index, word) ->
+    @wordList.splice(index, 1, word)
+    @setAppropriateAutoFocus(index)
 
   removeWordAt: (index) ->
-    {wordList} = @props
-    wordList.splice(index, 1)
-    UI.setAutoFocus {wordListView: this, spacerIndex: index}
+    @wordList.splice(index, 1)
+    @setAutoFocusBefore(index)
 
-  replaceWordAt: (word, index) ->
-    {wordList} = @props
-    wordList.splice(index, 1, word)
-    @setAutoFocus(index)
+  setAppropriateAutoFocus: (wordIndex) ->
+    word = @wordList.words[wordIndex]
+    editableTypes = [C.Param, C.Placeholder]
+    editable = _.any editableTypes, (type) => word instanceof type
 
-  setAutoFocus: (createdWordIndex) ->
-    {wordList} = @props
-    word = wordList.words[createdWordIndex]
-    if word instanceof C.That or word instanceof C.Op
-      UI.setAutoFocus {wordListView: this, spacerIndex: createdWordIndex + 1}
+    if editable
+      @setAutoFocusAt(wordIndex)
     else
-      UI.setAutoFocus {wordListView: this, index: createdWordIndex}
+      @setAutoFocusBefore(wordIndex + 1)
+
+  setAutoFocusAt: (wordIndex) ->
+    UI.setAutoFocus {
+      descendantOf: this
+      props: {wordIndex: wordIndex}
+    }
+
+  setAutoFocusBefore: (wordIndex) ->
+    UI.setAutoFocus {
+      descendantOf: this
+      props: {wordSpacerIndex: wordIndex}
+    }
+
 
   render: ->
-    {wordList} = @props
-
-    words = wordList.words
+    words = @wordList.words
 
     result = []
-    wordListView = this
 
     for word, index in words
       result.push(R.WordSpacerView {
-        wordListView
-        spacerIndex: index
+        wordSpacerIndex: index
         key: "spacer"+index
       })
       result.push(R.WordView {
         word: word
-        wordListView
-        index
+        wordIndex: index
         key: "word"+index
       })
     result.push(R.WordSpacerView {
-      wordListView
-      spacerIndex: index
+      wordSpacerIndex: index
       key: "spacer"+index
     })
 
     result = _.filter result, (instance) ->
-      if (index = instance.props.spacerIndex)?
+      if (index = instance.props.wordSpacerIndex)?
         previousWord = words[index-1]
         nextWord = words[index]
         if previousWord instanceof C.Placeholder or nextWord instanceof C.Placeholder
