@@ -496,6 +496,10 @@
       return (_ref = this.words).splice.apply(_ref, args);
     };
 
+    WordList.prototype.isEmpty = function() {
+      return this.words.length === 0;
+    };
+
     return WordList;
 
   })();
@@ -523,6 +527,14 @@
   R.create("EditorView", {
     propTypes: {
       editor: C.Editor
+    },
+    insertLineBefore: function(index) {
+      var line;
+      line = new C.Line();
+      return this.editor.lines.splice(index, 0, line);
+    },
+    removeLineAt: function(index) {
+      return this.editor.lines.splice(index, 1);
     },
     render: function() {
       return R.div({
@@ -730,6 +742,8 @@
         propType = React.PropTypes.number;
       } else if (propType === String) {
         propType = React.PropTypes.string;
+      } else if (propType === Boolean) {
+        propType = React.PropTypes.bool;
       } else if (propType === Function) {
         propType = React.PropTypes.func;
       } else {
@@ -928,6 +942,8 @@
         }
         return true;
       });
+      _.first(result).props.isFirstWord = true;
+      _.last(result).props.isLastWord = true;
       return R.div({
         className: "wordList"
       }, result);
@@ -938,7 +954,15 @@
 }, "view/WordSpacerView": function(exports, require, module) {(function() {
   R.create("WordSpacerView", {
     propTypes: {
-      wordSpacerIndex: Number
+      wordSpacerIndex: Number,
+      isFirstWord: Boolean,
+      isLastWord: Boolean
+    },
+    getDefaultProps: function() {
+      return {
+        isFirstWord: false,
+        isLastWord: false
+      };
     },
     handleInput: function(newValue) {
       var wordListView;
@@ -946,19 +970,65 @@
       return wordListView.insertPlaceholderBefore(this.wordSpacerIndex, newValue);
     },
     handleBackSpace: function() {
-      var wordListView;
-      if (this.wordSpacerIndex === 0) {
-        return console.log("TODO: remove line");
+      var editorView, line, lineIndex, previousLine, wordListView;
+      if (this.isFirstWord) {
+        editorView = this.lookupView("EditorView");
+        lineIndex = this.lookup("lineIndex");
+        line = editorView.editor.lines[lineIndex];
+        previousLine = editorView.editor.lines[lineIndex - 1];
+        if (previousLine != null ? previousLine.wordList.isEmpty() : void 0) {
+          editorView.removeLineAt(lineIndex - 1);
+          return UI.setAutoFocus({
+            descendantOf: editorView,
+            props: {
+              lineIndex: lineIndex - 1,
+              isFirstWord: true
+            }
+          });
+        } else if (line.wordList.isEmpty() && lineIndex > 0) {
+          editorView.removeLineAt(lineIndex);
+          return UI.setAutoFocus({
+            descendantOf: editorView,
+            props: {
+              lineIndex: lineIndex - 1,
+              isLastWord: true
+            }
+          });
+        }
       } else {
         wordListView = this.lookupView("WordListView");
         return wordListView.removeWordAt(this.wordSpacerIndex - 1);
+      }
+    },
+    handleEnter: function() {
+      var editorView, lineIndex, wordListView;
+      wordListView = this.lookupView("WordListView");
+      editorView = this.lookupView("EditorView");
+      lineIndex = this.lookup("lineIndex");
+      if (this.isFirstWord) {
+        editorView.insertLineBefore(lineIndex);
+        return UI.setAutoFocus({
+          descendantOf: editorView,
+          props: {
+            lineIndex: lineIndex + 1
+          }
+        });
+      } else if (this.isLastWord) {
+        editorView.insertLineBefore(lineIndex + 1);
+        return UI.setAutoFocus({
+          descendantOf: editorView,
+          props: {
+            lineIndex: lineIndex + 1
+          }
+        });
       }
     },
     render: function() {
       return R.TextFieldView({
         className: "wordSpacer",
         onInput: this.handleInput,
-        onBackSpace: this.handleBackSpace
+        onBackSpace: this.handleBackSpace,
+        onEnter: this.handleEnter
       });
     }
   });

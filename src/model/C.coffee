@@ -43,6 +43,9 @@ class C.WordList
   splice: (args...) ->
     @words.splice(args...)
 
+  isEmpty: ->
+    @words.length == 0
+
 
 class C.Line
   constructor: ->

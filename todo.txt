@@ -1,3 +1,12 @@
-Enter for new line
 Parens
 Function
+up and down arrows
+
+
+evaluator
+
+
+cleanup
+  Move enter functionality somewhere else?
+  Can PlaceholderView and WordSpacerView be unified?
+  How can enter functionality be added to ParamValueView?

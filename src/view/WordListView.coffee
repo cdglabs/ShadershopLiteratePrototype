@@ -67,5 +67,8 @@ R.create "WordListView",
           return false
       return true
 
+    _.first(result).props.isFirstWord = true
+    _.last(result).props.isLastWord = true
+
     R.div {className: "wordList"},
       result

@@ -53,6 +53,8 @@ R.create = (name, opts) ->
       propType = React.PropTypes.number
     else if propType == String
       propType = React.PropTypes.string
+    else if propType == Boolean
+      propType = React.PropTypes.bool
     else if propType == Function
       propType = React.PropTypes.func
     else
