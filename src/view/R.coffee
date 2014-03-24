@@ -1,4 +1,4 @@
-module.exports = R = {}
+window.R = R = {}
 
 for own key, value of React.DOM
   R[key] = value
@@ -7,14 +7,9 @@ R.cx = React.addons.classSet
 
 
 R.UniversalMixin = {
+  # Extra traversal powers
   ownerView: ->
     @props.__owner__ # undocumented React property
-
-  # lookupProp: (propName) ->
-  #   return @props[propName] ? @ownerView()?.lookupProp[propName]
-
-  # lookupMethod: (methodName) ->
-  #   return this[methodName] ? @ownerView()?.lookupMethod(methodName)
 
   lookup: (keyName) ->
     return this[keyName] ? @ownerView()?.lookup(keyName)
@@ -23,9 +18,10 @@ R.UniversalMixin = {
     return this if this == viewName or @viewName() == viewName
     return @ownerView()?.lookupView(viewName)
 
-
+  # Move props to be actual properties on the view
   setPropsOnSelf: (nextProps) ->
     for own propName, propValue of nextProps
+      continue if propName == "__owner__"
       this[propName] = propValue
 
   componentWillMount: ->
@@ -34,8 +30,7 @@ R.UniversalMixin = {
   componentWillUpdate: (nextProps) ->
     @setPropsOnSelf(nextProps)
 
-
-
+  # Annotate the created DOM Node
   componentDidMount: ->
     el = @getDOMNode()
     el.dataFor ?= this
@@ -47,9 +42,11 @@ R.UniversalMixin = {
 
 
 R.create = (name, opts) ->
+  # add name stuff
   opts.displayName = name
   opts.viewName = -> name
 
+  # desugar propTypes
   opts.propTypes ?= {}
   for own propName, propType of opts.propTypes
     if propType == Number
@@ -63,13 +60,14 @@ R.create = (name, opts) ->
 
     opts.propTypes[propName] = propType.isRequired
 
+  # add the universal mixin
   opts.mixins ?= []
   opts.mixins.unshift(R.UniversalMixin)
 
+  # create and register it
   R[name] = React.createClass(opts)
 
 
-window.R = R
 
 
 require("./TextFieldView")
@@ -77,7 +75,5 @@ require("./EditorView")
 require("./LineView")
 require("./WordListView")
 require("./WordView")
+require("./ParamView")
 require("./WordSpacerView")
-
-# require("./views")
-# require("./WordListView")

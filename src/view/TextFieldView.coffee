@@ -22,8 +22,7 @@ R.create "TextFieldView",
     if el.textContent != @value
       el.textContent = @value
 
-    if UI.attemptAutoFocus(this)
-      Selection.setAtEnd(el)
+    UI.attemptAutoFocus(this)
 
   componentDidMount: -> @refresh()
   componentDidUpdate: -> @refresh()

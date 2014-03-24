@@ -1,5 +1,3 @@
-8
-4 -
-abs
-4 +
-
+Enter for new line
+Parens
+Function

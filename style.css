@@ -4,10 +4,14 @@ html, body {
   font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
   font-size: 16px;
   color: #333;
+  cursor: default;
 }
 
-[contenteditable="true"]:active, [contenteditable="true"]:focus, button:active, button:focus {
+[contenteditable]:active, [contenteditable]:focus, button:active, button:focus {
   outline: none;
+}
+[contenteditable] {
+  cursor: text;
 }
 
 canvas {
@@ -44,10 +48,27 @@ canvas {
 
 .param {
   background-color: #cec;
-  padding-left: 6px;
-  padding-right: 6px;
+  padding: 0;
   border-radius: 6px;
-  color: #696;
+}
+.paramLabel {
+  display: inline-block;
+  color: #797;
+  padding: 6px;
+}
+.paramLabel:after {
+  content: ":";
+}
+.paramLabelEmpty {
+  display: inline-block;
+  padding: 6px;
+  width: 0px;
+}
+.paramValue {
+  display: inline-block;
+  padding: 6px 6px 6px 0px;
+  color: #000;
+  font-weight: bold;
 }
 
 .that {
@@ -65,7 +86,6 @@ canvas {
 }
 
 .op {
-  cursor: default;
   color: #000;
   /*background-color: #eee;*/
 }

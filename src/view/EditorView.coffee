@@ -5,5 +5,5 @@ R.create "EditorView",
 
   render: ->
     R.div {className: "editor"},
-      @editor.lines.map (line, index) =>
-        R.LineView {line, index, key: index}
+      @editor.lines.map (line, lineIndex) =>
+        R.LineView {line, lineIndex, key: lineIndex}

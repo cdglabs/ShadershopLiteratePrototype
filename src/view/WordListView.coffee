@@ -19,19 +19,18 @@ R.create "WordListView",
 
   setAppropriateAutoFocus: (wordIndex) ->
     word = @wordList.words[wordIndex]
-    editableTypes = [C.Param, C.Placeholder]
-    editable = _.any editableTypes, (type) => word instanceof type
-
-    if editable
-      @setAutoFocusAt(wordIndex)
+    if word instanceof C.Param
+      UI.setAutoFocus {
+        descendantOf: [this, "ParamValueView"]
+        props: {wordIndex}
+      }
+    else if word instanceof C.Placeholder
+      UI.setAutoFocus {
+        descendantOf: [this]
+        props: {wordIndex}
+      }
     else
       @setAutoFocusBefore(wordIndex + 1)
-
-  setAutoFocusAt: (wordIndex) ->
-    UI.setAutoFocus {
-      descendantOf: this
-      props: {wordIndex: wordIndex}
-    }
 
   setAutoFocusBefore: (wordIndex) ->
     UI.setAutoFocus {

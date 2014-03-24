@@ -1,7 +1,7 @@
 R.create "LineView",
   propTypes: {
     line: C.Line
-    index: Number
+    lineIndex: Number
   }
 
   render: ->

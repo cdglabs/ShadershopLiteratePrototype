@@ -46,20 +46,6 @@ R.create "PlaceholderView",
 
 # =============================================================================
 
-R.create "ParamView",
-  propTypes: {
-    param: C.Param
-  }
-
-  render: ->
-    R.TextFieldView {
-      className: "word param"
-      value: @param.valueString
-    }
-
-
-# =============================================================================
-
 R.create "OpView",
   propTypes: {
     op: C.Op

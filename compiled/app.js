@@ -282,7 +282,116 @@
 
 }).call(this);
 }, "main": function(exports, require, module) {(function() {
-  var C, UI, editor, eventName, refresh, refreshView, willRefreshNextFrame, _i, _len, _ref,
+  var Selection, UI, editor, eventName, refresh, refreshView, willRefreshNextFrame, _i, _len, _ref;
+
+  require("model/C");
+
+  require("view/R");
+
+  window.editor = editor = new C.Editor();
+
+  (function() {
+    var line, words;
+    line = new C.Line();
+    editor.lines.push(line);
+    words = line.wordList.words;
+    words.push(new C.Param("3", "a"));
+    words.push(new C.Op("+"));
+    words.push(new C.Param("5", "b"));
+    return editor.lines.push(new C.Line());
+  })();
+
+  Selection = require("./Selection");
+
+  window.UI = UI = new ((function() {
+    function _Class() {
+      this.autofocus = null;
+    }
+
+    _Class.prototype.setAutoFocus = function(opts) {
+      if (opts.descendantOf == null) {
+        opts.descendantOf = [];
+      }
+      if (!_.isArray(opts.descendantOf)) {
+        opts.descendantOf = [opts.descendantOf];
+      }
+      if (opts.props == null) {
+        opts.props = {};
+      }
+      if (opts.location == null) {
+        opts.location = "end";
+      }
+      return this.autofocus = opts;
+    };
+
+    _Class.prototype.attemptAutoFocus = function(textFieldView) {
+      var el, matchesDescendantOf, matchesProps;
+      if (!this.autofocus) {
+        return;
+      }
+      matchesDescendantOf = _.every(this.autofocus.descendantOf, (function(_this) {
+        return function(ancestorView) {
+          return textFieldView.lookupView(ancestorView);
+        };
+      })(this));
+      if (!matchesDescendantOf) {
+        return;
+      }
+      matchesProps = _.every(this.autofocus.props, (function(_this) {
+        return function(propValue, propName) {
+          return textFieldView.lookup(propName) === propValue;
+        };
+      })(this));
+      if (!matchesProps) {
+        return;
+      }
+      el = textFieldView.getDOMNode();
+      if (this.autofocus.location === "start") {
+        Selection.setAtStart(el);
+      } else if (this.autofocus.location === "end") {
+        Selection.setAtEnd(el);
+      }
+      return this.autofocus = null;
+    };
+
+    return _Class;
+
+  })());
+
+  willRefreshNextFrame = false;
+
+  refresh = function() {
+    if (willRefreshNextFrame) {
+      return;
+    }
+    willRefreshNextFrame = true;
+    return requestAnimationFrame(function() {
+      refreshView();
+      return willRefreshNextFrame = false;
+    });
+  };
+
+  refreshView = function() {
+    var editorEl;
+    editorEl = document.querySelector("#editor");
+    return React.renderComponent(R.EditorView({
+      editor: editor
+    }), editorEl);
+  };
+
+  _ref = ["mousedown", "mousemove", "mouseup", "keydown", "scroll", "change"];
+  for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+    eventName = _ref[_i];
+    window.addEventListener(eventName, refresh);
+  }
+
+  refresh();
+
+  document.styleSheets.start_autoreload(1000);
+
+}).call(this);
+}, "model/C": function(exports, require, module) {(function() {
+  var C,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     __slice = [].slice;
@@ -299,9 +408,9 @@
   C.Param = (function(_super) {
     __extends(Param, _super);
 
-    function Param(valueString) {
+    function Param(valueString, label) {
       this.valueString = valueString != null ? valueString : "0";
-      this.label = "";
+      this.label = label != null ? label : "";
     }
 
     return Param;
@@ -342,6 +451,8 @@
         return new C.Op(this.string);
       } else if (/[0-9]/.test(this.string)) {
         return new C.Param(this.string);
+      } else if (/:$/.test(this.string)) {
+        return new C.Param("", this.string.slice(0, -1));
       } else {
         return this;
       }
@@ -407,100 +518,6 @@
 
   })();
 
-  require("view/R");
-
-  window.editor = editor = new C.Editor();
-
-  (function() {
-    var line, words;
-    line = new C.Line();
-    editor.lines.push(line);
-    words = line.wordList.words;
-    words.push(new C.Param("3"));
-    words.push(new C.Op("+"));
-    words.push(new C.Param("5"));
-    words.push(new C.Placeholder("asdf"));
-    return editor.lines.push(new C.Line());
-  })();
-
-  window.UI = UI = new ((function() {
-    function _Class() {
-      this.autofocus = null;
-    }
-
-    _Class.prototype.setAutoFocus = function(opts) {
-      if (opts.descendantOf == null) {
-        opts.descendantOf = [];
-      }
-      if (opts.props == null) {
-        opts.props = {};
-      }
-      if (!_.isArray(opts.descendantOf)) {
-        opts.descendantOf = [opts.descendantOf];
-      }
-      return this.autofocus = opts;
-    };
-
-    _Class.prototype.attemptAutoFocus = function(textFieldView) {
-      var matchesDescendantOf, matchesProps;
-      if (!this.autofocus) {
-        return false;
-      }
-      matchesDescendantOf = _.every(this.autofocus.descendantOf, (function(_this) {
-        return function(ancestorView) {
-          return textFieldView.lookupView(ancestorView);
-        };
-      })(this));
-      if (!matchesDescendantOf) {
-        return false;
-      }
-      matchesProps = _.every(this.autofocus.props, (function(_this) {
-        return function(propValue, propName) {
-          return textFieldView.lookup(propName) === propValue;
-        };
-      })(this));
-      if (!matchesProps) {
-        return false;
-      }
-      this.autofocus = null;
-      return true;
-    };
-
-    return _Class;
-
-  })());
-
-  willRefreshNextFrame = false;
-
-  refresh = function() {
-    if (willRefreshNextFrame) {
-      return;
-    }
-    willRefreshNextFrame = true;
-    return requestAnimationFrame(function() {
-      refreshView();
-      return willRefreshNextFrame = false;
-    });
-  };
-
-  refreshView = function() {
-    var editorEl;
-    editorEl = document.querySelector("#editor");
-    return React.renderComponent(R.EditorView({
-      editor: editor
-    }), editorEl);
-  };
-
-  _ref = ["mousedown", "mousemove", "mouseup", "keydown", "scroll", "change"];
-  for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-    eventName = _ref[_i];
-    window.addEventListener(eventName, refresh);
-  }
-
-  refresh();
-
-  document.styleSheets.start_autoreload(1000);
-
 }).call(this);
 }, "view/EditorView": function(exports, require, module) {(function() {
   R.create("EditorView", {
@@ -511,11 +528,11 @@
       return R.div({
         className: "editor"
       }, this.editor.lines.map((function(_this) {
-        return function(line, index) {
+        return function(line, lineIndex) {
           return R.LineView({
             line: line,
-            index: index,
-            key: index
+            lineIndex: lineIndex,
+            key: lineIndex
           });
         };
       })(this)));
@@ -527,7 +544,7 @@
   R.create("LineView", {
     propTypes: {
       line: C.Line,
-      index: Number
+      lineIndex: Number
     },
     render: function() {
       return R.div({
@@ -539,11 +556,107 @@
   });
 
 }).call(this);
+}, "view/ParamView": function(exports, require, module) {(function() {
+  R.create("ParamView", {
+    propTypes: {
+      param: C.Param
+    },
+    render: function() {
+      return R.div({
+        className: "word param"
+      }, this.param.label === "" ? R.div({
+        className: "paramLabelEmpty"
+      }) : R.ParamLabelView({
+        param: this.param
+      }), R.ParamValueView({
+        param: this.param
+      }));
+    }
+  });
+
+  R.create("ParamLabelView", {
+    propTypes: {
+      param: C.Param
+    },
+    handleInput: function(newValue) {
+      this.param.label = newValue;
+      if (this.param.label === "") {
+        return this.focusValue();
+      } else if (this.param.label.slice(-1) === ":") {
+        this.param.label = this.param.label.slice(0, -1);
+        return this.focusValue();
+      }
+    },
+    focusValue: function() {
+      var paramView;
+      paramView = this.lookupView("ParamView");
+      return UI.setAutoFocus({
+        descendantOf: [paramView, "ParamValueView"],
+        location: "start"
+      });
+    },
+    render: function() {
+      return R.TextFieldView({
+        className: "paramLabel",
+        value: this.param.label,
+        onInput: this.handleInput
+      });
+    }
+  });
+
+  R.create("ParamValueView", {
+    propTypes: {
+      param: C.Param
+    },
+    labelPart: function() {
+      var matches;
+      matches = this.param.valueString.match(/^[^0-9.-]+/);
+      return matches != null ? matches[0] : void 0;
+    },
+    placeholderPart: function() {
+      var matches;
+      if (this.param.valueString === "-") {
+        return null;
+      }
+      matches = this.param.valueString.match(/[^0-9.]+$/);
+      return matches != null ? matches[0] : void 0;
+    },
+    handleInput: function(newValue) {
+      var labelPart, placeholderPart, wordIndex, wordListView;
+      this.param.valueString = newValue;
+      if (labelPart = this.labelPart()) {
+        this.param.valueString = this.param.valueString.slice(labelPart.length);
+        this.param.label = this.param.label + labelPart;
+        return this.focusLabel();
+      } else if (placeholderPart = this.placeholderPart()) {
+        this.param.valueString = this.param.valueString.slice(0, -placeholderPart.length);
+        wordListView = this.lookupView("WordListView");
+        wordIndex = this.lookup("wordIndex");
+        return wordListView.insertPlaceholderBefore(wordIndex + 1, placeholderPart);
+      }
+    },
+    focusLabel: function() {
+      var paramView;
+      paramView = this.lookupView("ParamView");
+      return UI.setAutoFocus({
+        descendantOf: [paramView, "ParamLabelView"]
+      });
+    },
+    render: function() {
+      return R.TextFieldView({
+        className: "paramValue",
+        value: this.param.valueString,
+        onInput: this.handleInput
+      });
+    }
+  });
+
+}).call(this);
 }, "view/R": function(exports, require, module) {(function() {
   var R, key, value, _ref,
     __hasProp = {}.hasOwnProperty;
 
-  module.exports = R = {};
+  window.R = R = {};
 
   _ref = React.DOM;
   for (key in _ref) {
@@ -575,6 +688,9 @@
       for (propName in nextProps) {
         if (!__hasProp.call(nextProps, propName)) continue;
         propValue = nextProps[propName];
+        if (propName === "__owner__") {
+          continue;
+        }
         _results.push(this[propName] = propValue);
       }
       return _results;
@@ -628,8 +744,6 @@
     return R[name] = React.createClass(opts);
   };
 
-  window.R = R;
-
   require("./TextFieldView");
 
   require("./EditorView");
@@ -639,6 +753,8 @@
   require("./WordListView");
 
   require("./WordView");
+
+  require("./ParamView");
 
   require("./WordSpacerView");
 
@@ -670,9 +786,7 @@
       if (el.textContent !== this.value) {
         el.textContent = this.value;
       }
-      if (UI.attemptAutoFocus(this)) {
-        return Selection.setAtEnd(el);
-      }
+      return UI.attemptAutoFocus(this);
     },
     componentDidMount: function() {
       return this.refresh();
@@ -755,27 +869,25 @@
       return this.setAutoFocusBefore(index);
     },
     setAppropriateAutoFocus: function(wordIndex) {
-      var editable, editableTypes, word;
+      var word;
       word = this.wordList.words[wordIndex];
-      editableTypes = [C.Param, C.Placeholder];
-      editable = _.any(editableTypes, (function(_this) {
-        return function(type) {
-          return word instanceof type;
-        };
-      })(this));
-      if (editable) {
-        return this.setAutoFocusAt(wordIndex);
+      if (word instanceof C.Param) {
+        return UI.setAutoFocus({
+          descendantOf: [this, "ParamValueView"],
+          props: {
+            wordIndex: wordIndex
+          }
+        });
+      } else if (word instanceof C.Placeholder) {
+        return UI.setAutoFocus({
+          descendantOf: [this],
+          props: {
+            wordIndex: wordIndex
+          }
+        });
       } else {
         return this.setAutoFocusBefore(wordIndex + 1);
       }
-    },
-    setAutoFocusAt: function(wordIndex) {
-      return UI.setAutoFocus({
-        descendantOf: this,
-        props: {
-          wordIndex: wordIndex
-        }
-      });
     },
     setAutoFocusBefore: function(wordIndex) {
       return UI.setAutoFocus({
@@ -900,18 +1012,6 @@
         className: "word placeholder",
         value: this.placeholder.string,
         onInput: this.handleInput
-      });
-    }
-  });
-
-  R.create("ParamView", {
-    propTypes: {
-      param: C.Param
-    },
-    render: function() {
-      return R.TextFieldView({
-        className: "word param",
-        value: this.param.valueString
       });
     }
   });

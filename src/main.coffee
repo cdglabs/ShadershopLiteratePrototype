@@ -5,63 +5,7 @@
 
 
 
-window.C = C = {}
-
-class C.Word
-  constructor: ->
-
-class C.Param extends C.Word
-  constructor: (@valueString = "0") ->
-    @label = ""
-
-class C.Op extends C.Word
-  constructor: (@opString = "+") ->
-
-class C.That extends C.Word
-  constructor: ->
-
-class C.Placeholder extends C.Word
-  constructor: (@string = "") ->
-  convert: ->
-    if @string == "that"
-      return new C.That()
-    else if _.contains(["+", "-", "*", "/"], @string)
-      return new C.Op(@string)
-    else if /[0-9]/.test(@string)
-      return new C.Param(@string)
-    else
-      return this
-
-class C.Parens extends C.Word
-  constructor: ->
-    @wordList = new C.WordList()
-
-class C.Application extends C.Word
-  constructor: ->
-    @fn = null
-    @params = [] # list of WordLists
-
-
-class C.WordList
-  constructor: ->
-    @words = []
-
-  splice: (args...) ->
-    @words.splice(args...)
-
-
-class C.Line
-  constructor: ->
-    @wordList = new C.WordList()
-
-
-class C.Editor
-  constructor: ->
-    @lines = []
-
-
-
-
+require("model/C")
 require("view/R")
 
 
@@ -74,10 +18,9 @@ do ->
   line = new C.Line()
   editor.lines.push(line)
   words = line.wordList.words
-  words.push(new C.Param("3"))
+  words.push(new C.Param("3", "a"))
   words.push(new C.Op("+"))
-  words.push(new C.Param("5"))
-  words.push(new C.Placeholder("asdf"))
+  words.push(new C.Param("5", "b"))
   editor.lines.push(new C.Line())
 
 
@@ -85,6 +28,7 @@ do ->
 
 
 
+Selection = require("./Selection")
 
 window.UI = UI = new class
   constructor: ->
@@ -92,24 +36,34 @@ window.UI = UI = new class
 
   setAutoFocus: (opts) ->
     opts.descendantOf ?= []
-    opts.props ?= {}
     if !_.isArray(opts.descendantOf)
       opts.descendantOf = [opts.descendantOf]
+
+    opts.props ?= {}
+
+    opts.location ?= "end"
+
     @autofocus = opts
 
   attemptAutoFocus: (textFieldView) ->
-    return false unless @autofocus
+    return unless @autofocus
 
     matchesDescendantOf = _.every @autofocus.descendantOf, (ancestorView) =>
       textFieldView.lookupView(ancestorView)
-    return false unless matchesDescendantOf
+    return unless matchesDescendantOf
 
     matchesProps = _.every @autofocus.props, (propValue, propName) =>
       textFieldView.lookup(propName) == propValue
-    return false unless matchesProps
+    return unless matchesProps
+
+    # Found a match, focus it.
+    el = textFieldView.getDOMNode()
+    if @autofocus.location == "start"
+      Selection.setAtStart(el)
+    else if @autofocus.location == "end"
+      Selection.setAtEnd(el)
 
     @autofocus = null
-    return true
 
 
 
