@@ -9,7 +9,7 @@ R.cx = React.addons.classSet
 R.UniversalMixin = {
   # Extra traversal powers
   ownerView: ->
-    @props.__owner__ # undocumented React property
+    @_owner ? @props.__owner__ # undocumented React property
 
   lookup: (keyName) ->
     return this[keyName] ? @ownerView()?.lookup(keyName)

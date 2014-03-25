@@ -973,7 +973,8 @@
 
   R.UniversalMixin = {
     ownerView: function() {
-      return this.props.__owner__;
+      var _ref1;
+      return (_ref1 = this._owner) != null ? _ref1 : this.props.__owner__;
     },
     lookup: function(keyName) {
       var _ref1, _ref2;
