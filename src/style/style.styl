@@ -4,7 +4,6 @@
 
 wordPadding = 3px
 wordBorderRadius = 5px
-lineBorderColor = #eee
 
 paramColor = #ffe
 lineOutputColor = #eef
@@ -50,18 +49,20 @@ canvas
 
 .line
   display table-row
+  &:hover
+    background-color: tint(#def, 50%)
 
 .lineLeft
   display table-cell
-  border-bottom 1px solid lineBorderColor
-  padding-right 36px
+  padding-right 6px
   padding-top 6px
 
 .lineRight
   display table-cell
-  border-bottom 1px solid lineBorderColor
   padding-top 6px
   padding-right 6px
+  padding-left: 12px
+  border-left: 1px solid #eee
 
 
 // ============================================================================
@@ -109,8 +110,9 @@ canvas
   font-weight bold
 
 .that
-  background-color #eee
-  color #666
+  background-color lineOutputColor
+  color shade(lineOutputColor, 50%)
+  font-style italic
 
 .placeholder
   color #999

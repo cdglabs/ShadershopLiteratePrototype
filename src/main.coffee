@@ -3,10 +3,9 @@
 
 
 
-
-
-require("model/C")
-require("view/R")
+require("./util")
+require("./model/C")
+require("./view/R")
 
 
 

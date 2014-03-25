@@ -5,13 +5,6 @@ enter from anywhere
 
 
 
-
-css preprocessor
-  variable for word padding
-  variable for line spacing
-
-
-
 scrubbing param value
 transclude param, result
 
@@ -22,5 +15,5 @@ cleanup
   Move enter functionality somewhere else?
   Can PlaceholderView and WordSpacerView be unified?
   How can enter functionality be added to ParamValueView?
-  Move truncate, Selection, etc into util
+  Move Selection into util
   rename C. to M., R. to V.?

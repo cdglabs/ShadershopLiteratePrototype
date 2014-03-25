@@ -227,9 +227,11 @@
 }, "main": function(exports, require, module) {(function() {
   var Selection, UI, editor, eventName, json, refresh, refreshView, saveState, storageName, willRefreshNextFrame, _i, _len, _ref;
 
-  require("model/C");
+  require("./util");
 
-  require("view/R");
+  require("./model/C");
+
+  require("./view/R");
 
   storageName = "spaceShaderTyper";
 
@@ -653,6 +655,27 @@
   })();
 
 }).call(this);
+}, "util": function(exports, require, module) {(function() {
+  var util;
+
+  window.util = util = {};
+
+  util.formatFloat = function(value, precision) {
+    var s;
+    if (precision == null) {
+      precision = 6;
+    }
+    s = value.toFixed(precision);
+    if (s.indexOf(".") !== -1) {
+      s = s.replace(/\.?0*$/, "");
+    }
+    if (s === "-0") {
+      s = "0";
+    }
+    return s;
+  };
+
+}).call(this);
 }, "view/EditorView": function(exports, require, module) {(function() {
   R.create("EditorView", {
     propTypes: {
@@ -669,21 +692,9 @@
 
 }).call(this);
 }, "view/LineOutputView": function(exports, require, module) {(function() {
-  var compile, truncate;
+  var compile;
 
   compile = require("../compile/compile");
-
-  truncate = function(value) {
-    var s;
-    s = value.toFixed(6);
-    if (s.indexOf(".") !== -1) {
-      s = s.replace(/\.?0*$/, "");
-    }
-    if (s === "-0") {
-      s = "0";
-    }
-    return s;
-  };
 
   R.create("LineOutputView", {
     propTypes: {
@@ -696,7 +707,7 @@
       compiled = compile(program);
       compiled += "\n" + id + ";";
       value = eval(compiled);
-      return truncate(value);
+      return util.formatFloat(value);
     },
     render: function() {
       return R.div({

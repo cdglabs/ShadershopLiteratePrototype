@@ -28,17 +28,20 @@ canvas {
 .line {
   display: table-row;
 }
+.line:hover {
+  background-color: #eef6ff;
+}
 .lineLeft {
   display: table-cell;
-  border-bottom: 1px solid #eee;
-  padding-right: 36px;
+  padding-right: 6px;
   padding-top: 6px;
 }
 .lineRight {
   display: table-cell;
-  border-bottom: 1px solid #eee;
   padding-top: 6px;
   padding-right: 6px;
+  padding-left: 12px;
+  border-left: 1px solid #eee;
 }
 .word {
   display: inline-block;
@@ -85,8 +88,9 @@ canvas {
   font-weight: bold;
 }
 .that {
-  background-color: #eee;
-  color: #666;
+  background-color: #eef;
+  color: #77777f;
+  font-style: italic;
 }
 .placeholder {
   color: #999;
