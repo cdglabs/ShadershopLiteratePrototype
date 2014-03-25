@@ -282,24 +282,41 @@
 
 }).call(this);
 }, "main": function(exports, require, module) {(function() {
-  var Selection, UI, editor, eventName, refresh, refreshView, willRefreshNextFrame, _i, _len, _ref;
+  var Selection, UI, editor, eventName, json, refresh, refreshView, saveState, storageName, willRefreshNextFrame, _i, _len, _ref;
 
   require("model/C");
 
   require("view/R");
 
-  window.editor = editor = new C.Editor();
+  storageName = "spaceShaderTyper";
 
-  (function() {
-    var line, words;
-    line = new C.Line();
-    editor.lines.push(line);
-    words = line.wordList.words;
-    words.push(new C.Param("3", "a"));
-    words.push(new C.Op("+"));
-    words.push(new C.Param("5", "b"));
-    return editor.lines.push(new C.Line());
-  })();
+  window.reset = function() {
+    delete window.localStorage[storageName];
+    return location.reload();
+  };
+
+  if (json = window.localStorage[storageName]) {
+    json = JSON.parse(json);
+    window.editor = editor = C.reconstruct(json);
+  } else {
+    window.editor = editor = new C.Editor();
+    (function() {
+      var line, words;
+      line = new C.Line();
+      editor.lines.push(line);
+      words = line.wordList.words;
+      words.push(new C.Param("3", "a"));
+      words.push(new C.Op("+"));
+      words.push(new C.Param("5", "b"));
+      return editor.lines.push(new C.Line());
+    })();
+  }
+
+  saveState = function() {
+    json = C.deconstruct(editor);
+    json = JSON.stringify(json);
+    return window.localStorage[storageName] = json;
+  };
 
   Selection = require("./Selection");
 
@@ -367,6 +384,7 @@
     willRefreshNextFrame = true;
     return requestAnimationFrame(function() {
       refreshView();
+      saveState();
       return willRefreshNextFrame = false;
     });
   };
@@ -391,12 +409,139 @@
 
 }).call(this);
 }, "model/C": function(exports, require, module) {(function() {
-  var C,
-    __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    __slice = [].slice;
+  var C, className, constructor,
+    __hasProp = {}.hasOwnProperty;
 
   window.C = C = {};
+
+  require("./model");
+
+  for (className in C) {
+    if (!__hasProp.call(C, className)) continue;
+    constructor = C[className];
+    constructor.prototype.__className = className;
+  }
+
+  C._idCounter = 0;
+
+  C._assignId = function(obj) {
+    var id;
+    this._idCounter++;
+    id = "id" + this._idCounter + Date.now() + Math.floor(1e9 * Math.random());
+    return obj.__id = id;
+  };
+
+  C.id = function(obj) {
+    var _ref;
+    return (_ref = obj.__id) != null ? _ref : C._assignId(obj);
+  };
+
+  C.deconstruct = function(object) {
+    var objects, root, serialize;
+    objects = {};
+    serialize = (function(_this) {
+      return function(object, force) {
+        var entry, id, key, result, value, _i, _len;
+        if (force == null) {
+          force = false;
+        }
+        if (!force && object.__className) {
+          id = C.id(object);
+          if (!objects[id]) {
+            objects[id] = serialize(object, true);
+          }
+          return {
+            __ref: id
+          };
+        }
+        if (_.isArray(object)) {
+          result = [];
+          for (_i = 0, _len = object.length; _i < _len; _i++) {
+            entry = object[_i];
+            result.push(serialize(entry));
+          }
+          return result;
+        }
+        if (_.isObject(object)) {
+          result = {};
+          for (key in object) {
+            if (!__hasProp.call(object, key)) continue;
+            value = object[key];
+            result[key] = serialize(value);
+          }
+          if (object.__className) {
+            result.__className = object.__className;
+          }
+          return result;
+        }
+        return object != null ? object : null;
+      };
+    })(this);
+    root = serialize(object);
+    return {
+      objects: objects,
+      root: root
+    };
+  };
+
+  C.reconstruct = function(_arg) {
+    var constructObject, constructedObjects, derefObject, id, object, objects, root;
+    objects = _arg.objects, root = _arg.root;
+    constructedObjects = {};
+    constructObject = (function(_this) {
+      return function(object) {
+        var classConstructor, constructedObject, key, value;
+        className = object.__className;
+        classConstructor = C[className];
+        constructedObject = new classConstructor();
+        for (key in object) {
+          if (!__hasProp.call(object, key)) continue;
+          value = object[key];
+          if (key === "__className") {
+            continue;
+          }
+          constructedObject[key] = value;
+        }
+        return constructedObject;
+      };
+    })(this);
+    for (id in objects) {
+      if (!__hasProp.call(objects, id)) continue;
+      object = objects[id];
+      constructedObjects[id] = constructObject(object);
+    }
+    derefObject = (function(_this) {
+      return function(object) {
+        var key, value, _results;
+        if (!_.isObject(object)) {
+          return;
+        }
+        _results = [];
+        for (key in object) {
+          if (!__hasProp.call(object, key)) continue;
+          value = object[key];
+          if (id = value != null ? value.__ref : void 0) {
+            _results.push(object[key] = constructedObjects[id]);
+          } else {
+            _results.push(derefObject(value));
+          }
+        }
+        return _results;
+      };
+    })(this);
+    for (id in constructedObjects) {
+      if (!__hasProp.call(constructedObjects, id)) continue;
+      object = constructedObjects[id];
+      derefObject(object);
+    }
+    return constructedObjects[root.__ref];
+  };
+
+}).call(this);
+}, "model/model": function(exports, require, module) {(function() {
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    __slice = [].slice;
 
   C.Word = (function() {
     function Word() {}
