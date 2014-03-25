@@ -26,25 +26,50 @@ canvas {
 
 
 .editor {
-  width: 300px;
+  display: table;
 }
 
 .line {
-  /*padding: 12px 0px;*/
-  margin-top: 12px;
-  overflow: hidden;
-  border-bottom: 1px solid #ccc;
+  display: table-row;
 }
 
-.preview {
-  float: right;
+.lineLeft {
+  display: table-cell;
+  border-bottom: 1px solid #ccc;
+  padding-right: 36px;
+  padding-top: 6px;
 }
+
+.lineRight {
+  display: table-cell;
+  border-bottom: 1px solid #ccc;
+  padding-top: 6px;
+  padding-right: 6px;
+}
+
 
 .word {
   display: inline-block;
   padding: 6px 0px;
-  margin-bottom: 12px;
+  margin-bottom: 6px;
 }
+.wordSpacer {
+  display: inline-block;
+  padding: 6px 3px;
+  color: #999;
+  margin-bottom: 6px;
+}
+
+
+.lineOutput {
+  background-color: #dce;
+  padding-left: 6px;
+  padding-right: 6px;
+  border-radius: 6px;
+  color: #000;
+  font-weight: bold;
+}
+
 
 .param {
   background-color: #cec;
@@ -87,19 +112,11 @@ canvas {
 
 .op {
   color: #000;
-  /*background-color: #eee;*/
-}
-
-.wordSpacer {
-  display: inline-block;
-  padding: 6px 3px;
-  margin-bottom: 12px;
-  color: #999;
 }
 
 
-.stackValue {
-  display: inline-block;
-  margin-right: 6px;
-  background-color: #aaa;
-}
+
+
+
+
+

@@ -6,4 +6,7 @@ R.create "LineView",
 
   render: ->
     R.div {className: "line"},
-      R.WordListView {wordList: @line.wordList}
+      R.div {className: "lineLeft"},
+        R.WordListView {wordList: @line.wordList}
+      R.div {className: "lineRight"},
+        R.LineOutputView {line: @line}

@@ -82,10 +82,6 @@ window.UI = UI = new class
 
 
 
-
-
-
-
 willRefreshNextFrame = false
 refresh = ->
   return if willRefreshNextFrame

@@ -178,6 +178,52 @@
   })());
 
 }).call(this);
+}, "compile/compile": function(exports, require, module) {(function() {
+  var compile, compileLine, compileWord, compileWordList;
+
+  module.exports = compile = function(editor) {
+    var line, result, _i, _len, _ref;
+    result = [];
+    result.push("var that = 0;");
+    _ref = editor.lines;
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      line = _ref[_i];
+      result.push(compileLine(line));
+    }
+    return result.join("\n");
+  };
+
+  compileLine = function(line) {
+    var lineId, s, wordList;
+    lineId = C.id(line);
+    s = "var " + lineId + " = that = ";
+    wordList = line.wordList.effectiveWordList();
+    if (!wordList) {
+      s += "that";
+    } else {
+      s += compileWordList(wordList);
+    }
+    s += ";";
+    return s;
+  };
+
+  compileWordList = function(wordList) {
+    var result;
+    result = _.map(wordList.words, compileWord);
+    return result.join(" ");
+  };
+
+  compileWord = function(word) {
+    if (word instanceof C.Op) {
+      return word.opString;
+    } else if (word instanceof C.That) {
+      return "that";
+    } else if (word instanceof C.Param) {
+      return "" + word.value();
+    }
+  };
+
+}).call(this);
 }, "dom": function(exports, require, module) {(function() {
   var dom, fnizeSelector;
 
@@ -546,6 +592,10 @@
   C.Word = (function() {
     function Word() {}
 
+    Word.prototype.effectiveWord = function() {
+      return this;
+    };
+
     return Word;
 
   })();
@@ -557,6 +607,15 @@
       this.valueString = valueString != null ? valueString : "0";
       this.label = label != null ? label : "";
     }
+
+    Param.prototype.value = function() {
+      var number;
+      number = parseFloat(this.valueString);
+      if (_.isNaN(number) || !_.isFinite(number)) {
+        return 0;
+      }
+      return number;
+    };
 
     return Param;
 
@@ -603,6 +662,10 @@
       }
     };
 
+    Placeholder.prototype.effectiveWord = function() {
+      return null;
+    };
+
     return Placeholder;
 
   })(C.Word);
@@ -631,8 +694,8 @@
   })(C.Word);
 
   C.WordList = (function() {
-    function WordList() {
-      this.words = [];
+    function WordList(words) {
+      this.words = words != null ? words : [];
     }
 
     WordList.prototype.splice = function() {
@@ -643,6 +706,32 @@
 
     WordList.prototype.isEmpty = function() {
       return this.words.length === 0;
+    };
+
+    WordList.prototype.effectiveWordList = function() {
+      var lookingForOp, word, wordIsOp, words, _i, _len, _ref;
+      words = [];
+      lookingForOp = false;
+      _ref = this.words;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        word = _ref[_i];
+        word = word.effectiveWord();
+        if (!word) {
+          continue;
+        }
+        wordIsOp = word instanceof C.Op;
+        if (wordIsOp === lookingForOp) {
+          words.push(word);
+          lookingForOp = !lookingForOp;
+        }
+      }
+      if (_.last(words) instanceof C.Op) {
+        words = _.initial(words);
+      }
+      if (words.length === 0) {
+        return null;
+      }
+      return new C.WordList(words);
     };
 
     return WordList;
@@ -697,6 +786,43 @@
   });
 
 }).call(this);
+}, "view/LineOutputView": function(exports, require, module) {(function() {
+  var compile, truncate;
+
+  compile = require("../compile/compile");
+
+  truncate = function(value) {
+    var s;
+    s = value.toFixed(8);
+    if (s.indexOf(".") !== -1) {
+      s = s.replace(/\.?0*$/, "");
+    }
+    if (s === "-0") {
+      s = "0";
+    }
+    return s;
+  };
+
+  R.create("LineOutputView", {
+    propTypes: {
+      line: C.Line
+    },
+    value: function() {
+      var compiled, id, value;
+      id = C.id(this.line);
+      compiled = compile(editor);
+      compiled += "\n" + id + ";";
+      value = eval(compiled);
+      return truncate(value);
+    },
+    render: function() {
+      return R.div({
+        className: "word lineOutput"
+      }, this.value());
+    }
+  });
+
+}).call(this);
 }, "view/LineView": function(exports, require, module) {(function() {
   R.create("LineView", {
     propTypes: {
@@ -706,9 +832,15 @@
     render: function() {
       return R.div({
         className: "line"
+      }, R.div({
+        className: "lineLeft"
       }, R.WordListView({
         wordList: this.line.wordList
-      }));
+      })), R.div({
+        className: "lineRight"
+      }, R.LineOutputView({
+        line: this.line
+      })));
     }
   });
 
@@ -908,6 +1040,8 @@
   require("./EditorView");
 
   require("./LineView");
+
+  require("./LineOutputView");
 
   require("./WordListView");
 
