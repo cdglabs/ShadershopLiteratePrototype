@@ -23,3 +23,5 @@ cleanup
   Move enter functionality somewhere else?
   Can PlaceholderView and WordSpacerView be unified?
   How can enter functionality be added to ParamValueView?
+  Move truncate, Selection, etc into util
+  rename C. to M., R. to V.?
