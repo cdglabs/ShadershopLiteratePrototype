@@ -7,6 +7,10 @@ R.create "WordListView",
     placeholder = new C.Placeholder(string)
     word = placeholder.convert()
     @wordList.splice(index, 0, word)
+    if index == 0 and word instanceof C.Op
+      that = new C.That()
+      @wordList.splice(0, 0, that)
+      index += 1
     @setAppropriateAutoFocus(index)
 
   replaceWordAt: (index, word) ->

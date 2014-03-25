@@ -675,7 +675,7 @@
 
   truncate = function(value) {
     var s;
-    s = value.toFixed(8);
+    s = value.toFixed(6);
     if (s.indexOf(".") !== -1) {
       s = s.replace(/\.?0*$/, "");
     }
@@ -1062,10 +1062,15 @@
       wordList: C.WordList
     },
     insertPlaceholderBefore: function(index, string) {
-      var placeholder, word;
+      var placeholder, that, word;
       placeholder = new C.Placeholder(string);
       word = placeholder.convert();
       this.wordList.splice(index, 0, word);
+      if (index === 0 && word instanceof C.Op) {
+        that = new C.That();
+        this.wordList.splice(0, 0, that);
+        index += 1;
+      }
       return this.setAppropriateAutoFocus(index);
     },
     replaceWordAt: function(index, word) {
@@ -1295,7 +1300,7 @@
     render: function() {
       return R.div({
         className: "word that"
-      }, "that");
+      }, "That");
     }
   });
 

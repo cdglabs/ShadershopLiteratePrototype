@@ -1,125 +1,97 @@
-html, body {
+html,
+body {
   height: 100%;
   overflow: hidden;
   font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
-  font-size: 16px;
+  font-size: 14px;
   color: #333;
   cursor: default;
 }
-
-[contenteditable]:active, [contenteditable]:focus, button:active, button:focus {
+[contenteditable]:active,
+[contenteditable]:focus,
+button:active,
+button:focus {
   outline: none;
 }
 [contenteditable] {
   cursor: text;
 }
-
 canvas {
   position: absolute;
   width: 100%;
   height: 100%;
 }
-
-
-
-
-
-.editor {
-
-}
-
+.editor,
 .program {
   display: table;
 }
-
 .line {
   display: table-row;
 }
-
 .lineLeft {
   display: table-cell;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid #eee;
   padding-right: 36px;
   padding-top: 6px;
 }
-
 .lineRight {
   display: table-cell;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid #eee;
   padding-top: 6px;
   padding-right: 6px;
 }
-
-
 .word {
   display: inline-block;
-  padding: 6px 0px;
+  padding: 3px;
+  border-radius: 5px;
   margin-bottom: 6px;
 }
 .wordSpacer {
   display: inline-block;
-  padding: 6px 3px;
+  padding: 3px 3px;
   color: #999;
   margin-bottom: 6px;
 }
-
-
 .lineOutput {
-  background-color: #dce;
-  padding-left: 6px;
-  padding-right: 6px;
-  border-radius: 6px;
+  background-color: #eef;
   color: #000;
   font-weight: bold;
 }
-
-
 .param {
-  background-color: #cec;
   padding: 0;
-  border-radius: 6px;
+  border-radius: 0;
 }
-.paramLabel {
+.paramLabel,
+.paramLabelEmpty {
   display: inline-block;
-  color: #797;
-  padding: 6px;
+  border-radius: 5px 0 0 5px;
+  background-color: #efefdf;
+  color: #7f7f77;
+  padding: 3px;
 }
-.paramLabel:after {
+.paramLabel:after,
+.paramLabelEmpty:after {
   content: ":";
 }
 .paramLabelEmpty {
-  display: inline-block;
-  padding: 6px;
-  width: 0px;
+  color: transparent;
 }
 .paramValue {
   display: inline-block;
-  padding: 6px 6px 6px 0px;
+  border-radius: 0 5px 5px 0;
+  background-color: #ffe;
+  padding: 3px;
   color: #000;
   font-weight: bold;
 }
-
 .that {
   background-color: #eee;
   color: #666;
-  padding-left: 6px;
-  padding-right: 6px;
-  border-radius: 6px;
 }
-
 .placeholder {
-  padding-left: 6px;
-  padding-right: 6px;
   color: #999;
 }
-
 .op {
   color: #000;
+  padding: 3px 0;
 }
-
-
-
-
-
-
-

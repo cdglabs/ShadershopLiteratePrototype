@@ -60,4 +60,4 @@ R.create "OpView",
 
 R.create "ThatView",
   render: ->
-    R.div {className: "word that"}, "that"
+    R.div {className: "word that"}, "That"

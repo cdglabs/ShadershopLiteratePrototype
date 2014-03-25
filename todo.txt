@@ -2,7 +2,6 @@ Parens
 Function
 up and down arrows
 enter from anywhere
-up and down arrows
 
 
 

@@ -1,7 +1,8 @@
-fs               = require("fs")
+fs      = require("fs")
+watcher = require("node-watch")
 
-watcher          = require('node-watch')
-stitch           = require("stitch")
+stitch  = require("stitch")
+stylus  = require("stylus")
 
 
 
@@ -11,6 +12,7 @@ buildScripts = ->
   OUT_FILE = "compiled/app.js"
 
   build = ->
+    # Stitch
     pkg = stitch.createPackage({paths: [IN_DIR]})
     pkg.compile (err, output) ->
       if err
@@ -18,8 +20,15 @@ buildScripts = ->
         return
 
       fs.writeFile OUT_FILE, output, (err) ->
-        if (err) then throw err
-        console.log("compiled: #{OUT_FILE}")
+        if err then throw err
+        console.log "compiled: #{OUT_FILE}"
+
+    # Stylus
+    fs.readFile "./src/style/style.styl", "utf8", (err, data) ->
+      stylus.render data, (err, css) ->
+        fs.writeFile "compiled/app.css", css, (err) ->
+          if err then throw err
+          console.log "compiled: compiled/app.css"
 
   build()
   watcher(IN_DIR, build)

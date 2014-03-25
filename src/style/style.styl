@@ -1,0 +1,121 @@
+// ============================================================================
+// Config
+// ============================================================================
+
+wordPadding = 3px
+wordBorderRadius = 5px
+lineBorderColor = #eee
+
+paramColor = #ffe
+lineOutputColor = #eef
+
+
+// ============================================================================
+// Generic
+// ============================================================================
+
+html, body
+  height 100%
+  overflow hidden
+  font-family "Lucida Sans Unicode", "Lucida Grande", sans-serif
+  font-size 14px
+  color #333
+  cursor default
+
+[contenteditable]:active, [contenteditable]:focus, button:active, button:focus
+  outline none
+
+[contenteditable]
+  cursor text
+
+canvas
+  position absolute
+  width 100%
+  height 100%
+
+
+// ============================================================================
+// Editor
+// ============================================================================
+
+.editor
+
+.program
+  display table
+
+
+// ============================================================================
+// Lines
+// ============================================================================
+
+.line
+  display table-row
+
+.lineLeft
+  display table-cell
+  border-bottom 1px solid lineBorderColor
+  padding-right 36px
+  padding-top 6px
+
+.lineRight
+  display table-cell
+  border-bottom 1px solid lineBorderColor
+  padding-top 6px
+  padding-right 6px
+
+
+// ============================================================================
+// Words
+// ============================================================================
+
+.word
+  display inline-block
+  padding wordPadding
+  border-radius wordBorderRadius
+  margin-bottom 6px
+
+.wordSpacer
+  display inline-block
+  padding wordPadding 3px
+  color #999
+  margin-bottom 6px
+
+.lineOutput
+  background-color lineOutputColor
+  color #000
+  font-weight bold
+
+.param
+  padding 0
+  border-radius 0
+
+.paramLabel, .paramLabelEmpty
+  display inline-block
+  border-radius wordBorderRadius 0 0 wordBorderRadius
+  background-color shade(paramColor, 6%)
+  color shade(paramColor, 50%)
+  padding wordPadding
+  &:after
+    content ":"
+.paramLabelEmpty
+  color: transparent
+
+.paramValue
+  display inline-block
+  border-radius 0 wordBorderRadius wordBorderRadius 0
+  background-color paramColor
+  padding wordPadding
+  color #000
+  font-weight bold
+
+.that
+  background-color #eee
+  color #666
+
+.placeholder
+  color #999
+
+.op
+  color #000
+  padding wordPadding 0
+
