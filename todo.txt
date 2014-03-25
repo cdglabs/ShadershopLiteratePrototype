@@ -12,7 +12,6 @@ css preprocessor
   variable for line spacing
 
 
-evaluator
 
 scrubbing param value
 transclude param, result

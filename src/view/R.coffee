@@ -74,6 +74,7 @@ R.create = (name, opts) ->
 
 require("./TextFieldView")
 require("./EditorView")
+require("./ProgramView")
 require("./LineView")
 require("./LineOutputView")
 require("./WordListView")

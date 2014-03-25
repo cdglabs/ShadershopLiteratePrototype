@@ -12,8 +12,9 @@ R.create "LineOutputView",
     line: C.Line
   }
   value: ->
+    program = @lookup("program")
     id = C.id(@line)
-    compiled = compile(editor)
+    compiled = compile(program)
     compiled += "\n#{id};"
     value = eval(compiled)
     return truncate(value)

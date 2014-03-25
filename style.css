@@ -24,8 +24,11 @@ canvas {
 
 
 
-
 .editor {
+
+}
+
+.program {
   display: table;
 }
 

@@ -78,6 +78,11 @@ class C.Line
     @wordList = new C.WordList()
 
 
+class C.Program
+  constructor: ->
+    @lines = [new C.Line()]
+
+
 class C.Editor
   constructor: ->
-    @lines = []
+    @programs = [new C.Program()]

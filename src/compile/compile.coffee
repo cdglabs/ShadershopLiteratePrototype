@@ -1,9 +1,9 @@
-module.exports = compile = (editor) ->
+module.exports = compile = (program) ->
   result = []
 
   result.push "var that = 0;"
 
-  for line in editor.lines
+  for line in program.lines
     result.push compileLine(line)
 
   return result.join("\n")

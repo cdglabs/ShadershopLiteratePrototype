@@ -181,11 +181,11 @@
 }, "compile/compile": function(exports, require, module) {(function() {
   var compile, compileLine, compileWord, compileWordList;
 
-  module.exports = compile = function(editor) {
+  module.exports = compile = function(program) {
     var line, result, _i, _len, _ref;
     result = [];
     result.push("var that = 0;");
-    _ref = editor.lines;
+    _ref = program.lines;
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       line = _ref[_i];
       result.push(compileLine(line));
@@ -346,16 +346,6 @@
     window.editor = editor = C.reconstruct(json);
   } else {
     window.editor = editor = new C.Editor();
-    (function() {
-      var line, words;
-      line = new C.Line();
-      editor.lines.push(line);
-      words = line.wordList.words;
-      words.push(new C.Param("3", "a"));
-      words.push(new C.Op("+"));
-      words.push(new C.Param("5", "b"));
-      return editor.lines.push(new C.Line());
-    })();
   }
 
   saveState = function() {
@@ -747,9 +737,18 @@
 
   })();
 
+  C.Program = (function() {
+    function Program() {
+      this.lines = [new C.Line()];
+    }
+
+    return Program;
+
+  })();
+
   C.Editor = (function() {
     function Editor() {
-      this.lines = [];
+      this.programs = [new C.Program()];
     }
 
     return Editor;
@@ -762,26 +761,12 @@
     propTypes: {
       editor: C.Editor
     },
-    insertLineBefore: function(index) {
-      var line;
-      line = new C.Line();
-      return this.editor.lines.splice(index, 0, line);
-    },
-    removeLineAt: function(index) {
-      return this.editor.lines.splice(index, 1);
-    },
     render: function() {
       return R.div({
         className: "editor"
-      }, this.editor.lines.map((function(_this) {
-        return function(line, lineIndex) {
-          return R.LineView({
-            line: line,
-            lineIndex: lineIndex,
-            key: lineIndex
-          });
-        };
-      })(this)));
+      }, R.ProgramView({
+        program: this.editor.programs[0]
+      }));
     }
   });
 
@@ -808,9 +793,10 @@
       line: C.Line
     },
     value: function() {
-      var compiled, id, value;
+      var compiled, id, program, value;
+      program = this.lookup("program");
       id = C.id(this.line);
-      compiled = compile(editor);
+      compiled = compile(program);
       compiled += "\n" + id + ";";
       value = eval(compiled);
       return truncate(value);
@@ -941,6 +927,35 @@
   });
 
 }).call(this);
+}, "view/ProgramView": function(exports, require, module) {(function() {
+  R.create("ProgramView", {
+    propTypes: {
+      program: C.Program
+    },
+    insertLineBefore: function(index) {
+      var line;
+      line = new C.Line();
+      return this.program.lines.splice(index, 0, line);
+    },
+    removeLineAt: function(index) {
+      return this.program.lines.splice(index, 1);
+    },
+    render: function() {
+      return R.div({
+        className: "program"
+      }, this.program.lines.map((function(_this) {
+        return function(line, lineIndex) {
+          return R.LineView({
+            line: line,
+            lineIndex: lineIndex,
+            key: lineIndex
+          });
+        };
+      })(this)));
+    }
+  });
+
+}).call(this);
 }, "view/R": function(exports, require, module) {(function() {
   var R, key, value, _ref,
     __hasProp = {}.hasOwnProperty;
@@ -1038,6 +1053,8 @@
   require("./TextFieldView");
 
   require("./EditorView");
+
+  require("./ProgramView");
 
   require("./LineView");
 
@@ -1249,25 +1266,25 @@
       return wordListView.insertPlaceholderBefore(this.wordSpacerIndex, newValue);
     },
     handleBackSpace: function() {
-      var editorView, line, lineIndex, previousLine, wordListView;
+      var line, lineIndex, previousLine, programView, wordListView;
       if (this.isFirstWord) {
-        editorView = this.lookupView("EditorView");
+        programView = this.lookupView("ProgramView");
         lineIndex = this.lookup("lineIndex");
-        line = editorView.editor.lines[lineIndex];
-        previousLine = editorView.editor.lines[lineIndex - 1];
+        line = programView.program.lines[lineIndex];
+        previousLine = programView.program.lines[lineIndex - 1];
         if (previousLine != null ? previousLine.wordList.isEmpty() : void 0) {
-          editorView.removeLineAt(lineIndex - 1);
+          programView.removeLineAt(lineIndex - 1);
           return UI.setAutoFocus({
-            descendantOf: editorView,
+            descendantOf: programView,
             props: {
               lineIndex: lineIndex - 1,
               isFirstWord: true
             }
           });
         } else if (line.wordList.isEmpty() && lineIndex > 0) {
-          editorView.removeLineAt(lineIndex);
+          programView.removeLineAt(lineIndex);
           return UI.setAutoFocus({
-            descendantOf: editorView,
+            descendantOf: programView,
             props: {
               lineIndex: lineIndex - 1,
               isLastWord: true
@@ -1280,22 +1297,22 @@
       }
     },
     handleEnter: function() {
-      var editorView, lineIndex, wordListView;
+      var lineIndex, programView, wordListView;
       wordListView = this.lookupView("WordListView");
-      editorView = this.lookupView("EditorView");
+      programView = this.lookupView("ProgramView");
       lineIndex = this.lookup("lineIndex");
       if (this.isFirstWord) {
-        editorView.insertLineBefore(lineIndex);
+        programView.insertLineBefore(lineIndex);
         return UI.setAutoFocus({
-          descendantOf: editorView,
+          descendantOf: programView,
           props: {
             lineIndex: lineIndex + 1
           }
         });
       } else if (this.isLastWord) {
-        editorView.insertLineBefore(lineIndex + 1);
+        programView.insertLineBefore(lineIndex + 1);
         return UI.setAutoFocus({
-          descendantOf: editorView,
+          descendantOf: programView,
           props: {
             lineIndex: lineIndex + 1
           }

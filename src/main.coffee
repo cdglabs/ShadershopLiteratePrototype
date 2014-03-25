@@ -22,14 +22,6 @@ if json = window.localStorage[storageName]
   window.editor = editor = C.reconstruct(json)
 else
   window.editor = editor = new C.Editor()
-  do ->
-    line = new C.Line()
-    editor.lines.push(line)
-    words = line.wordList.words
-    words.push(new C.Param("3", "a"))
-    words.push(new C.Op("+"))
-    words.push(new C.Param("5", "b"))
-    editor.lines.push(new C.Line())
 
 saveState = ->
   json = C.deconstruct(editor)
