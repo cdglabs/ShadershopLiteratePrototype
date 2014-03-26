@@ -101,10 +101,13 @@ R.create = (name, opts) ->
 # =============================================================================
 
 require("./mixins/StartTranscludeMixin")
-require("./EditorView")
-require("./DraggingView")
-require("./ProgramView")
-require("./LineView")
+
+require("./editor/EditorView")
+require("./editor/DraggingView")
+
+require("./program/ProgramView")
+require("./program/LineView")
+
 require("./word/TextFieldView")
 require("./word/LineOutputView")
 require("./word/WordListView")

@@ -847,98 +847,6 @@
   };
 
 }).call(this);
-}, "view/DraggingView": function(exports, require, module) {(function() {
-  R.create("DraggingView", {
-    render: function() {
-      var _ref;
-      return R.div({}, ((_ref = UI.dragging) != null ? _ref.render : void 0) ? R.div({
-        className: "draggingObject",
-        style: {
-          left: UI.mousePosition.x - UI.dragging.offset.x,
-          top: UI.mousePosition.y - UI.dragging.offset.y
-        }
-      }, UI.dragging.render()) : void 0, UI.dragging ? R.div({
-        className: "draggingOverlay"
-      }) : void 0);
-    }
-  });
-
-}).call(this);
-}, "view/EditorView": function(exports, require, module) {(function() {
-  R.create("EditorView", {
-    propTypes: {
-      editor: C.Editor
-    },
-    cursor: function() {
-      var _ref, _ref1;
-      return (_ref = (_ref1 = UI.dragging) != null ? _ref1.cursor : void 0) != null ? _ref : "";
-    },
-    render: function() {
-      return R.div({
-        className: "editor",
-        style: {
-          cursor: this.cursor()
-        }
-      }, R.ProgramView({
-        program: this.editor.programs[0]
-      }), R.div({
-        className: "dragging"
-      }, R.DraggingView({})));
-    }
-  });
-
-}).call(this);
-}, "view/LineView": function(exports, require, module) {(function() {
-  R.create("LineView", {
-    propTypes: {
-      line: C.Line,
-      lineIndex: Number
-    },
-    render: function() {
-      return R.div({
-        className: "line"
-      }, R.div({
-        className: "lineLeft"
-      }, R.WordListView({
-        wordList: this.line.wordList
-      })), R.div({
-        className: "lineRight"
-      }, R.LineOutputView({
-        line: this.line
-      })));
-    }
-  });
-
-}).call(this);
-}, "view/ProgramView": function(exports, require, module) {(function() {
-  R.create("ProgramView", {
-    propTypes: {
-      program: C.Program
-    },
-    insertLineBefore: function(index) {
-      var line;
-      line = new C.Line();
-      return this.program.lines.splice(index, 0, line);
-    },
-    removeLineAt: function(index) {
-      return this.program.lines.splice(index, 1);
-    },
-    render: function() {
-      return R.div({
-        className: "program"
-      }, this.program.lines.map((function(_this) {
-        return function(line, lineIndex) {
-          return R.LineView({
-            line: line,
-            lineIndex: lineIndex,
-            key: lineIndex
-          });
-        };
-      })(this)));
-    }
-  });
-
-}).call(this);
 }, "view/R": function(exports, require, module) {(function() {
   var R, key, value, _ref,
     __hasProp = {}.hasOwnProperty;
@@ -1052,13 +960,13 @@
 
   require("./mixins/StartTranscludeMixin");
 
-  require("./EditorView");
+  require("./editor/EditorView");
 
-  require("./DraggingView");
+  require("./editor/DraggingView");
 
-  require("./ProgramView");
+  require("./program/ProgramView");
 
-  require("./LineView");
+  require("./program/LineView");
 
   require("./word/TextFieldView");
 
@@ -1071,6 +979,47 @@
   require("./word/ParamView");
 
   require("./word/WordSpacerView");
+
+}).call(this);
+}, "view/editor/DraggingView": function(exports, require, module) {(function() {
+  R.create("DraggingView", {
+    render: function() {
+      var _ref;
+      return R.div({}, ((_ref = UI.dragging) != null ? _ref.render : void 0) ? R.div({
+        className: "draggingObject",
+        style: {
+          left: UI.mousePosition.x - UI.dragging.offset.x,
+          top: UI.mousePosition.y - UI.dragging.offset.y
+        }
+      }, UI.dragging.render()) : void 0, UI.dragging ? R.div({
+        className: "draggingOverlay"
+      }) : void 0);
+    }
+  });
+
+}).call(this);
+}, "view/editor/EditorView": function(exports, require, module) {(function() {
+  R.create("EditorView", {
+    propTypes: {
+      editor: C.Editor
+    },
+    cursor: function() {
+      var _ref, _ref1;
+      return (_ref = (_ref1 = UI.dragging) != null ? _ref1.cursor : void 0) != null ? _ref : "";
+    },
+    render: function() {
+      return R.div({
+        className: "editor",
+        style: {
+          cursor: this.cursor()
+        }
+      }, R.ProgramView({
+        program: this.editor.programs[0]
+      }), R.div({
+        className: "dragging"
+      }, R.DraggingView({})));
+    }
+  });
 
 }).call(this);
 }, "view/mixins/StartTranscludeMixin": function(exports, require, module) {(function() {
@@ -1105,6 +1054,57 @@
       })(this));
     }
   };
+
+}).call(this);
+}, "view/program/LineView": function(exports, require, module) {(function() {
+  R.create("LineView", {
+    propTypes: {
+      line: C.Line,
+      lineIndex: Number
+    },
+    render: function() {
+      return R.div({
+        className: "line"
+      }, R.div({
+        className: "lineLeft"
+      }, R.WordListView({
+        wordList: this.line.wordList
+      })), R.div({
+        className: "lineRight"
+      }, R.LineOutputView({
+        line: this.line
+      })));
+    }
+  });
+
+}).call(this);
+}, "view/program/ProgramView": function(exports, require, module) {(function() {
+  R.create("ProgramView", {
+    propTypes: {
+      program: C.Program
+    },
+    insertLineBefore: function(index) {
+      var line;
+      line = new C.Line();
+      return this.program.lines.splice(index, 0, line);
+    },
+    removeLineAt: function(index) {
+      return this.program.lines.splice(index, 1);
+    },
+    render: function() {
+      return R.div({
+        className: "program"
+      }, this.program.lines.map((function(_this) {
+        return function(line, lineIndex) {
+          return R.LineView({
+            line: line,
+            lineIndex: lineIndex,
+            key: lineIndex
+          });
+        };
+      })(this)));
+    }
+  });
 
 }).call(this);
 }, "view/word/LineOutputView": function(exports, require, module) {(function() {
