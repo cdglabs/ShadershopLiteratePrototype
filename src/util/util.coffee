@@ -81,3 +81,10 @@ util.onceDragConsummated = (downEvent, callback, notConsummatedCallback=null) ->
 
   window.addEventListener("mousemove", handleMove)
   window.addEventListener("mouseup", handleUp)
+
+
+# =============================================================================
+# Additional
+# =============================================================================
+
+require("./selection")

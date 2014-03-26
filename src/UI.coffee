@@ -1,5 +1,3 @@
-Selection = require("./Selection")
-
 window.UI = UI = new class
   constructor: ->
     @dragging = null
@@ -20,7 +18,7 @@ window.UI = UI = new class
 
   preventDefault: (e) ->
     e.preventDefault()
-    Selection.set(null)
+    util.selection.set(null)
 
 
   # ===========================================================================
@@ -80,9 +78,9 @@ window.UI = UI = new class
     # Found a match, focus it.
     el = textFieldView.getDOMNode()
     if @autofocus.location == "start"
-      Selection.setAtStart(el)
+      util.selection.setAtStart(el)
     else if @autofocus.location == "end"
-      Selection.setAtEnd(el)
+      util.selection.setAtEnd(el)
 
     @autofocus = null
 

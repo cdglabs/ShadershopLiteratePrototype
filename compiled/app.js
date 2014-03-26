@@ -48,148 +48,9 @@
     };
   }
   return this.require.define;
-}).call(this)({"Selection": function(exports, require, module) {(function() {
-  var Selection;
-
-  module.exports = Selection = new ((function() {
-    function _Class() {}
-
-    _Class.prototype.get = function() {
-      var range, selection;
-      selection = window.getSelection();
-      if (selection.rangeCount > 0) {
-        range = selection.getRangeAt(0);
-        return range;
-      } else {
-        return null;
-      }
-    };
-
-    _Class.prototype.set = function(range) {
-      var host, selection;
-      selection = window.getSelection();
-      if (range == null) {
-        this.focusBody();
-        return selection.removeAllRanges();
-      } else {
-        host = this.findEditingHost(range.commonAncestorContainer);
-        if (host != null) {
-          host.focus();
-        }
-        selection.removeAllRanges();
-        return selection.addRange(range);
-      }
-    };
-
-    _Class.prototype.getHost = function() {
-      var selectedRange;
-      selectedRange = this.get();
-      if (!selectedRange) {
-        return null;
-      }
-      return this.findEditingHost(selectedRange.commonAncestorContainer);
-    };
-
-    _Class.prototype.beforeSelection = function() {
-      var beforeSelection, host, selectedRange;
-      selectedRange = this.get();
-      if (!selectedRange) {
-        return null;
-      }
-      host = this.getHost();
-      beforeSelection = document.createRange();
-      beforeSelection.selectNodeContents(host);
-      beforeSelection.setEnd(selectedRange.startContainer, selectedRange.startOffset);
-      return beforeSelection;
-    };
-
-    _Class.prototype.afterSelection = function() {
-      var afterSelection, host, selectedRange;
-      selectedRange = this.get();
-      if (!selectedRange) {
-        return null;
-      }
-      host = this.getHost();
-      afterSelection = document.createRange();
-      afterSelection.selectNodeContents(host);
-      afterSelection.setStart(selectedRange.endContainer, selectedRange.endOffset);
-      return afterSelection;
-    };
-
-    _Class.prototype.isAtStart = function() {
-      var _ref;
-      if (!((_ref = this.get()) != null ? _ref.collapsed : void 0)) {
-        return false;
-      }
-      return this.beforeSelection().toString() === "";
-    };
-
-    _Class.prototype.isAtEnd = function() {
-      var _ref;
-      if (!((_ref = this.get()) != null ? _ref.collapsed : void 0)) {
-        return false;
-      }
-      return this.afterSelection().toString() === "";
-    };
-
-    _Class.prototype.setAtStart = function(el) {
-      var range;
-      range = document.createRange();
-      range.selectNodeContents(el);
-      range.collapse(true);
-      return this.set(range);
-    };
-
-    _Class.prototype.setAtEnd = function(el) {
-      var range;
-      range = document.createRange();
-      range.selectNodeContents(el);
-      range.collapse(false);
-      return this.set(range);
-    };
-
-    _Class.prototype.setAll = function(el) {
-      var range;
-      range = document.createRange();
-      range.selectNodeContents(el);
-      return this.set(range);
-    };
-
-    _Class.prototype.focusBody = function() {
-      var body;
-      body = document.body;
-      if (!body.hasAttribute("tabindex")) {
-        body.setAttribute("tabindex", "0");
-      }
-      return body.focus();
-    };
-
-    _Class.prototype.findEditingHost = function(node) {
-      if (node == null) {
-        return null;
-      }
-      if (node.nodeType !== Node.ELEMENT_NODE) {
-        return this.findEditingHost(node.parentNode);
-      }
-      if (!node.isContentEditable) {
-        return null;
-      }
-      if (!node.parentNode.isContentEditable) {
-        return node;
-      }
-      return this.findEditingHost(node.parentNode);
-    };
-
-    return _Class;
-
-  })());
-
-}).call(this);
-}, "UI": function(exports, require, module) {(function() {
-  var Selection, UI,
+}).call(this)({"UI": function(exports, require, module) {(function() {
+  var UI,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
-
-  Selection = require("./Selection");
 
   window.UI = UI = new ((function() {
     function _Class() {
@@ -208,7 +69,7 @@
 
     _Class.prototype.preventDefault = function(e) {
       e.preventDefault();
-      return Selection.set(null);
+      return util.selection.set(null);
     };
 
     _Class.prototype.handleWindowMouseMove = function(e) {
@@ -291,9 +152,9 @@
       }
       el = textFieldView.getDOMNode();
       if (this.autofocus.location === "start") {
-        Selection.setAtStart(el);
+        util.selection.setAtStart(el);
       } else if (this.autofocus.location === "end") {
-        Selection.setAtEnd(el);
+        util.selection.setAtEnd(el);
       }
       return this.autofocus = null;
     };
@@ -747,6 +608,149 @@
   })();
 
 }).call(this);
+}, "util/selection": function(exports, require, module) {(function() {
+  var afterSelection, beforeSelection, findEditingHost, focusBody, get, getHost, isAtEnd, isAtStart, set, setAll, setAtEnd, setAtStart;
+
+  get = function() {
+    var range, selection;
+    selection = window.getSelection();
+    if (selection.rangeCount > 0) {
+      range = selection.getRangeAt(0);
+      return range;
+    } else {
+      return null;
+    }
+  };
+
+  set = function(range) {
+    var host, selection;
+    selection = window.getSelection();
+    if (range == null) {
+      focusBody();
+      return selection.removeAllRanges();
+    } else {
+      host = findEditingHost(range.commonAncestorContainer);
+      if (host != null) {
+        host.focus();
+      }
+      selection.removeAllRanges();
+      return selection.addRange(range);
+    }
+  };
+
+  getHost = function() {
+    var selectedRange;
+    selectedRange = get();
+    if (!selectedRange) {
+      return null;
+    }
+    return findEditingHost(selectedRange.commonAncestorContainer);
+  };
+
+  beforeSelection = function() {
+    var host, range, selectedRange;
+    selectedRange = get();
+    if (!selectedRange) {
+      return null;
+    }
+    host = getHost();
+    range = document.createRange();
+    range.selectNodeContents(host);
+    range.setEnd(selectedRange.startContainer, selectedRange.startOffset);
+    return range;
+  };
+
+  afterSelection = function() {
+    var host, range, selectedRange;
+    selectedRange = get();
+    if (!selectedRange) {
+      return null;
+    }
+    host = getHost();
+    range = document.createRange();
+    range.selectNodeContents(host);
+    range.setStart(selectedRange.endContainer, selectedRange.endOffset);
+    return range;
+  };
+
+  isAtStart = function() {
+    var _ref;
+    if (!((_ref = get()) != null ? _ref.collapsed : void 0)) {
+      return false;
+    }
+    return beforeSelection().toString() === "";
+  };
+
+  isAtEnd = function() {
+    var _ref;
+    if (!((_ref = get()) != null ? _ref.collapsed : void 0)) {
+      return false;
+    }
+    return afterSelection().toString() === "";
+  };
+
+  setAtStart = function(el) {
+    var range;
+    range = document.createRange();
+    range.selectNodeContents(el);
+    range.collapse(true);
+    return set(range);
+  };
+
+  setAtEnd = function(el) {
+    var range;
+    range = document.createRange();
+    range.selectNodeContents(el);
+    range.collapse(false);
+    return set(range);
+  };
+
+  setAll = function(el) {
+    var range;
+    range = document.createRange();
+    range.selectNodeContents(el);
+    return set(range);
+  };
+
+  focusBody = function() {
+    var body;
+    body = document.body;
+    if (!body.hasAttribute("tabindex")) {
+      body.setAttribute("tabindex", "0");
+    }
+    return body.focus();
+  };
+
+  findEditingHost = function(node) {
+    if (node == null) {
+      return null;
+    }
+    if (node.nodeType !== Node.ELEMENT_NODE) {
+      return findEditingHost(node.parentNode);
+    }
+    if (!node.isContentEditable) {
+      return null;
+    }
+    if (!node.parentNode.isContentEditable) {
+      return node;
+    }
+    return findEditingHost(node.parentNode);
+  };
+
+  util.selection = {
+    get: get,
+    set: set,
+    getHost: getHost,
+    beforeSelection: beforeSelection,
+    afterSelection: afterSelection,
+    isAtStart: isAtStart,
+    isAtEnd: isAtEnd,
+    setAtStart: setAtStart,
+    setAtEnd: setAtEnd,
+    setAll: setAll
+  };
+
+}).call(this);
 }, "util/util": function(exports, require, module) {(function() {
   var util, _base, _ref, _ref1;
 
@@ -845,6 +849,8 @@
     window.addEventListener("mousemove", handleMove);
     return window.addEventListener("mouseup", handleUp);
   };
+
+  require("./selection");
 
 }).call(this);
 }, "view/R": function(exports, require, module) {(function() {
@@ -1319,9 +1325,7 @@
 
 }).call(this);
 }, "view/word/TextFieldView": function(exports, require, module) {(function() {
-  var Selection, findAdjacentHost;
-
-  Selection = require("../../Selection");
+  var findAdjacentHost;
 
   R.create("TextFieldView", {
     propTypes: {
@@ -1361,25 +1365,25 @@
     },
     handleKeyDown: function(e) {
       var host, nextHost, previousHost;
-      host = Selection.getHost();
+      host = util.selection.getHost();
       if (e.keyCode === 37) {
-        if (Selection.isAtStart()) {
+        if (util.selection.isAtStart()) {
           previousHost = findAdjacentHost(host, -1);
           if (previousHost) {
             e.preventDefault();
-            return Selection.setAtEnd(previousHost);
+            return util.selection.setAtEnd(previousHost);
           }
         }
       } else if (e.keyCode === 39) {
-        if (Selection.isAtEnd()) {
+        if (util.selection.isAtEnd()) {
           nextHost = findAdjacentHost(host, 1);
           if (nextHost) {
             e.preventDefault();
-            return Selection.setAtStart(nextHost);
+            return util.selection.setAtStart(nextHost);
           }
         }
       } else if (e.keyCode === 8) {
-        if (Selection.isAtStart()) {
+        if (util.selection.isAtStart()) {
           e.preventDefault();
           return this.onBackSpace();
         }
@@ -1391,12 +1395,12 @@
     selectAll: function() {
       var el;
       el = this.getDOMNode();
-      return Selection.setAll(el);
+      return util.selection.setAll(el);
     },
     isFocused: function() {
       var el, host;
       el = this.getDOMNode();
-      host = Selection.getHost();
+      host = util.selection.getHost();
       return el === host;
     },
     render: function() {

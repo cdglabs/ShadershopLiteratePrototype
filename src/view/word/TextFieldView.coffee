@@ -1,6 +1,3 @@
-Selection = require("../../Selection")
-
-
 R.create "TextFieldView",
   propTypes: {
     value: String
@@ -33,23 +30,23 @@ R.create "TextFieldView",
     @onInput(newValue)
 
   handleKeyDown: (e) ->
-    host = Selection.getHost()
+    host = util.selection.getHost()
     if e.keyCode == 37 # left
-      if Selection.isAtStart()
+      if util.selection.isAtStart()
         previousHost = findAdjacentHost(host, -1)
         if previousHost
           e.preventDefault()
-          Selection.setAtEnd(previousHost)
+          util.selection.setAtEnd(previousHost)
 
     else if e.keyCode == 39 # right
-      if Selection.isAtEnd()
+      if util.selection.isAtEnd()
         nextHost = findAdjacentHost(host, 1)
         if nextHost
           e.preventDefault()
-          Selection.setAtStart(nextHost)
+          util.selection.setAtStart(nextHost)
 
     else if e.keyCode == 8 # backspace
-      if Selection.isAtStart()
+      if util.selection.isAtStart()
         e.preventDefault()
         @onBackSpace()
 
@@ -59,11 +56,11 @@ R.create "TextFieldView",
 
   selectAll: ->
     el = @getDOMNode()
-    Selection.setAll(el)
+    util.selection.setAll(el)
 
   isFocused: ->
     el = @getDOMNode()
-    host = Selection.getHost()
+    host = util.selection.getHost()
     return el == host
 
 
