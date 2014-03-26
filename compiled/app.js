@@ -148,6 +148,13 @@
       return this.set(range);
     };
 
+    _Class.prototype.setAll = function(el) {
+      var range;
+      range = document.createRange();
+      range.selectNodeContents(el);
+      return this.set(range);
+    };
+
     _Class.prototype.focusBody = function() {
       var body;
       body = document.body;
@@ -225,7 +232,8 @@
 
 }).call(this);
 }, "main": function(exports, require, module) {(function() {
-  var Selection, UI, editor, eventName, json, refresh, refreshView, saveState, storageName, willRefreshNextFrame, _i, _len, _ref;
+  var Selection, UI, editor, eventName, json, refresh, refreshView, saveState, storageName, willRefreshNextFrame, _i, _len, _ref,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   require("./util");
 
@@ -257,7 +265,12 @@
 
   window.UI = UI = new ((function() {
     function _Class() {
+      this.handleWindowMouseUp = __bind(this.handleWindowMouseUp, this);
+      this.handleWindowMouseMove = __bind(this.handleWindowMouseMove, this);
+      this.dragging = null;
       this.autofocus = null;
+      window.addEventListener("mousemove", this.handleWindowMouseMove);
+      window.addEventListener("mouseup", this.handleWindowMouseUp);
     }
 
     _Class.prototype.setAutoFocus = function(opts) {
@@ -304,6 +317,25 @@
         Selection.setAtEnd(el);
       }
       return this.autofocus = null;
+    };
+
+    _Class.prototype.handleWindowMouseMove = function(e) {
+      var _ref;
+      this.mousePosition = {
+        x: e.clientX,
+        y: e.clientY
+      };
+      return (_ref = this.dragging) != null ? typeof _ref.onMove === "function" ? _ref.onMove(e) : void 0 : void 0;
+    };
+
+    _Class.prototype.handleWindowMouseUp = function(e) {
+      var _ref;
+      if ((_ref = this.dragging) != null) {
+        if (typeof _ref.onUp === "function") {
+          _ref.onUp(e);
+        }
+      }
+      return this.dragging = null;
     };
 
     return _Class;
@@ -675,18 +707,79 @@
     return s;
   };
 
+  util.onceDragConsummated = function(downEvent, callback, notConsummatedCallback) {
+    var consummated, handleMove, handleUp, originalX, originalY, removeListeners;
+    if (notConsummatedCallback == null) {
+      notConsummatedCallback = null;
+    }
+    consummated = false;
+    originalX = downEvent.clientX;
+    originalY = downEvent.clientY;
+    handleMove = function(moveEvent) {
+      var d, dx, dy;
+      dx = moveEvent.clientX - originalX;
+      dy = moveEvent.clientY - originalY;
+      d = Math.max(Math.abs(dx), Math.abs(dy));
+      if (d > 3) {
+        consummated = true;
+        removeListeners();
+        return typeof callback === "function" ? callback(moveEvent) : void 0;
+      }
+    };
+    handleUp = function(upEvent) {
+      if (!consummated) {
+        if (typeof notConsummatedCallback === "function") {
+          notConsummatedCallback(upEvent);
+        }
+      }
+      return removeListeners();
+    };
+    removeListeners = function() {
+      window.removeEventListener("mousemove", handleMove);
+      return window.removeEventListener("mouseup", handleUp);
+    };
+    window.addEventListener("mousemove", handleMove);
+    return window.addEventListener("mouseup", handleUp);
+  };
+
+}).call(this);
+}, "view/DraggingView": function(exports, require, module) {(function() {
+  R.create("DraggingView", {
+    render: function() {
+      var _ref;
+      return R.div({}, ((_ref = UI.dragging) != null ? _ref.render : void 0) ? R.div({
+        className: "draggingObject",
+        style: {
+          left: UI.mousePosition.x - UI.dragging.offset.x,
+          top: UI.mousePosition.y - UI.dragging.offset.y
+        }
+      }, UI.dragging.render()) : void 0, UI.dragging ? R.div({
+        className: "draggingOverlay"
+      }) : void 0);
+    }
+  });
+
 }).call(this);
 }, "view/EditorView": function(exports, require, module) {(function() {
   R.create("EditorView", {
     propTypes: {
       editor: C.Editor
     },
+    cursor: function() {
+      var _ref, _ref1;
+      return (_ref = (_ref1 = UI.dragging) != null ? _ref1.cursor : void 0) != null ? _ref : "";
+    },
     render: function() {
       return R.div({
-        className: "editor"
+        className: "editor",
+        style: {
+          cursor: this.cursor()
+        }
       }, R.ProgramView({
         program: this.editor.programs[0]
-      }));
+      }), R.div({
+        className: "dragging"
+      }, R.DraggingView({})));
     }
   });
 
@@ -825,12 +918,54 @@
         descendantOf: [paramView, "ParamLabelView"]
       });
     },
+    handleMouseDown: function(e) {
+      var originalValue, originalX, originalY;
+      if (this.refs.textField.isFocused()) {
+        return;
+      }
+      e.preventDefault();
+      originalX = e.clientX;
+      originalY = e.clientY;
+      originalValue = this.param.value();
+      UI.dragging = {
+        cursor: this.cursor(),
+        onMove: (function(_this) {
+          return function(e) {
+            var d, dx, dy, value;
+            dx = e.clientX - originalX;
+            dy = -(e.clientY - originalY);
+            d = dy;
+            value = originalValue + d;
+            return _this.param.valueString = "" + value;
+          };
+        })(this)
+      };
+      return util.onceDragConsummated(e, null, (function(_this) {
+        return function() {
+          return _this.refs.textField.selectAll();
+        };
+      })(this));
+    },
+    cursor: function() {
+      if (this.isMounted()) {
+        if (this.refs.textField.isFocused()) {
+          return "text";
+        }
+      }
+      return "ns-resize";
+    },
     render: function() {
-      return R.TextFieldView({
+      return R.span({
+        style: {
+          cursor: this.cursor()
+        },
+        onMouseDown: this.handleMouseDown
+      }, R.TextFieldView({
         className: "paramValue",
         value: this.param.valueString,
-        onInput: this.handleInput
-      });
+        onInput: this.handleInput,
+        ref: "textField"
+      }));
     }
   });
 
@@ -963,6 +1098,8 @@
 
   require("./EditorView");
 
+  require("./DraggingView");
+
   require("./ProgramView");
 
   require("./LineView");
@@ -1047,6 +1184,17 @@
         e.preventDefault();
         return this.onEnter();
       }
+    },
+    selectAll: function() {
+      var el;
+      el = this.getDOMNode();
+      return Selection.setAll(el);
+    },
+    isFocused: function() {
+      var el, host;
+      el = this.getDOMNode();
+      host = Selection.getHost();
+      return el === host;
     },
     render: function() {
       return R.div({

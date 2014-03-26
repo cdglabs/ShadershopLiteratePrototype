@@ -68,6 +68,11 @@ module.exports = Selection = new class
     range.collapse(false)
     @set(range)
 
+  setAll: (el) ->
+    range = document.createRange()
+    range.selectNodeContents(el)
+    @set(range)
+
 
   focusBody: ->
     body = document.body

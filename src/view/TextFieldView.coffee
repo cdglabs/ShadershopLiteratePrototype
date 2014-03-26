@@ -57,6 +57,15 @@ R.create "TextFieldView",
       e.preventDefault()
       @onEnter()
 
+  selectAll: ->
+    el = @getDOMNode()
+    Selection.setAll(el)
+
+  isFocused: ->
+    el = @getDOMNode()
+    host = Selection.getHost()
+    return el == host
+
 
   render: ->
     R.div {

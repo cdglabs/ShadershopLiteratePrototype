@@ -13,15 +13,27 @@ button:active,
 button:focus {
   outline: none;
 }
-[contenteditable] {
-  cursor: text;
-}
 canvas {
   position: absolute;
   width: 100%;
   height: 100%;
 }
-.editor,
+.draggingObject {
+  position: absolute;
+  z-index: 100;
+  pointer-events: none;
+}
+.draggingObject > * {
+  box-shadow: 0px 2px 6px rgba(0,0,0,0.5);
+}
+.draggingOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  z-index: 200;
+}
 .program {
   display: table;
 }
@@ -51,6 +63,7 @@ canvas {
 }
 .wordSpacer {
   display: inline-block;
+  cursor: text;
   padding: 3px 3px;
   color: #999;
   margin-bottom: 6px;
@@ -67,6 +80,7 @@ canvas {
 .paramLabel,
 .paramLabelEmpty {
   display: inline-block;
+  cursor: text;
   border-radius: 5px 0 0 5px;
   background-color: #efefdf;
   color: #7f7f77;
@@ -93,6 +107,7 @@ canvas {
   font-style: italic;
 }
 .placeholder {
+  cursor: text;
   color: #999;
 }
 .op {

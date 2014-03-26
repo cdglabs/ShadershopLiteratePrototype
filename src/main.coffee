@@ -35,7 +35,11 @@ Selection = require("./Selection")
 
 window.UI = UI = new class
   constructor: ->
+    @dragging = null
     @autofocus = null
+
+    window.addEventListener("mousemove", @handleWindowMouseMove)
+    window.addEventListener("mouseup", @handleWindowMouseUp)
 
   setAutoFocus: (opts) ->
     opts.descendantOf ?= []
@@ -67,6 +71,17 @@ window.UI = UI = new class
       Selection.setAtEnd(el)
 
     @autofocus = null
+
+  handleWindowMouseMove: (e) =>
+    @mousePosition = {x: e.clientX, y: e.clientY}
+    @dragging?.onMove?(e)
+
+  handleWindowMouseUp: (e) =>
+    @dragging?.onUp?(e)
+    @dragging = null
+
+
+
 
 
 

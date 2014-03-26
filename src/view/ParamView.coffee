@@ -79,10 +79,39 @@ R.create "ParamValueView",
       descendantOf: [paramView, "ParamLabelView"]
     }
 
-  render: ->
-    R.TextFieldView {
-      className: "paramValue"
-      value: @param.valueString
-      onInput: @handleInput
+  handleMouseDown: (e) ->
+    return if @refs.textField.isFocused()
+    e.preventDefault()
+
+    originalX = e.clientX
+    originalY = e.clientY
+    originalValue = @param.value()
+
+    UI.dragging = {
+      cursor: @cursor()
+      onMove: (e) =>
+        dx =   e.clientX - originalX
+        dy = -(e.clientY - originalY)
+        d  = dy
+        value = originalValue + d
+        @param.valueString = ""+value
     }
+
+    util.onceDragConsummated e, null, =>
+      @refs.textField.selectAll()
+
+  cursor: ->
+    if @isMounted()
+      if @refs.textField.isFocused()
+        return "text"
+    return "ns-resize"
+
+  render: ->
+    R.span {style: {cursor: @cursor()}, onMouseDown: @handleMouseDown},
+      R.TextFieldView {
+        className: "paramValue"
+        value: @param.valueString
+        onInput: @handleInput
+        ref: "textField"
+      }
 
