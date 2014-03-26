@@ -5,10 +5,7 @@ R.create "ParamView",
 
   render: ->
     R.div {className: "word param"},
-      if @param.label == ""
-        R.div {className: "paramLabelEmpty"}
-      else
-        R.ParamLabelView {param: @param}
+      R.ParamLabelView {param: @param}
       R.ParamValueView {param: @param}
 
 
@@ -35,12 +32,55 @@ R.create "ParamLabelView",
       location: "start"
     }
 
-  render: ->
-    R.TextFieldView {
-      className: "paramLabel"
-      value: @param.label
-      onInput: @handleInput
+  handleMouseDown: (e) ->
+    return if @refs.textField?.isFocused()
+    UI.preventDefault(e)
+
+    UI.dragging = {
+      cursor: config.cursor.grabbing
     }
+
+    util.onceDragConsummated e, =>
+
+      UI.dragging = {
+        cursor: config.cursor.grabbing
+        offset: {x: -10, y: -10}
+        render: =>
+          R.ParamView {param: @param}
+        onMove: (e) =>
+          dropView = UI.getViewUnderMouse()
+          dropView = dropView?.lookupViewWithKey("handleTransclusionDrop")
+
+          UI.activeTransclusionDropView = dropView
+        onUp: (e) =>
+          if UI.activeTransclusionDropView
+            UI.activeTransclusionDropView.handleTransclusionDrop(@param)
+          UI.activeTransclusionDropView = null
+      }
+
+    util.onceDragConsummated e, null, =>
+      @refs.textField?.selectAll()
+
+  cursor: ->
+    if @isMounted()
+      if @refs.textField?.isFocused()
+        return config.cursor.text
+    return config.cursor.grab
+
+  render: ->
+    R.span {
+      style: {cursor: @cursor()}
+      onMouseDown: @handleMouseDown
+    },
+      if @param.label == ""
+        R.div {className: "paramLabelEmpty"}
+      else
+        R.TextFieldView {
+          className: "paramLabel"
+          value: @param.label
+          onInput: @handleInput
+          ref: "textField"
+        }
 
 
 # =============================================================================
@@ -81,7 +121,7 @@ R.create "ParamValueView",
 
   handleMouseDown: (e) ->
     return if @refs.textField.isFocused()
-    e.preventDefault()
+    UI.preventDefault(e)
 
     originalX = e.clientX
     originalY = e.clientY
@@ -103,11 +143,14 @@ R.create "ParamValueView",
   cursor: ->
     if @isMounted()
       if @refs.textField.isFocused()
-        return "text"
-    return "ns-resize"
+        return config.cursor.text
+    return config.cursor.verticalScrub
 
   render: ->
-    R.span {style: {cursor: @cursor()}, onMouseDown: @handleMouseDown},
+    R.span {
+      style: {cursor: @cursor()}
+      onMouseDown: @handleMouseDown
+    },
       R.TextFieldView {
         className: "paramValue"
         value: @param.valueString

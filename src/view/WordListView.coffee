@@ -3,6 +3,10 @@ R.create "WordListView",
     wordList: C.WordList
   }
 
+  insertWordBefore: (index, word) ->
+    @wordList.splice(index, 0, word)
+    @setAutoFocusBefore(index + 1)
+
   insertPlaceholderBefore: (index, string) ->
     placeholder = new C.Placeholder(string)
     word = placeholder.convert()

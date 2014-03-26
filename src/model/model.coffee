@@ -20,14 +20,15 @@ class C.That extends C.Word
 class C.Placeholder extends C.Word
   constructor: (@string = "") ->
   convert: ->
-    if @string == "that"
+    string = @string.trim()
+    if string == "that"
       return new C.That()
-    else if _.contains(["+", "-", "*", "/"], @string)
-      return new C.Op(@string)
-    else if /[0-9]/.test(@string)
-      return new C.Param(@string)
-    else if /:$/.test(@string)
-      return new C.Param("", @string.slice(0, -1))
+    else if _.contains(["+", "-", "*", "/"], string)
+      return new C.Op(string)
+    else if /[0-9]/.test(string)
+      return new C.Param(string)
+    else if /:$/.test(string)
+      return new C.Param("", string.slice(0, -1))
     else
       return this
   effectiveWord: ->

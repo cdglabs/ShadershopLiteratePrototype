@@ -61,6 +61,7 @@ canvas {
   margin-bottom: 6px;
 }
 .wordSpacer {
+  position: relative;
   display: inline-block;
   cursor: text;
   padding: 3px 3px;
@@ -82,7 +83,6 @@ canvas {
 .paramLabel,
 .paramLabelEmpty {
   display: inline-block;
-  cursor: text;
   border-radius: 5px 0 0 5px;
   background-color: #efefdf;
   color: #7f7f77;
@@ -115,4 +115,14 @@ canvas {
 .op {
   color: #000;
   padding: 3px 0;
+}
+.wordSpacer.activeTransclusionDrop:before {
+  position: absolute;
+  content: "";
+  top: 0;
+  left: 2px;
+  width: 2px;
+  height: 100%;
+  box-shadow: 0px 0px 8px 4px #def;
+  background-color: #6e777f;
 }

@@ -18,6 +18,10 @@ R.UniversalMixin = {
     return this if this == viewName or @viewName() == viewName
     return @ownerView()?.lookupView(viewName)
 
+  lookupViewWithKey: (keyName) ->
+    return this if this[keyName]?
+    return @ownerView()?.lookupViewWithKey(keyName)
+
   # Move props to be actual properties on the view
   setPropsOnSelf: (nextProps) ->
     for own propName, propValue of nextProps

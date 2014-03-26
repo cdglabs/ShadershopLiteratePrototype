@@ -57,9 +57,17 @@ R.create "WordSpacerView",
         props: {lineIndex: lineIndex + 1}
       }
 
+  handleTransclusionDrop: (word) ->
+    wordListView = @lookupView("WordListView")
+    wordListView.insertWordBefore(@wordSpacerIndex, word)
+
   render: ->
+    className = R.cx {
+      wordSpacer: true
+      activeTransclusionDrop: this == UI.activeTransclusionDropView
+    }
     R.TextFieldView {
-      className: "wordSpacer"
+      className: className
       onInput: @handleInput
       onBackSpace: @handleBackSpace
       onEnter: @handleEnter

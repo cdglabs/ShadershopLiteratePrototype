@@ -185,81 +185,9 @@
   })());
 
 }).call(this);
-}, "compile/compile": function(exports, require, module) {(function() {
-  var compile, compileLine, compileWord, compileWordList;
-
-  module.exports = compile = function(program) {
-    var line, result, _i, _len, _ref;
-    result = [];
-    result.push("var that = 0;");
-    _ref = program.lines;
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      line = _ref[_i];
-      result.push(compileLine(line));
-    }
-    return result.join("\n");
-  };
-
-  compileLine = function(line) {
-    var lineId, s, wordList;
-    lineId = C.id(line);
-    s = "var " + lineId + " = that = ";
-    wordList = line.wordList.effectiveWordList();
-    if (!wordList) {
-      s += "that";
-    } else {
-      s += compileWordList(wordList);
-    }
-    s += ";";
-    return s;
-  };
-
-  compileWordList = function(wordList) {
-    var result;
-    result = _.map(wordList.words, compileWord);
-    return result.join(" ");
-  };
-
-  compileWord = function(word) {
-    if (word instanceof C.Op) {
-      return word.opString;
-    } else if (word instanceof C.That) {
-      return "that";
-    } else if (word instanceof C.Param) {
-      return "" + word.value();
-    }
-  };
-
-}).call(this);
-}, "main": function(exports, require, module) {(function() {
-  var Selection, UI, editor, eventName, json, refresh, refreshView, saveState, storageName, willRefreshNextFrame, _i, _len, _ref,
+}, "UI": function(exports, require, module) {(function() {
+  var Selection, UI,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
-
-  require("./util");
-
-  require("./model/C");
-
-  require("./view/R");
-
-  storageName = "spaceShaderTyper";
-
-  window.reset = function() {
-    delete window.localStorage[storageName];
-    return location.reload();
-  };
-
-  if (json = window.localStorage[storageName]) {
-    json = JSON.parse(json);
-    window.editor = editor = C.reconstruct(json);
-  } else {
-    window.editor = editor = new C.Editor();
-  }
-
-  saveState = function() {
-    json = C.deconstruct(editor);
-    json = JSON.stringify(json);
-    return window.localStorage[storageName] = json;
-  };
 
   Selection = require("./Selection");
 
@@ -269,9 +197,60 @@
       this.handleWindowMouseMove = __bind(this.handleWindowMouseMove, this);
       this.dragging = null;
       this.autofocus = null;
-      window.addEventListener("mousemove", this.handleWindowMouseMove);
-      window.addEventListener("mouseup", this.handleWindowMouseUp);
+      this.activeTransclusionDropView = null;
+      this.registerEvents();
     }
+
+    _Class.prototype.registerEvents = function() {
+      window.addEventListener("mousemove", this.handleWindowMouseMove);
+      return window.addEventListener("mouseup", this.handleWindowMouseUp);
+    };
+
+    _Class.prototype.preventDefault = function(e) {
+      e.preventDefault();
+      return Selection.set(null);
+    };
+
+    _Class.prototype.handleWindowMouseMove = function(e) {
+      var _ref;
+      this.mousePosition = {
+        x: e.clientX,
+        y: e.clientY
+      };
+      return (_ref = this.dragging) != null ? typeof _ref.onMove === "function" ? _ref.onMove(e) : void 0 : void 0;
+    };
+
+    _Class.prototype.handleWindowMouseUp = function(e) {
+      var _ref;
+      if ((_ref = this.dragging) != null) {
+        if (typeof _ref.onUp === "function") {
+          _ref.onUp(e);
+        }
+      }
+      return this.dragging = null;
+    };
+
+    _Class.prototype.getElementUnderMouse = function() {
+      var draggingOverlayEl, el;
+      draggingOverlayEl = document.querySelector(".draggingOverlay");
+      if (draggingOverlayEl != null) {
+        draggingOverlayEl.style.pointerEvents = "none";
+      }
+      el = document.elementFromPoint(this.mousePosition.x, this.mousePosition.y);
+      if (draggingOverlayEl != null) {
+        draggingOverlayEl.style.pointerEvents = "";
+      }
+      return el;
+    };
+
+    _Class.prototype.getViewUnderMouse = function() {
+      var el;
+      el = this.getElementUnderMouse();
+      el = el != null ? el.closest(function(el) {
+        return el.dataFor != null;
+      }) : void 0;
+      return el != null ? el.dataFor : void 0;
+    };
 
     _Class.prototype.setAutoFocus = function(opts) {
       if (opts.descendantOf == null) {
@@ -319,28 +298,103 @@
       return this.autofocus = null;
     };
 
-    _Class.prototype.handleWindowMouseMove = function(e) {
-      var _ref;
-      this.mousePosition = {
-        x: e.clientX,
-        y: e.clientY
-      };
-      return (_ref = this.dragging) != null ? typeof _ref.onMove === "function" ? _ref.onMove(e) : void 0 : void 0;
-    };
-
-    _Class.prototype.handleWindowMouseUp = function(e) {
-      var _ref;
-      if ((_ref = this.dragging) != null) {
-        if (typeof _ref.onUp === "function") {
-          _ref.onUp(e);
-        }
-      }
-      return this.dragging = null;
-    };
-
     return _Class;
 
   })());
+
+}).call(this);
+}, "compile/compile": function(exports, require, module) {(function() {
+  var compile, compileLine, compileWord, compileWordList;
+
+  module.exports = compile = function(program) {
+    var line, result, _i, _len, _ref;
+    result = [];
+    result.push("var that = 0;");
+    _ref = program.lines;
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      line = _ref[_i];
+      result.push(compileLine(line));
+    }
+    return result.join("\n");
+  };
+
+  compileLine = function(line) {
+    var lineId, s, wordList;
+    lineId = C.id(line);
+    s = "var " + lineId + " = that = ";
+    wordList = line.wordList.effectiveWordList();
+    if (!wordList) {
+      s += "that";
+    } else {
+      s += compileWordList(wordList);
+    }
+    s += ";";
+    return s;
+  };
+
+  compileWordList = function(wordList) {
+    var result;
+    result = _.map(wordList.words, compileWord);
+    return result.join(" ");
+  };
+
+  compileWord = function(word) {
+    if (word instanceof C.Op) {
+      return word.opString;
+    } else if (word instanceof C.That) {
+      return "that";
+    } else if (word instanceof C.Param) {
+      return "" + word.value();
+    }
+  };
+
+}).call(this);
+}, "config": function(exports, require, module) {(function() {
+  var config;
+
+  window.config = config = {
+    cursor: {
+      text: "text",
+      grab: "-webkit-grab",
+      grabbing: "-webkit-grabbing",
+      verticalScrub: "ns-resize",
+      horizontalScrub: "ew-resize"
+    }
+  };
+
+}).call(this);
+}, "main": function(exports, require, module) {(function() {
+  var editor, eventName, json, refresh, refreshView, saveState, storageName, willRefreshNextFrame, _i, _len, _ref;
+
+  require("./config");
+
+  require("./util/util");
+
+  require("./model/C");
+
+  require("./view/R");
+
+  require("./UI");
+
+  storageName = "spaceShaderTyper";
+
+  window.reset = function() {
+    delete window.localStorage[storageName];
+    return location.reload();
+  };
+
+  if (json = window.localStorage[storageName]) {
+    json = JSON.parse(json);
+    window.editor = editor = C.reconstruct(json);
+  } else {
+    window.editor = editor = new C.Editor();
+  }
+
+  saveState = function() {
+    json = C.deconstruct(editor);
+    json = JSON.stringify(json);
+    return window.localStorage[storageName] = json;
+  };
 
   willRefreshNextFrame = false;
 
@@ -570,14 +624,16 @@
     }
 
     Placeholder.prototype.convert = function() {
-      if (this.string === "that") {
+      var string;
+      string = this.string.trim();
+      if (string === "that") {
         return new C.That();
-      } else if (_.contains(["+", "-", "*", "/"], this.string)) {
-        return new C.Op(this.string);
-      } else if (/[0-9]/.test(this.string)) {
-        return new C.Param(this.string);
-      } else if (/:$/.test(this.string)) {
-        return new C.Param("", this.string.slice(0, -1));
+      } else if (_.contains(["+", "-", "*", "/"], string)) {
+        return new C.Op(string);
+      } else if (/[0-9]/.test(string)) {
+        return new C.Param(string);
+      } else if (/:$/.test(string)) {
+        return new C.Param("", string.slice(0, -1));
       } else {
         return this;
       }
@@ -687,10 +743,54 @@
   })();
 
 }).call(this);
-}, "util": function(exports, require, module) {(function() {
-  var util;
+}, "util/util": function(exports, require, module) {(function() {
+  var util, _base, _ref, _ref1;
 
   window.util = util = {};
+
+  _.concatMap = function(array, fn) {
+    return _.flatten(_.map(array, fn), true);
+  };
+
+  if ((_base = Element.prototype).matches == null) {
+    _base.matches = (_ref = (_ref1 = Element.prototype.webkitMatchesSelector) != null ? _ref1 : Element.prototype.mozMatchesSelector) != null ? _ref : Element.prototype.oMatchesSelector;
+  }
+
+  Element.prototype.closest = function(selector) {
+    var fn, parent;
+    if (_.isString(selector)) {
+      fn = function(el) {
+        return el.matches(selector);
+      };
+    } else {
+      fn = selector;
+    }
+    if (fn(this)) {
+      return this;
+    } else {
+      parent = this.parentNode;
+      if ((parent != null) && parent.nodeType === Node.ELEMENT_NODE) {
+        return parent.closest(fn);
+      } else {
+        return void 0;
+      }
+    }
+  };
+
+  Element.prototype.getMarginRect = function() {
+    var rect, result, style;
+    rect = this.getBoundingClientRect();
+    style = window.getComputedStyle(this);
+    result = {
+      top: rect.top - parseInt(style["margin-top"], 10),
+      left: rect.left - parseInt(style["margin-left"], 10),
+      bottom: rect.bottom + parseInt(style["margin-bottom"], 10),
+      right: rect.right + parseInt(style["margin-right"], 10)
+    };
+    result.width = result.right - result.left;
+    result.height = result.bottom - result.top;
+    return result;
+  };
 
   util.formatFloat = function(value, precision) {
     var s;
@@ -840,9 +940,7 @@
     render: function() {
       return R.div({
         className: "word param"
-      }, this.param.label === "" ? R.div({
-        className: "paramLabelEmpty"
-      }) : R.ParamLabelView({
+      }, R.ParamLabelView({
         param: this.param
       }), R.ParamValueView({
         param: this.param
@@ -871,12 +969,73 @@
         location: "start"
       });
     },
+    handleMouseDown: function(e) {
+      var _ref;
+      if ((_ref = this.refs.textField) != null ? _ref.isFocused() : void 0) {
+        return;
+      }
+      UI.preventDefault(e);
+      UI.dragging = {
+        cursor: config.cursor.grabbing
+      };
+      util.onceDragConsummated(e, (function(_this) {
+        return function() {
+          return UI.dragging = {
+            cursor: config.cursor.grabbing,
+            offset: {
+              x: -10,
+              y: -10
+            },
+            render: function() {
+              return R.ParamView({
+                param: _this.param
+              });
+            },
+            onMove: function(e) {
+              var dropView;
+              dropView = UI.getViewUnderMouse();
+              dropView = dropView != null ? dropView.lookupViewWithKey("handleTransclusionDrop") : void 0;
+              return UI.activeTransclusionDropView = dropView;
+            },
+            onUp: function(e) {
+              if (UI.activeTransclusionDropView) {
+                UI.activeTransclusionDropView.handleTransclusionDrop(_this.param);
+              }
+              return UI.activeTransclusionDropView = null;
+            }
+          };
+        };
+      })(this));
+      return util.onceDragConsummated(e, null, (function(_this) {
+        return function() {
+          var _ref1;
+          return (_ref1 = _this.refs.textField) != null ? _ref1.selectAll() : void 0;
+        };
+      })(this));
+    },
+    cursor: function() {
+      var _ref;
+      if (this.isMounted()) {
+        if ((_ref = this.refs.textField) != null ? _ref.isFocused() : void 0) {
+          return config.cursor.text;
+        }
+      }
+      return config.cursor.grab;
+    },
     render: function() {
-      return R.TextFieldView({
+      return R.span({
+        style: {
+          cursor: this.cursor()
+        },
+        onMouseDown: this.handleMouseDown
+      }, this.param.label === "" ? R.div({
+        className: "paramLabelEmpty"
+      }) : R.TextFieldView({
         className: "paramLabel",
         value: this.param.label,
-        onInput: this.handleInput
-      });
+        onInput: this.handleInput,
+        ref: "textField"
+      }));
     }
   });
 
@@ -923,7 +1082,7 @@
       if (this.refs.textField.isFocused()) {
         return;
       }
-      e.preventDefault();
+      UI.preventDefault(e);
       originalX = e.clientX;
       originalY = e.clientY;
       originalValue = this.param.value();
@@ -949,10 +1108,10 @@
     cursor: function() {
       if (this.isMounted()) {
         if (this.refs.textField.isFocused()) {
-          return "text";
+          return config.cursor.text;
         }
       }
-      return "ns-resize";
+      return config.cursor.verticalScrub;
     },
     render: function() {
       return R.span({
@@ -1029,6 +1188,13 @@
         return this;
       }
       return (_ref1 = this.ownerView()) != null ? _ref1.lookupView(viewName) : void 0;
+    },
+    lookupViewWithKey: function(keyName) {
+      var _ref1;
+      if (this[keyName] != null) {
+        return this;
+      }
+      return (_ref1 = this.ownerView()) != null ? _ref1.lookupViewWithKey(keyName) : void 0;
     },
     setPropsOnSelf: function(nextProps) {
       var propName, propValue, _results;
@@ -1220,6 +1386,10 @@
     propTypes: {
       wordList: C.WordList
     },
+    insertWordBefore: function(index, word) {
+      this.wordList.splice(index, 0, word);
+      return this.setAutoFocusBefore(index + 1);
+    },
     insertPlaceholderBefore: function(index, string) {
       var placeholder, that, word;
       placeholder = new C.Placeholder(string);
@@ -1381,9 +1551,19 @@
         });
       }
     },
+    handleTransclusionDrop: function(word) {
+      var wordListView;
+      wordListView = this.lookupView("WordListView");
+      return wordListView.insertWordBefore(this.wordSpacerIndex, word);
+    },
     render: function() {
+      var className;
+      className = R.cx({
+        wordSpacer: true,
+        activeTransclusionDrop: this === UI.activeTransclusionDropView
+      });
       return R.TextFieldView({
-        className: "wordSpacer",
+        className: className,
         onInput: this.handleInput,
         onBackSpace: this.handleBackSpace,
         onEnter: this.handleEnter
