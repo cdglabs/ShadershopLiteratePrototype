@@ -53,6 +53,12 @@ R.create = (name, opts) ->
   # desugar propTypes
   opts.propTypes ?= {}
   for own propName, propType of opts.propTypes
+    if propType.optional
+      propType = propType.optional
+      required = false
+    else
+      required = true
+
     if propType == Number
       propType = React.PropTypes.number
     else if propType == String
@@ -64,7 +70,10 @@ R.create = (name, opts) ->
     else
       propType = React.PropTypes.instanceOf(propType)
 
-    opts.propTypes[propName] = propType.isRequired
+    if required
+      propType = propType.isRequired
+
+    opts.propTypes[propName] = propType
 
   # add the universal mixin
   opts.mixins ?= []
@@ -75,7 +84,7 @@ R.create = (name, opts) ->
 
 
 
-
+require("./mixins/StartTranscludeMixin")
 require("./EditorView")
 require("./DraggingView")
 require("./ProgramView")

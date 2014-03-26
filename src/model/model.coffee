@@ -74,7 +74,7 @@ class C.WordList
     return new C.WordList(words)
 
 
-class C.Line
+class C.Line extends C.Word
   constructor: ->
     @wordList = new C.WordList()
 

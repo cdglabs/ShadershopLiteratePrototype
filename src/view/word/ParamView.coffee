@@ -16,6 +16,8 @@ R.create "ParamLabelView",
     param: C.Param
   }
 
+  mixins: [R.StartTranscludeMixin]
+
   handleInput: (newValue) ->
     @param.label = newValue
 
@@ -36,27 +38,8 @@ R.create "ParamLabelView",
     return if @refs.textField?.isFocused()
     UI.preventDefault(e)
 
-    UI.dragging = {
-      cursor: config.cursor.grabbing
-    }
-
-    util.onceDragConsummated e, =>
-
-      UI.dragging = {
-        cursor: config.cursor.grabbing
-        offset: {x: -10, y: -10}
-        render: =>
-          R.ParamView {param: @param}
-        onMove: (e) =>
-          dropView = UI.getViewUnderMouse()
-          dropView = dropView?.lookupViewWithKey("handleTransclusionDrop")
-
-          UI.activeTransclusionDropView = dropView
-        onUp: (e) =>
-          if UI.activeTransclusionDropView
-            UI.activeTransclusionDropView.handleTransclusionDrop(@param)
-          UI.activeTransclusionDropView = null
-      }
+    paramView = @lookupView("ParamView")
+    @startTransclude(e, @param, paramView.render.bind(paramView))
 
     util.onceDragConsummated e, null, =>
       @refs.textField?.selectAll()

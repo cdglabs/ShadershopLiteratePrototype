@@ -13,6 +13,8 @@ R.create "WordView",
       R.OpView {op: @word}
     else if @word instanceof C.That
       R.ThatView {}
+    else if @word instanceof C.Line
+      R.LineOutputView {line: @word}
 
 
 # =============================================================================

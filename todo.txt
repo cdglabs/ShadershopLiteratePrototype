@@ -4,9 +4,13 @@ up and down arrows
 enter from anywhere
 
 
-transclude result
-
 graph
+
+
+UI.hoveredWord, UI.activeWord
+
+
+handle invalid (not yet reached or deleted) line references
 
 
 cleanup

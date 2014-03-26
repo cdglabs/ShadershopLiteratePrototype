@@ -35,3 +35,6 @@ compileWord = (word) ->
 
   else if word instanceof C.Param
     return ""+word.value()
+
+  else if word instanceof C.Line
+    return C.id(word)

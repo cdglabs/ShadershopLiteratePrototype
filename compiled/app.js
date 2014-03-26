@@ -345,6 +345,8 @@
       return "that";
     } else if (word instanceof C.Param) {
       return "" + word.value();
+    } else if (word instanceof C.Line) {
+      return C.id(word);
     }
   };
 
@@ -715,14 +717,16 @@
 
   })();
 
-  C.Line = (function() {
+  C.Line = (function(_super) {
+    __extends(Line, _super);
+
     function Line() {
       this.wordList = new C.WordList();
     }
 
     return Line;
 
-  })();
+  })(C.Word);
 
   C.Program = (function() {
     function Program() {
@@ -1005,7 +1009,7 @@
   };
 
   R.create = function(name, opts) {
-    var propName, propType, _ref1;
+    var propName, propType, required, _ref1;
     opts.displayName = name;
     opts.viewName = function() {
       return name;
@@ -1017,6 +1021,12 @@
     for (propName in _ref1) {
       if (!__hasProp.call(_ref1, propName)) continue;
       propType = _ref1[propName];
+      if (propType.optional) {
+        propType = propType.optional;
+        required = false;
+      } else {
+        required = true;
+      }
       if (propType === Number) {
         propType = React.PropTypes.number;
       } else if (propType === String) {
@@ -1028,7 +1038,10 @@
       } else {
         propType = React.PropTypes.instanceOf(propType);
       }
-      opts.propTypes[propName] = propType.isRequired;
+      if (required) {
+        propType = propType.isRequired;
+      }
+      opts.propTypes[propName] = propType;
     }
     if (opts.mixins == null) {
       opts.mixins = [];
@@ -1036,6 +1049,8 @@
     opts.mixins.unshift(R.UniversalMixin);
     return R[name] = React.createClass(opts);
   };
+
+  require("./mixins/StartTranscludeMixin");
 
   require("./EditorView");
 
@@ -1058,6 +1073,40 @@
   require("./word/WordSpacerView");
 
 }).call(this);
+}, "view/mixins/StartTranscludeMixin": function(exports, require, module) {(function() {
+  R.StartTranscludeMixin = {
+    startTransclude: function(e, word, render) {
+      UI.dragging = {
+        cursor: config.cursor.grabbing
+      };
+      return util.onceDragConsummated(e, (function(_this) {
+        return function() {
+          return UI.dragging = {
+            cursor: config.cursor.grabbing,
+            offset: {
+              x: -10,
+              y: -10
+            },
+            render: render,
+            onMove: function(e) {
+              var dropView;
+              dropView = UI.getViewUnderMouse();
+              dropView = dropView != null ? dropView.lookupViewWithKey("handleTransclusionDrop") : void 0;
+              return UI.activeTransclusionDropView = dropView;
+            },
+            onUp: function(e) {
+              if (UI.activeTransclusionDropView) {
+                UI.activeTransclusionDropView.handleTransclusionDrop(word);
+              }
+              return UI.activeTransclusionDropView = null;
+            }
+          };
+        };
+      })(this));
+    }
+  };
+
+}).call(this);
 }, "view/word/LineOutputView": function(exports, require, module) {(function() {
   var compile;
 
@@ -1067,19 +1116,35 @@
     propTypes: {
       line: C.Line
     },
-    value: function() {
+    mixins: [R.StartTranscludeMixin],
+    evaluate: function() {
       var compiled, id, program, value;
       program = this.lookup("program");
       id = C.id(this.line);
       compiled = compile(program);
       compiled += "\n" + id + ";";
-      value = eval(compiled);
+      try {
+        value = eval(compiled);
+      } catch (_error) {
+        console.warn("Could not eval", compiled);
+      }
       return util.formatFloat(value);
+    },
+    handleMouseDown: function(e) {
+      UI.preventDefault(e);
+      return this.startTransclude(e, this.line, this.render.bind(this));
+    },
+    cursor: function() {
+      return config.cursor.grab;
     },
     render: function() {
       return R.div({
-        className: "word lineOutput"
-      }, this.value());
+        className: "word lineOutput",
+        style: {
+          cursor: this.cursor()
+        },
+        onMouseDown: this.handleMouseDown
+      }, this.evaluate());
     }
   });
 
@@ -1104,6 +1169,7 @@
     propTypes: {
       param: C.Param
     },
+    mixins: [R.StartTranscludeMixin],
     handleInput: function(newValue) {
       this.param.label = newValue;
       if (this.param.label === "") {
@@ -1122,42 +1188,13 @@
       });
     },
     handleMouseDown: function(e) {
-      var _ref;
+      var paramView, _ref;
       if ((_ref = this.refs.textField) != null ? _ref.isFocused() : void 0) {
         return;
       }
       UI.preventDefault(e);
-      UI.dragging = {
-        cursor: config.cursor.grabbing
-      };
-      util.onceDragConsummated(e, (function(_this) {
-        return function() {
-          return UI.dragging = {
-            cursor: config.cursor.grabbing,
-            offset: {
-              x: -10,
-              y: -10
-            },
-            render: function() {
-              return R.ParamView({
-                param: _this.param
-              });
-            },
-            onMove: function(e) {
-              var dropView;
-              dropView = UI.getViewUnderMouse();
-              dropView = dropView != null ? dropView.lookupViewWithKey("handleTransclusionDrop") : void 0;
-              return UI.activeTransclusionDropView = dropView;
-            },
-            onUp: function(e) {
-              if (UI.activeTransclusionDropView) {
-                UI.activeTransclusionDropView.handleTransclusionDrop(_this.param);
-              }
-              return UI.activeTransclusionDropView = null;
-            }
-          };
-        };
-      })(this));
+      paramView = this.lookupView("ParamView");
+      this.startTransclude(e, this.param, paramView.render.bind(paramView));
       return util.onceDragConsummated(e, null, (function(_this) {
         return function() {
           var _ref1;
@@ -1593,6 +1630,10 @@
         });
       } else if (this.word instanceof C.That) {
         return R.ThatView({});
+      } else if (this.word instanceof C.Line) {
+        return R.LineOutputView({
+          line: this.word
+        });
       }
     }
   });
