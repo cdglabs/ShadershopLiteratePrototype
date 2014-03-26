@@ -1,10 +1,19 @@
 window.R = R = {}
 
+
+# =============================================================================
+# Provide easy access to React.DOM and React.addons.classSet
+# =============================================================================
+
 for own key, value of React.DOM
   R[key] = value
 
 R.cx = React.addons.classSet
 
+
+# =============================================================================
+# UniversalMixin gets mixed in to every component
+# =============================================================================
 
 R.UniversalMixin = {
   # Extra traversal powers
@@ -45,6 +54,10 @@ R.UniversalMixin = {
 }
 
 
+# =============================================================================
+# Extra stuff on React.create
+# =============================================================================
+
 R.create = (name, opts) ->
   # add name stuff
   opts.displayName = name
@@ -83,6 +96,9 @@ R.create = (name, opts) ->
   R[name] = React.createClass(opts)
 
 
+# =============================================================================
+# Include all the view code
+# =============================================================================
 
 require("./mixins/StartTranscludeMixin")
 require("./EditorView")

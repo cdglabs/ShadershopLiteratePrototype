@@ -1,12 +1,24 @@
 window.C = C = {}
 
+
+# =============================================================================
+# Include all the model code
+# =============================================================================
+
 require("./model")
 
 
-
+# =============================================================================
+# Annotate each model class to have __className
+# =============================================================================
 
 for own className, constructor of C
   constructor.prototype.__className = className
+
+
+# =============================================================================
+# ID Management
+# =============================================================================
 
 C._idCounter = 0
 C._assignId = (obj) ->
@@ -17,6 +29,10 @@ C._assignId = (obj) ->
 C.id = (obj) ->
   obj.__id ? C._assignId(obj)
 
+
+# =============================================================================
+# Serialization
+# =============================================================================
 
 C.deconstruct = (object) ->
   objects = {} # id : object
@@ -46,7 +62,6 @@ C.deconstruct = (object) ->
   root = serialize(object)
 
   return {objects, root}
-
 
 C.reconstruct = ({objects, root}) ->
   # Construct all the objects
