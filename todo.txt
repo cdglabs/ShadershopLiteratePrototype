@@ -4,9 +4,7 @@ up and down arrows
 enter from anywhere
 
 
-
-scrubbing param value
-transclude param, result
+transclude result
 
 graph
 

@@ -884,32 +884,6 @@
   });
 
 }).call(this);
-}, "view/LineOutputView": function(exports, require, module) {(function() {
-  var compile;
-
-  compile = require("../compile/compile");
-
-  R.create("LineOutputView", {
-    propTypes: {
-      line: C.Line
-    },
-    value: function() {
-      var compiled, id, program, value;
-      program = this.lookup("program");
-      id = C.id(this.line);
-      compiled = compile(program);
-      compiled += "\n" + id + ";";
-      value = eval(compiled);
-      return util.formatFloat(value);
-    },
-    render: function() {
-      return R.div({
-        className: "word lineOutput"
-      }, this.value());
-    }
-  });
-
-}).call(this);
 }, "view/LineView": function(exports, require, module) {(function() {
   R.create("LineView", {
     propTypes: {
@@ -932,7 +906,185 @@
   });
 
 }).call(this);
-}, "view/ParamView": function(exports, require, module) {(function() {
+}, "view/ProgramView": function(exports, require, module) {(function() {
+  R.create("ProgramView", {
+    propTypes: {
+      program: C.Program
+    },
+    insertLineBefore: function(index) {
+      var line;
+      line = new C.Line();
+      return this.program.lines.splice(index, 0, line);
+    },
+    removeLineAt: function(index) {
+      return this.program.lines.splice(index, 1);
+    },
+    render: function() {
+      return R.div({
+        className: "program"
+      }, this.program.lines.map((function(_this) {
+        return function(line, lineIndex) {
+          return R.LineView({
+            line: line,
+            lineIndex: lineIndex,
+            key: lineIndex
+          });
+        };
+      })(this)));
+    }
+  });
+
+}).call(this);
+}, "view/R": function(exports, require, module) {(function() {
+  var R, key, value, _ref,
+    __hasProp = {}.hasOwnProperty;
+
+  window.R = R = {};
+
+  _ref = React.DOM;
+  for (key in _ref) {
+    if (!__hasProp.call(_ref, key)) continue;
+    value = _ref[key];
+    R[key] = value;
+  }
+
+  R.cx = React.addons.classSet;
+
+  R.UniversalMixin = {
+    ownerView: function() {
+      var _ref1;
+      return (_ref1 = this._owner) != null ? _ref1 : this.props.__owner__;
+    },
+    lookup: function(keyName) {
+      var _ref1, _ref2;
+      return (_ref1 = this[keyName]) != null ? _ref1 : (_ref2 = this.ownerView()) != null ? _ref2.lookup(keyName) : void 0;
+    },
+    lookupView: function(viewName) {
+      var _ref1;
+      if (this === viewName || this.viewName() === viewName) {
+        return this;
+      }
+      return (_ref1 = this.ownerView()) != null ? _ref1.lookupView(viewName) : void 0;
+    },
+    lookupViewWithKey: function(keyName) {
+      var _ref1;
+      if (this[keyName] != null) {
+        return this;
+      }
+      return (_ref1 = this.ownerView()) != null ? _ref1.lookupViewWithKey(keyName) : void 0;
+    },
+    setPropsOnSelf: function(nextProps) {
+      var propName, propValue, _results;
+      _results = [];
+      for (propName in nextProps) {
+        if (!__hasProp.call(nextProps, propName)) continue;
+        propValue = nextProps[propName];
+        if (propName === "__owner__") {
+          continue;
+        }
+        _results.push(this[propName] = propValue);
+      }
+      return _results;
+    },
+    componentWillMount: function() {
+      return this.setPropsOnSelf(this.props);
+    },
+    componentWillUpdate: function(nextProps) {
+      return this.setPropsOnSelf(nextProps);
+    },
+    componentDidMount: function() {
+      var el;
+      el = this.getDOMNode();
+      return el.dataFor != null ? el.dataFor : el.dataFor = this;
+    },
+    componentWillUnmount: function() {
+      var el;
+      el = this.getDOMNode();
+      return delete el.dataFor;
+    }
+  };
+
+  R.create = function(name, opts) {
+    var propName, propType, _ref1;
+    opts.displayName = name;
+    opts.viewName = function() {
+      return name;
+    };
+    if (opts.propTypes == null) {
+      opts.propTypes = {};
+    }
+    _ref1 = opts.propTypes;
+    for (propName in _ref1) {
+      if (!__hasProp.call(_ref1, propName)) continue;
+      propType = _ref1[propName];
+      if (propType === Number) {
+        propType = React.PropTypes.number;
+      } else if (propType === String) {
+        propType = React.PropTypes.string;
+      } else if (propType === Boolean) {
+        propType = React.PropTypes.bool;
+      } else if (propType === Function) {
+        propType = React.PropTypes.func;
+      } else {
+        propType = React.PropTypes.instanceOf(propType);
+      }
+      opts.propTypes[propName] = propType.isRequired;
+    }
+    if (opts.mixins == null) {
+      opts.mixins = [];
+    }
+    opts.mixins.unshift(R.UniversalMixin);
+    return R[name] = React.createClass(opts);
+  };
+
+  require("./EditorView");
+
+  require("./DraggingView");
+
+  require("./ProgramView");
+
+  require("./LineView");
+
+  require("./word/TextFieldView");
+
+  require("./word/LineOutputView");
+
+  require("./word/WordListView");
+
+  require("./word/WordView");
+
+  require("./word/ParamView");
+
+  require("./word/WordSpacerView");
+
+}).call(this);
+}, "view/word/LineOutputView": function(exports, require, module) {(function() {
+  var compile;
+
+  compile = require("../../compile/compile");
+
+  R.create("LineOutputView", {
+    propTypes: {
+      line: C.Line
+    },
+    value: function() {
+      var compiled, id, program, value;
+      program = this.lookup("program");
+      id = C.id(this.line);
+      compiled = compile(program);
+      compiled += "\n" + id + ";";
+      value = eval(compiled);
+      return util.formatFloat(value);
+    },
+    render: function() {
+      return R.div({
+        className: "word lineOutput"
+      }, this.value());
+    }
+  });
+
+}).call(this);
+}, "view/word/ParamView": function(exports, require, module) {(function() {
   R.create("ParamView", {
     propTypes: {
       param: C.Param
@@ -1129,162 +1281,10 @@
   });
 
 }).call(this);
-}, "view/ProgramView": function(exports, require, module) {(function() {
-  R.create("ProgramView", {
-    propTypes: {
-      program: C.Program
-    },
-    insertLineBefore: function(index) {
-      var line;
-      line = new C.Line();
-      return this.program.lines.splice(index, 0, line);
-    },
-    removeLineAt: function(index) {
-      return this.program.lines.splice(index, 1);
-    },
-    render: function() {
-      return R.div({
-        className: "program"
-      }, this.program.lines.map((function(_this) {
-        return function(line, lineIndex) {
-          return R.LineView({
-            line: line,
-            lineIndex: lineIndex,
-            key: lineIndex
-          });
-        };
-      })(this)));
-    }
-  });
-
-}).call(this);
-}, "view/R": function(exports, require, module) {(function() {
-  var R, key, value, _ref,
-    __hasProp = {}.hasOwnProperty;
-
-  window.R = R = {};
-
-  _ref = React.DOM;
-  for (key in _ref) {
-    if (!__hasProp.call(_ref, key)) continue;
-    value = _ref[key];
-    R[key] = value;
-  }
-
-  R.cx = React.addons.classSet;
-
-  R.UniversalMixin = {
-    ownerView: function() {
-      var _ref1;
-      return (_ref1 = this._owner) != null ? _ref1 : this.props.__owner__;
-    },
-    lookup: function(keyName) {
-      var _ref1, _ref2;
-      return (_ref1 = this[keyName]) != null ? _ref1 : (_ref2 = this.ownerView()) != null ? _ref2.lookup(keyName) : void 0;
-    },
-    lookupView: function(viewName) {
-      var _ref1;
-      if (this === viewName || this.viewName() === viewName) {
-        return this;
-      }
-      return (_ref1 = this.ownerView()) != null ? _ref1.lookupView(viewName) : void 0;
-    },
-    lookupViewWithKey: function(keyName) {
-      var _ref1;
-      if (this[keyName] != null) {
-        return this;
-      }
-      return (_ref1 = this.ownerView()) != null ? _ref1.lookupViewWithKey(keyName) : void 0;
-    },
-    setPropsOnSelf: function(nextProps) {
-      var propName, propValue, _results;
-      _results = [];
-      for (propName in nextProps) {
-        if (!__hasProp.call(nextProps, propName)) continue;
-        propValue = nextProps[propName];
-        if (propName === "__owner__") {
-          continue;
-        }
-        _results.push(this[propName] = propValue);
-      }
-      return _results;
-    },
-    componentWillMount: function() {
-      return this.setPropsOnSelf(this.props);
-    },
-    componentWillUpdate: function(nextProps) {
-      return this.setPropsOnSelf(nextProps);
-    },
-    componentDidMount: function() {
-      var el;
-      el = this.getDOMNode();
-      return el.dataFor != null ? el.dataFor : el.dataFor = this;
-    },
-    componentWillUnmount: function() {
-      var el;
-      el = this.getDOMNode();
-      return delete el.dataFor;
-    }
-  };
-
-  R.create = function(name, opts) {
-    var propName, propType, _ref1;
-    opts.displayName = name;
-    opts.viewName = function() {
-      return name;
-    };
-    if (opts.propTypes == null) {
-      opts.propTypes = {};
-    }
-    _ref1 = opts.propTypes;
-    for (propName in _ref1) {
-      if (!__hasProp.call(_ref1, propName)) continue;
-      propType = _ref1[propName];
-      if (propType === Number) {
-        propType = React.PropTypes.number;
-      } else if (propType === String) {
-        propType = React.PropTypes.string;
-      } else if (propType === Boolean) {
-        propType = React.PropTypes.bool;
-      } else if (propType === Function) {
-        propType = React.PropTypes.func;
-      } else {
-        propType = React.PropTypes.instanceOf(propType);
-      }
-      opts.propTypes[propName] = propType.isRequired;
-    }
-    if (opts.mixins == null) {
-      opts.mixins = [];
-    }
-    opts.mixins.unshift(R.UniversalMixin);
-    return R[name] = React.createClass(opts);
-  };
-
-  require("./TextFieldView");
-
-  require("./EditorView");
-
-  require("./DraggingView");
-
-  require("./ProgramView");
-
-  require("./LineView");
-
-  require("./LineOutputView");
-
-  require("./WordListView");
-
-  require("./WordView");
-
-  require("./ParamView");
-
-  require("./WordSpacerView");
-
-}).call(this);
-}, "view/TextFieldView": function(exports, require, module) {(function() {
+}, "view/word/TextFieldView": function(exports, require, module) {(function() {
   var Selection, findAdjacentHost;
 
-  Selection = require("../Selection");
+  Selection = require("../../Selection");
 
   R.create("TextFieldView", {
     propTypes: {
@@ -1381,7 +1381,7 @@
   };
 
 }).call(this);
-}, "view/WordListView": function(exports, require, module) {(function() {
+}, "view/word/WordListView": function(exports, require, module) {(function() {
   R.create("WordListView", {
     propTypes: {
       wordList: C.WordList
@@ -1479,7 +1479,7 @@
   });
 
 }).call(this);
-}, "view/WordSpacerView": function(exports, require, module) {(function() {
+}, "view/word/WordSpacerView": function(exports, require, module) {(function() {
   R.create("WordSpacerView", {
     propTypes: {
       wordSpacerIndex: Number,
@@ -1572,7 +1572,7 @@
   });
 
 }).call(this);
-}, "view/WordView": function(exports, require, module) {(function() {
+}, "view/word/WordView": function(exports, require, module) {(function() {
   R.create("WordView", {
     propTypes: {
       word: C.Word,

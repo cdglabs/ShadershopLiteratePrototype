@@ -1,4 +1,4 @@
-compile = require("../compile/compile")
+compile = require("../../compile/compile")
 
 R.create "LineOutputView",
   propTypes: {

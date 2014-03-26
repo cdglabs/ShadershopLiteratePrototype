@@ -1,4 +1,4 @@
-Selection = require("../Selection")
+Selection = require("../../Selection")
 
 
 R.create "TextFieldView",
