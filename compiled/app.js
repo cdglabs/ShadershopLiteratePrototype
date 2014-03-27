@@ -1228,9 +1228,7 @@
     mixins: [R.StartTranscludeMixin],
     handleInput: function(newValue) {
       this.param.label = newValue;
-      if (this.param.label === "") {
-        return this.focusValue();
-      } else if (this.param.label.slice(-1) === ":") {
+      if (this.param.label.slice(-1) === ":") {
         this.param.label = this.param.label.slice(0, -1);
         return this.focusValue();
       }
@@ -1273,9 +1271,7 @@
           cursor: this.cursor()
         },
         onMouseDown: this.handleMouseDown
-      }, this.param.label === "" ? R.div({
-        className: "paramLabelEmpty"
-      }) : R.TextFieldView({
+      }, R.TextFieldView({
         className: "paramLabel",
         value: this.param.label,
         onInput: this.handleInput,

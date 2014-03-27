@@ -36,9 +36,7 @@ R.create "ParamLabelView",
   handleInput: (newValue) ->
     @param.label = newValue
 
-    if @param.label == ""
-      @focusValue()
-    else if @param.label.slice(-1) == ":"
+    if @param.label.slice(-1) == ":"
       @param.label = @param.label.slice(0, -1)
       @focusValue()
 
@@ -70,15 +68,12 @@ R.create "ParamLabelView",
       style: {cursor: @cursor()}
       onMouseDown: @handleMouseDown
     },
-      if @param.label == ""
-        R.div {className: "paramLabelEmpty"}
-      else
-        R.TextFieldView {
-          className: "paramLabel"
-          value: @param.label
-          onInput: @handleInput
-          ref: "textField"
-        }
+      R.TextFieldView {
+        className: "paramLabel"
+        value: @param.label
+        onInput: @handleInput
+        ref: "textField"
+      }
 
 
 # =============================================================================

@@ -60,6 +60,9 @@ canvas {
   border-radius: 5px;
   margin-bottom: 6px;
 }
+.highlighted {
+  box-shadow: 0px 0px 8px 4px #6cf;
+}
 .wordSpacer {
   position: relative;
   display: inline-block;
@@ -76,33 +79,23 @@ canvas {
   color: #000;
   font-weight: bold;
 }
-.lineOutput.highlighted {
-  box-shadow: 0px 0px 8px 4px #9aa6b2;
-}
 .param {
   padding: 0;
-  border-radius: 5px;
 }
-.param.highlighted {
-  box-shadow: 0px 0px 8px 4px #9aa6b2;
-}
-.paramLabel,
-.paramLabelEmpty {
+.paramLabel {
   display: inline-block;
+  min-width: 3px;
   border-radius: 5px 0 0 5px;
   background-color: #efefdf;
   color: #7f7f77;
   padding: 3px;
 }
-.paramLabel:after,
-.paramLabelEmpty:after {
+.paramLabel:not(:empty):after {
   content: ":";
-}
-.paramLabelEmpty {
-  color: transparent;
 }
 .paramValue {
   display: inline-block;
+  min-width: 3px;
   border-radius: 0 5px 5px 0;
   background-color: #ffe;
   padding: 3px;
