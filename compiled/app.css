@@ -41,7 +41,7 @@ canvas {
   display: table-row;
 }
 .line:hover {
-  background-color: #eef6ff;
+  background-color: #f8fbff;
 }
 .lineLeft {
   display: table-cell;
@@ -76,9 +76,15 @@ canvas {
   color: #000;
   font-weight: bold;
 }
+.lineOutput.highlighted {
+  box-shadow: 0px 0px 8px 4px #9aa6b2;
+}
 .param {
   padding: 0;
-  border-radius: 0;
+  border-radius: 5px;
+}
+.param.highlighted {
+  box-shadow: 0px 0px 8px 4px #9aa6b2;
 }
 .paramLabel,
 .paramLabelEmpty {

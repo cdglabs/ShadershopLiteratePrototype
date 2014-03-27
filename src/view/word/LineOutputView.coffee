@@ -25,10 +25,23 @@ R.create "LineOutputView",
   cursor: ->
     config.cursor.grab
 
+  handleMouseEnter: ->
+    UI.setHoveredWord(@line)
+
+  handleMouseLeave: ->
+    UI.setHoveredWord(null)
+
   render: ->
+    className = R.cx {
+      word: true
+      lineOutput: true
+      highlighted: UI.getHighlightedWord() == @line
+    }
     R.div {
-      className: "word lineOutput"
+      className: className
       style: {cursor: @cursor()}
       onMouseDown: @handleMouseDown
+      onMouseEnter: @handleMouseEnter
+      onMouseLeave: @handleMouseLeave
     },
       @evaluate()

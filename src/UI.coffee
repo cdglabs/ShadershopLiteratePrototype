@@ -3,6 +3,8 @@ window.UI = UI = new class
     @dragging = null
     @autofocus = null
 
+    @hoveredWord = null
+    @activeWord = null
     @activeTransclusionDropView = null
 
     @registerEvents()
@@ -47,6 +49,15 @@ window.UI = UI = new class
     el = @getElementUnderMouse()
     el = el?.closest (el) -> el.dataFor?
     return el?.dataFor
+
+
+  # ===========================================================================
+  # Highlighting Words
+  # ===========================================================================
+
+  setHoveredWord: (word) -> @hoveredWord = word
+  setActiveWord: (word) -> @activeWord = word
+  getHighlightedWord: -> @activeWord ? @hoveredWord
 
 
   # ===========================================================================

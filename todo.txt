@@ -7,7 +7,7 @@ enter from anywhere
 graph
 
 
-UI.hoveredWord, UI.activeWord
+label line outputs
 
 
 handle invalid (not yet reached or deleted) line references

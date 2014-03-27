@@ -1,7 +1,11 @@
 R.StartTranscludeMixin = {
   startTransclude: (e, word, render) ->
+    UI.setActiveWord(word)
+
     UI.dragging = {
       cursor: config.cursor.grabbing
+      onUp: =>
+        UI.setActiveWord(null)
     }
 
     util.onceDragConsummated e, =>
@@ -19,5 +23,6 @@ R.StartTranscludeMixin = {
           if UI.activeTransclusionDropView
             UI.activeTransclusionDropView.handleTransclusionDrop(word)
           UI.activeTransclusionDropView = null
+          UI.setActiveWord(null)
       }
 }

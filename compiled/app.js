@@ -58,6 +58,8 @@
       this.handleWindowMouseMove = __bind(this.handleWindowMouseMove, this);
       this.dragging = null;
       this.autofocus = null;
+      this.hoveredWord = null;
+      this.activeWord = null;
       this.activeTransclusionDropView = null;
       this.registerEvents();
     }
@@ -111,6 +113,19 @@
         return el.dataFor != null;
       }) : void 0;
       return el != null ? el.dataFor : void 0;
+    };
+
+    _Class.prototype.setHoveredWord = function(word) {
+      return this.hoveredWord = word;
+    };
+
+    _Class.prototype.setActiveWord = function(word) {
+      return this.activeWord = word;
+    };
+
+    _Class.prototype.getHighlightedWord = function() {
+      var _ref;
+      return (_ref = this.activeWord) != null ? _ref : this.hoveredWord;
     };
 
     _Class.prototype.setAutoFocus = function(opts) {
@@ -1031,8 +1046,14 @@
 }, "view/mixins/StartTranscludeMixin": function(exports, require, module) {(function() {
   R.StartTranscludeMixin = {
     startTransclude: function(e, word, render) {
+      UI.setActiveWord(word);
       UI.dragging = {
-        cursor: config.cursor.grabbing
+        cursor: config.cursor.grabbing,
+        onUp: (function(_this) {
+          return function() {
+            return UI.setActiveWord(null);
+          };
+        })(this)
       };
       return util.onceDragConsummated(e, (function(_this) {
         return function() {
@@ -1053,7 +1074,8 @@
               if (UI.activeTransclusionDropView) {
                 UI.activeTransclusionDropView.handleTransclusionDrop(word);
               }
-              return UI.activeTransclusionDropView = null;
+              UI.activeTransclusionDropView = null;
+              return UI.setActiveWord(null);
             }
           };
         };
@@ -1143,13 +1165,27 @@
     cursor: function() {
       return config.cursor.grab;
     },
+    handleMouseEnter: function() {
+      return UI.setHoveredWord(this.line);
+    },
+    handleMouseLeave: function() {
+      return UI.setHoveredWord(null);
+    },
     render: function() {
+      var className;
+      className = R.cx({
+        word: true,
+        lineOutput: true,
+        highlighted: UI.getHighlightedWord() === this.line
+      });
       return R.div({
-        className: "word lineOutput",
+        className: className,
         style: {
           cursor: this.cursor()
         },
-        onMouseDown: this.handleMouseDown
+        onMouseDown: this.handleMouseDown,
+        onMouseEnter: this.handleMouseEnter,
+        onMouseLeave: this.handleMouseLeave
       }, this.evaluate());
     }
   });
@@ -1160,9 +1196,23 @@
     propTypes: {
       param: C.Param
     },
+    handleMouseEnter: function() {
+      return UI.setHoveredWord(this.param);
+    },
+    handleMouseLeave: function() {
+      return UI.setHoveredWord(null);
+    },
     render: function() {
+      var className;
+      className = R.cx({
+        word: true,
+        param: true,
+        highlighted: UI.getHighlightedWord() === this.param
+      });
       return R.div({
-        className: "word param"
+        className: className,
+        onMouseEnter: this.handleMouseEnter,
+        onMouseLeave: this.handleMouseLeave
       }, R.ParamLabelView({
         param: this.param
       }), R.ParamValueView({
@@ -1281,6 +1331,7 @@
       originalX = e.clientX;
       originalY = e.clientY;
       originalValue = this.param.value();
+      UI.setActiveWord(this.param);
       UI.dragging = {
         cursor: this.cursor(),
         onMove: (function(_this) {
@@ -1291,6 +1342,11 @@
             d = dy;
             value = originalValue + d;
             return _this.param.valueString = "" + value;
+          };
+        })(this),
+        onUp: (function(_this) {
+          return function() {
+            return UI.setActiveWord(null);
           };
         })(this)
       };

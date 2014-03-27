@@ -64,7 +64,7 @@ canvas
 .line
   display table-row
   &:hover
-    background-color: tint(#def, 50%)
+    background-color: tint(#def, 80%)
 
 .lineLeft
   display table-cell
@@ -103,10 +103,14 @@ canvas
   background-color lineOutputColor
   color #000
   font-weight bold
+  &.highlighted
+    box-shadow 0px 0px 8px 4px shade(#def, 30%)
 
 .param
   padding 0
-  border-radius 0
+  border-radius wordBorderRadius
+  &.highlighted
+    box-shadow 0px 0px 8px 4px shade(#def, 30%)
 
 .paramLabel, .paramLabelEmpty
   display inline-block

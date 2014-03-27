@@ -3,8 +3,23 @@ R.create "ParamView",
     param: C.Param
   }
 
+  handleMouseEnter: ->
+    UI.setHoveredWord(@param)
+
+  handleMouseLeave: ->
+    UI.setHoveredWord(null)
+
   render: ->
-    R.div {className: "word param"},
+    className = R.cx {
+      word: true
+      param: true
+      highlighted: UI.getHighlightedWord() == @param
+    }
+    R.div {
+      className: className
+      onMouseEnter: @handleMouseEnter
+      onMouseLeave: @handleMouseLeave
+    },
       R.ParamLabelView {param: @param}
       R.ParamValueView {param: @param}
 
@@ -110,6 +125,7 @@ R.create "ParamValueView",
     originalY = e.clientY
     originalValue = @param.value()
 
+    UI.setActiveWord(@param)
     UI.dragging = {
       cursor: @cursor()
       onMove: (e) =>
@@ -118,6 +134,8 @@ R.create "ParamValueView",
         d  = dy
         value = originalValue + d
         @param.valueString = ""+value
+      onUp: =>
+        UI.setActiveWord(null)
     }
 
     util.onceDragConsummated e, null, =>
