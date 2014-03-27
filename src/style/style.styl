@@ -4,6 +4,7 @@
 
 wordPadding = 3px
 wordBorderRadius = 5px
+lineSpacing = 4px
 
 paramColor = #ffe
 lineOutputColor = #eef
@@ -68,12 +69,12 @@ canvas
 
 .lineLeft
   display table-cell
-  padding-top 6px
+  padding-top lineSpacing
 
 .lineRight
   display table-cell
-  padding-top 6px
-  padding-right 6px
+  padding-top lineSpacing
+  padding-right 12px
   padding-left: 12px
   border-left: 1px solid #eee
 
@@ -86,7 +87,7 @@ canvas
   display inline-block
   padding wordPadding
   border-radius wordBorderRadius
-  margin-bottom 6px
+  margin-bottom lineSpacing
 
 .highlighted
   box-shadow 0px 0px 8px 4px #6cf
@@ -97,9 +98,9 @@ canvas
   cursor text
   padding wordPadding 3px
   color #999
-  margin-bottom 6px
+  margin-bottom lineSpacing
 
-.lineLeft > .wordList > .wordSpacer:last-child
+.lineLeft > .wordList > *:last-child
   padding-right: 18px
 
 .lineOutput

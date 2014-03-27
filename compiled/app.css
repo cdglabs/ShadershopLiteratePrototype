@@ -45,12 +45,12 @@ canvas {
 }
 .lineLeft {
   display: table-cell;
-  padding-top: 6px;
+  padding-top: 4px;
 }
 .lineRight {
   display: table-cell;
-  padding-top: 6px;
-  padding-right: 6px;
+  padding-top: 4px;
+  padding-right: 12px;
   padding-left: 12px;
   border-left: 1px solid #eee;
 }
@@ -58,7 +58,7 @@ canvas {
   display: inline-block;
   padding: 3px;
   border-radius: 5px;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 .highlighted {
   box-shadow: 0px 0px 8px 4px #6cf;
@@ -69,9 +69,9 @@ canvas {
   cursor: text;
   padding: 3px 3px;
   color: #999;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
-.lineLeft > .wordList > .wordSpacer:last-child {
+.lineLeft > .wordList > *:last-child {
   padding-right: 18px;
 }
 .lineOutput {

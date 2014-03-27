@@ -8,6 +8,7 @@ graph
 
 
 label line outputs
+do a cleanup pass on stylus
 
 
 handle invalid (not yet reached or deleted) line references

@@ -1,4 +1,5 @@
 compile = require("../../compile/compile")
+evaluate = require("../../compile/evaluate")
 
 R.create "LineOutputView",
   propTypes: {
@@ -12,10 +13,7 @@ R.create "LineOutputView",
     id = C.id(@line)
     compiled = compile(program)
     compiled += "\n#{id};"
-    try
-      value = eval(compiled)
-    catch
-      console.warn "Could not eval", compiled
+    value = evaluate(compiled)
     return util.formatFloat(value)
 
   handleMouseDown: (e) ->
