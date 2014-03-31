@@ -276,6 +276,7 @@
   var config;
 
   window.config = config = {
+    resolution: 0.5,
     cursor: {
       text: "text",
       grab: "-webkit-grab",
@@ -519,9 +520,10 @@
   C.Param = (function(_super) {
     __extends(Param, _super);
 
-    function Param(valueString, label) {
+    function Param(valueString, label, precision) {
       this.valueString = valueString != null ? valueString : "0";
       this.label = label != null ? label : "";
+      this.precision = precision != null ? precision : 1;
     }
 
     Param.prototype.value = function() {
@@ -531,6 +533,19 @@
         return 0;
       }
       return number;
+    };
+
+    Param.prototype.fixPrecision = function() {
+      var digits, numDigits, numZeros, zeros;
+      if (this.valueString.indexOf(".") === -1) {
+        zeros = this.valueString.match(/0*$/)[0];
+        numZeros = zeros.length;
+        return this.precision = Math.pow(10, numZeros);
+      } else {
+        digits = this.valueString.match(/\..*$/)[0];
+        numDigits = digits.length - 1;
+        return this.precision = Math.pow(0.1, numDigits);
+      }
     };
 
     return Param;
@@ -769,6 +784,56 @@
     return Editor;
 
   })();
+
+}).call(this);
+}, "util/canvas": function(exports, require, module) {(function() {
+  var drawGraph, lerp;
+
+  lerp = function(x, dMin, dMax, rMin, rMax) {
+    var ratio;
+    ratio = (x - dMin) / (dMax - dMin);
+    return ratio * (rMax - rMin) + rMin;
+  };
+
+  drawGraph = function(ctx, bounds, fn) {
+    var canvas, cx, cxMax, cxMin, cy, cyMax, cyMin, dCy, i, lastCx, lastCy, lastSample, x, xMax, xMin, y, yMax, yMin, _i;
+    xMin = bounds.xMin, xMax = bounds.xMax, yMin = bounds.yMin, yMax = bounds.yMax;
+    canvas = ctx.canvas;
+    cxMin = 0;
+    cxMax = canvas.width;
+    cyMin = canvas.height;
+    cyMax = 0;
+    ctx.beginPath();
+    lastSample = cxMax / config.resolution;
+    lastCx = null;
+    lastCy = null;
+    dCy = null;
+    for (i = _i = 0; 0 <= lastSample ? _i <= lastSample : _i >= lastSample; i = 0 <= lastSample ? ++_i : --_i) {
+      cx = i * config.resolution;
+      x = lerp(cx, cxMin, cxMax, xMin, xMax);
+      y = fn(x);
+      cy = lerp(y, yMin, yMax, cyMin, cyMax);
+      if (lastCy == null) {
+        ctx.moveTo(cx, cy);
+      }
+      if (dCy != null) {
+        if (Math.abs((cy - lastCy) - dCy) > .000001) {
+          ctx.lineTo(lastCx, lastCy);
+        }
+      }
+      if (lastCy != null) {
+        dCy = cy - lastCy;
+      }
+      lastCx = cx;
+      lastCy = cy;
+    }
+    return ctx.lineTo(cx, cy);
+  };
+
+  util.canvas = {
+    lerp: lerp,
+    drawGraph: drawGraph
+  };
 
 }).call(this);
 }, "util/selection": function(exports, require, module) {(function() {
@@ -1014,6 +1079,8 @@
   };
 
   require("./selection");
+
+  require("./canvas");
 
 }).call(this);
 }, "view/R": function(exports, require, module) {(function() {
@@ -1469,6 +1536,9 @@
         descendantOf: [paramView, "ParamLabelView"]
       });
     },
+    handleBlur: function() {
+      return this.param.fixPrecision();
+    },
     handleMouseDown: function(e) {
       var originalValue, originalX, originalY;
       if (this.refs.textField.isFocused()) {
@@ -1483,12 +1553,17 @@
         cursor: this.cursor(),
         onMove: (function(_this) {
           return function(e) {
-            var d, dx, dy, value;
+            var d, digitPrecision, dx, dy, value;
             dx = e.clientX - originalX;
             dy = -(e.clientY - originalY);
             d = dy;
-            value = originalValue + d;
-            return _this.param.valueString = "" + value;
+            value = originalValue + d * _this.param.precision;
+            if (_this.param.precision < 1) {
+              digitPrecision = -Math.round(Math.log(_this.param.precision) / Math.log(10));
+              return _this.param.valueString = value.toFixed(digitPrecision);
+            } else {
+              return _this.param.valueString = value.toFixed(0);
+            }
           };
         })(this),
         onUp: (function(_this) {
@@ -1521,6 +1596,7 @@
         className: "paramValue",
         value: this.param.valueString,
         onInput: this.handleInput,
+        onBlur: this.handleBlur,
         ref: "textField"
       }));
     }
@@ -1535,7 +1611,9 @@
       value: String,
       className: String,
       onInput: Function,
-      onBackSpace: Function
+      onBackSpace: Function,
+      onFocus: Function,
+      onBlur: Function
     },
     getDefaultProps: function() {
       return {
@@ -1543,7 +1621,9 @@
         className: "",
         onInput: function(newValue) {},
         onBackSpace: function() {},
-        onEnter: function() {}
+        onEnter: function() {},
+        onFocus: function() {},
+        onBlur: function() {}
       };
     },
     refresh: function() {
@@ -1595,6 +1675,12 @@
         return this.onEnter();
       }
     },
+    handleFocus: function() {
+      return this.onFocus();
+    },
+    handleBlur: function() {
+      return this.onBlur();
+    },
     selectAll: function() {
       var el;
       el = this.getDOMNode();
@@ -1611,7 +1697,9 @@
         className: this.className,
         contentEditable: true,
         onInput: this.handleInput,
-        onKeyDown: this.handleKeyDown
+        onKeyDown: this.handleKeyDown,
+        onFocus: this.handleFocus,
+        onBlur: this.handleBlur
       });
     }
   });

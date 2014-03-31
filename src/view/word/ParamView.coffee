@@ -112,6 +112,9 @@ R.create "ParamValueView",
       descendantOf: [paramView, "ParamLabelView"]
     }
 
+  handleBlur: ->
+    @param.fixPrecision()
+
   handleMouseDown: (e) ->
     return if @refs.textField.isFocused()
     UI.preventDefault(e)
@@ -127,8 +130,12 @@ R.create "ParamValueView",
         dx =   e.clientX - originalX
         dy = -(e.clientY - originalY)
         d  = dy
-        value = originalValue + d
-        @param.valueString = ""+value
+        value = originalValue + d * @param.precision
+        if @param.precision < 1
+          digitPrecision = -Math.round(Math.log(@param.precision)/Math.log(10))
+          @param.valueString = value.toFixed(digitPrecision)
+        else
+          @param.valueString = value.toFixed(0)
       onUp: =>
         UI.setActiveWord(null)
     }
@@ -151,6 +158,7 @@ R.create "ParamValueView",
         className: "paramValue"
         value: @param.valueString
         onInput: @handleInput
+        onBlur: @handleBlur
         ref: "textField"
       }
 

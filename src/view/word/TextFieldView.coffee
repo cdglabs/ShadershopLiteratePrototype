@@ -4,6 +4,8 @@ R.create "TextFieldView",
     className: String
     onInput: Function
     onBackSpace: Function
+    onFocus: Function
+    onBlur: Function
   }
   getDefaultProps: ->
     {
@@ -12,6 +14,8 @@ R.create "TextFieldView",
       onInput: (newValue) ->
       onBackSpace: ->
       onEnter: ->
+      onFocus: ->
+      onBlur: ->
     }
 
   refresh: ->
@@ -54,6 +58,12 @@ R.create "TextFieldView",
       e.preventDefault()
       @onEnter()
 
+  handleFocus: ->
+    @onFocus()
+
+  handleBlur: ->
+    @onBlur()
+
   selectAll: ->
     el = @getDOMNode()
     util.selection.setAll(el)
@@ -70,6 +80,8 @@ R.create "TextFieldView",
       contentEditable: true
       onInput: @handleInput
       onKeyDown: @handleKeyDown
+      onFocus: @handleFocus
+      onBlur: @handleBlur
     }
 
 

@@ -11,11 +11,21 @@ class C.Word
 # =============================================================================
 
 class C.Param extends C.Word
-  constructor: (@valueString = "0", @label = "") ->
+  constructor: (@valueString = "0", @label = "", @precision = 1) ->
   value: ->
     number = parseFloat(@valueString)
     return 0 if _.isNaN(number) or !_.isFinite(number)
     return number
+  fixPrecision: ->
+    if @valueString.indexOf(".") == -1
+      zeros = @valueString.match(/0*$/)[0]
+      numZeros = zeros.length
+      @precision = Math.pow(10, numZeros)
+    else
+      digits = @valueString.match(/\..*$/)[0]
+      numDigits = digits.length - 1 # -1 for the .
+      @precision = Math.pow(0.1, numDigits)
+
 
 # =============================================================================
 
