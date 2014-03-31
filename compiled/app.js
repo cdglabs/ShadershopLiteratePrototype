@@ -598,6 +598,22 @@
       this.params = [];
     }
 
+    Application.prototype.effectiveWord = function() {
+      var effectiveParams, result;
+      effectiveParams = _.map(this.params, (function(_this) {
+        return function(wordList) {
+          return wordList.effectiveWordList();
+        };
+      })(this));
+      if (!_.all(effectiveParams)) {
+        return null;
+      }
+      result = new C.Application();
+      result.fn = this.fn;
+      result.params = effectiveParams;
+      return result;
+    };
+
     return Application;
 
   })(C.Word);

@@ -54,6 +54,16 @@ class C.Application extends C.Word
     @fn = null
     @params = [] # list of WordLists
 
+  effectiveWord: ->
+    effectiveParams = _.map @params, (wordList) =>
+      wordList.effectiveWordList()
+    return null unless _.all(effectiveParams)
+    result = new C.Application()
+    result.fn = @fn
+    result.params = effectiveParams
+    return result
+
+
 class C.BuiltInFn
   constructor: (@fnName) ->
 
