@@ -67,17 +67,19 @@ canvas
   &:hover
     background-color: tint(#def, 80%)
 
-.lineLeft
+.lineLeft, .lineRight
   display table-cell
   padding-top lineSpacing
+  border-top 1px solid transparent
 
 .lineRight
-  display table-cell
-  padding-top lineSpacing
   padding-right 12px
   padding-left: 12px
   border-left: 1px solid #eee
 
+.line.isIndependent
+  .lineLeft, .lineRight
+    border-top 1px solid #aaa
 
 // ============================================================================
 // Words

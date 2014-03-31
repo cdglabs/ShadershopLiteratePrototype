@@ -116,6 +116,22 @@ class C.Line extends C.Word
   constructor: ->
     @wordList = new C.WordList()
 
+  hasReferenceToThat: ->
+    return true if !@wordList.effectiveWordList()
+    found = false
+    recurse = (wordList) ->
+      wordList = wordList.effectiveWordList()
+      return unless wordList
+      for word in wordList.words
+        found = true if word instanceof C.That
+        if word instanceof C.Application
+          word = word.effectiveWord()
+          for wordList in word.params
+            recurse(wordList)
+    recurse(@wordList)
+    return found
+
+
 # =============================================================================
 
 class C.Program

@@ -5,7 +5,11 @@ R.create "LineView",
   }
 
   render: ->
-    R.div {className: "line"},
+    className = R.cx {
+      line: true
+      isIndependent: !@line.hasReferenceToThat()
+    }
+    R.div {className: className},
       R.div {className: "lineLeft"},
         R.WordListView {wordList: @line.wordList}
       R.div {className: "lineRight"},

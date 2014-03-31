@@ -679,6 +679,47 @@
       this.wordList = new C.WordList();
     }
 
+    Line.prototype.hasReferenceToThat = function() {
+      var found, recurse;
+      if (!this.wordList.effectiveWordList()) {
+        return true;
+      }
+      found = false;
+      recurse = function(wordList) {
+        var word, _i, _len, _ref, _results;
+        wordList = wordList.effectiveWordList();
+        if (!wordList) {
+          return;
+        }
+        _ref = wordList.words;
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          word = _ref[_i];
+          if (word instanceof C.That) {
+            found = true;
+          }
+          if (word instanceof C.Application) {
+            word = word.effectiveWord();
+            _results.push((function() {
+              var _j, _len1, _ref1, _results1;
+              _ref1 = word.params;
+              _results1 = [];
+              for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+                wordList = _ref1[_j];
+                _results1.push(recurse(wordList));
+              }
+              return _results1;
+            })());
+          } else {
+            _results.push(void 0);
+          }
+        }
+        return _results;
+      };
+      recurse(this.wordList);
+      return found;
+    };
+
     return Line;
 
   })(C.Word);
@@ -1170,8 +1211,13 @@
       lineIndex: Number
     },
     render: function() {
+      var className;
+      className = R.cx({
+        line: true,
+        isIndependent: !this.line.hasReferenceToThat()
+      });
       return R.div({
-        className: "line"
+        className: className
       }, R.div({
         className: "lineLeft"
       }, R.WordListView({
@@ -1826,16 +1872,18 @@
       application: C.Application
     },
     renderParameters: function() {
-      var result, wordList, _i, _len, _ref;
+      var i, result, wordList, _i, _len, _ref;
       result = [];
       _ref = this.application.params;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        wordList = _ref[_i];
+      for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
+        wordList = _ref[i];
         result.push(R.WordListView({
-          wordList: wordList
+          wordList: wordList,
+          key: "param" + i
         }));
         result.push(R.div({
-          className: "word comma"
+          className: "word comma",
+          key: "comma" + i
         }, ","));
       }
       result.pop();

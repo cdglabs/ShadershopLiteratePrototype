@@ -75,9 +75,9 @@ R.create "ApplicationView",
 
   renderParameters: ->
     result = []
-    for wordList in @application.params
-      result.push(R.WordListView {wordList})
-      result.push(R.div {className: "word comma"}, ",")
+    for wordList, i in @application.params
+      result.push(R.WordListView {wordList, key: "param#{i}"})
+      result.push(R.div {className: "word comma", key: "comma#{i}"}, ",")
     result.pop() # remove last comma
     return result
 
