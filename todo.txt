@@ -1,4 +1,3 @@
-Function
 up and down arrows
 enter from anywhere
 Parens

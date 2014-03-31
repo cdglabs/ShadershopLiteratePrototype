@@ -482,10 +482,28 @@
   };
 
 }).call(this);
+}, "model/builtInFns": function(exports, require, module) {(function() {
+  module.exports = {
+    sin: [0],
+    cos: [0],
+    abs: [0],
+    sqrt: [0],
+    pow: [1, 1],
+    floor: [0],
+    ceil: [0],
+    min: [0, 0],
+    max: [0, 0],
+    fract: [0]
+  };
+
+}).call(this);
 }, "model/model": function(exports, require, module) {(function() {
-  var __hasProp = {}.hasOwnProperty,
+  var builtInFns,
+    __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     __slice = [].slice;
+
+  builtInFns = require("./builtInFns");
 
   C.Word = (function() {
     function Word() {}
@@ -547,7 +565,7 @@
     }
 
     Placeholder.prototype.convert = function() {
-      var application, fnName, string;
+      var application, fnDefinition, fnName, params, string;
       string = this.string.trim();
       if (string === "that") {
         return new C.That();
@@ -563,10 +581,20 @@
       }
       if (/.+\($/.test(string)) {
         fnName = string.slice(0, -1);
-        application = new C.Application();
-        application.fn = new C.BuiltInFn(fnName);
-        application.params = [new C.WordList([new C.That])];
-        return application;
+        fnDefinition = builtInFns[fnName];
+        if (fnDefinition) {
+          params = fnDefinition.map(function(value) {
+            return new C.Param("" + value);
+          });
+          params[0] = new C.That;
+          params = params.map(function(word) {
+            return new C.WordList([word]);
+          });
+          application = new C.Application();
+          application.fn = new C.BuiltInFn(fnName);
+          application.params = params;
+          return application;
+        }
       }
       return this;
     };

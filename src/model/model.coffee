@@ -1,3 +1,8 @@
+builtInFns = require("./builtInFns")
+
+
+# =============================================================================
+
 class C.Word
   constructor: ->
   effectiveWord: ->
@@ -42,10 +47,19 @@ class C.Placeholder extends C.Word
 
     if /.+\($/.test(string)
       fnName = string.slice(0, -1)
-      application = new C.Application()
-      application.fn = new C.BuiltInFn(fnName)
-      application.params = [new C.WordList([new C.That])]
-      return application
+      fnDefinition = builtInFns[fnName]
+      if fnDefinition
+        params = fnDefinition.map (value) ->
+          new C.Param(""+value)
+        params[0] = new C.That
+        params = params.map (word) ->
+          new C.WordList([word])
+
+        application = new C.Application()
+        application.fn = new C.BuiltInFn(fnName)
+        application.params = params
+
+        return application
 
     return this
 

@@ -128,7 +128,8 @@ canvas {
 .builtInFn {
   color: #c33;
 }
-.paren {
+.paren,
+.comma {
   color: #c33;
   padding: 3px 0;
 }
