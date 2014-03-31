@@ -3,6 +3,8 @@ class C.Word
   effectiveWord: ->
     return this
 
+# =============================================================================
+
 class C.Param extends C.Word
   constructor: (@valueString = "0", @label = "") ->
   value: ->
@@ -10,12 +12,17 @@ class C.Param extends C.Word
     return 0 if _.isNaN(number) or !_.isFinite(number)
     return number
 
+# =============================================================================
 
 class C.Op extends C.Word
   constructor: (@opString = "+") ->
 
+# =============================================================================
+
 class C.That extends C.Word
   constructor: ->
+
+# =============================================================================
 
 class C.Placeholder extends C.Word
   constructor: (@string = "") ->
@@ -45,9 +52,13 @@ class C.Placeholder extends C.Word
   effectiveWord: ->
     return null
 
+# =============================================================================
+
 class C.Parens extends C.Word
   constructor: ->
     @wordList = new C.WordList()
+
+# =============================================================================
 
 class C.Application extends C.Word
   constructor: ->
@@ -63,10 +74,12 @@ class C.Application extends C.Word
     result.params = effectiveParams
     return result
 
+# =============================================================================
 
 class C.BuiltInFn
   constructor: (@fnName) ->
 
+# =============================================================================
 
 class C.WordList
   constructor: (@words = []) ->
@@ -97,16 +110,19 @@ class C.WordList
     return null if words.length == 0
     return new C.WordList(words)
 
+# =============================================================================
 
 class C.Line extends C.Word
   constructor: ->
     @wordList = new C.WordList()
 
+# =============================================================================
 
 class C.Program
   constructor: ->
     @lines = [new C.Line()]
 
+# =============================================================================
 
 class C.Editor
   constructor: ->
