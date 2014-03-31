@@ -23,14 +23,25 @@ class C.Placeholder extends C.Word
     string = @string.trim()
     if string == "that"
       return new C.That()
-    else if _.contains(["+", "-", "*", "/"], string)
+
+    if _.contains(["+", "-", "*", "/"], string)
       return new C.Op(string)
-    else if /[0-9]/.test(string)
+
+    if /[0-9]/.test(string)
       return new C.Param(string)
-    else if /:$/.test(string)
+
+    if /:$/.test(string)
       return new C.Param("", string.slice(0, -1))
-    else
-      return this
+
+    if /.+\($/.test(string)
+      fnName = string.slice(0, -1)
+      application = new C.Application()
+      application.fn = new C.BuiltInFn(fnName)
+      application.params = [new C.WordList([new C.That])]
+      return application
+
+    return this
+
   effectiveWord: ->
     return null
 
@@ -42,6 +53,9 @@ class C.Application extends C.Word
   constructor: ->
     @fn = null
     @params = [] # list of WordLists
+
+class C.BuiltInFn
+  constructor: (@fnName) ->
 
 
 class C.WordList

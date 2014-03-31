@@ -48,7 +48,7 @@ Element::getMarginRect = ->
 # Util functions
 # =============================================================================
 
-util.formatFloat = (value, precision = 6) ->
+util.formatFloat = (value, precision = 4) ->
   s = value.toFixed(precision)
   if s.indexOf(".") != -1
     s = s.replace(/\.?0*$/, "")

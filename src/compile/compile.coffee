@@ -38,3 +38,12 @@ compileWord = (word) ->
 
   else if word instanceof C.Line
     return C.id(word)
+
+  else if word instanceof C.Application
+    compiledParams = _.map word.params, (wordList) ->
+      compileWordList(wordList)
+    return word.fn.fnName + "(" + compiledParams.join(", ") + ")"
+
+  else
+    console.warn "Cannot compile:", word
+    return "that"

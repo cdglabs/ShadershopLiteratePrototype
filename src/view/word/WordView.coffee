@@ -13,6 +13,8 @@ R.create "WordView",
       R.OpView {op: @word}
     else if @word instanceof C.That
       R.ThatView {}
+    else if @word instanceof C.Application
+      R.ApplicationView {application: @word}
     else if @word instanceof C.Line
       R.LineOutputView {line: @word}
 
@@ -63,3 +65,27 @@ R.create "OpView",
 R.create "ThatView",
   render: ->
     R.div {className: "word that"}, "That"
+
+# =============================================================================
+
+R.create "ApplicationView",
+  propTypes: {
+    application: C.Application
+  }
+
+  renderParameters: ->
+    result = []
+    for wordList in @application.params
+      result.push(R.WordListView {wordList})
+      result.push(R.div {className: "word comma"}, ",")
+    result.pop() # remove last comma
+    return result
+
+  render: ->
+    # Assuming built in fn
+    R.div {className: "application"},
+      R.div {className: "word builtInFn"},
+        @application.fn.fnName
+      R.div {className: "word paren"}, "("
+      @renderParameters()
+      R.div {className: "word paren"}, ")"

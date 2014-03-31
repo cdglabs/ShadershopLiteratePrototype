@@ -54,6 +54,12 @@ canvas {
   padding-left: 12px;
   border-left: 1px solid #eee;
 }
+.wordList {
+  display: inline-block;
+}
+.application {
+  display: inline-block;
+}
 .word {
   display: inline-block;
   padding: 3px;
@@ -112,7 +118,14 @@ canvas {
   color: #999;
 }
 .op {
-  color: #000;
+  color: #c33;
+  padding: 3px 0;
+}
+.builtInFn {
+  color: #c33;
+}
+.paren {
+  color: #c33;
   padding: 3px 0;
 }
 .wordSpacer.activeTransclusionDrop:before {

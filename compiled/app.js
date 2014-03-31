@@ -215,6 +215,7 @@
   };
 
   compileWord = function(word) {
+    var compiledParams;
     if (word instanceof C.Op) {
       return word.opString;
     } else if (word instanceof C.That) {
@@ -223,12 +224,52 @@
       return "" + word.value();
     } else if (word instanceof C.Line) {
       return C.id(word);
+    } else if (word instanceof C.Application) {
+      compiledParams = _.map(word.params, function(wordList) {
+        return compileWordList(wordList);
+      });
+      return word.fn.fnName + "(" + compiledParams.join(", ") + ")";
+    } else {
+      console.warn("Cannot compile:", word);
+      return "that";
     }
   };
 
 }).call(this);
 }, "compile/evaluate": function(exports, require, module) {(function() {
+  var abs, ceil, cos, evaluate, floor, fract, max, min, pow, sin, sqrt;
 
+  module.exports = evaluate = function(jsString) {
+    try {
+      return eval(jsString);
+    } catch (_error) {
+      return console.warn("Unable to evaluate:", jsString);
+    }
+  };
+
+  sin = Math.sin;
+
+  cos = Math.cos;
+
+  abs = Math.abs;
+
+  sqrt = Math.sqrt;
+
+  pow = function(a, b) {
+    return Math.pow(Math.abs(a), b);
+  };
+
+  floor = Math.floor;
+
+  ceil = Math.ceil;
+
+  min = Math.min;
+
+  max = Math.max;
+
+  fract = function(a) {
+    return a - Math.floor(a);
+  };
 
 }).call(this);
 }, "config": function(exports, require, module) {(function() {
@@ -506,19 +547,28 @@
     }
 
     Placeholder.prototype.convert = function() {
-      var string;
+      var application, fnName, string;
       string = this.string.trim();
       if (string === "that") {
         return new C.That();
-      } else if (_.contains(["+", "-", "*", "/"], string)) {
-        return new C.Op(string);
-      } else if (/[0-9]/.test(string)) {
-        return new C.Param(string);
-      } else if (/:$/.test(string)) {
-        return new C.Param("", string.slice(0, -1));
-      } else {
-        return this;
       }
+      if (_.contains(["+", "-", "*", "/"], string)) {
+        return new C.Op(string);
+      }
+      if (/[0-9]/.test(string)) {
+        return new C.Param(string);
+      }
+      if (/:$/.test(string)) {
+        return new C.Param("", string.slice(0, -1));
+      }
+      if (/.+\($/.test(string)) {
+        fnName = string.slice(0, -1);
+        application = new C.Application();
+        application.fn = new C.BuiltInFn(fnName);
+        application.params = [new C.WordList([new C.That])];
+        return application;
+      }
+      return this;
     };
 
     Placeholder.prototype.effectiveWord = function() {
@@ -551,6 +601,15 @@
     return Application;
 
   })(C.Word);
+
+  C.BuiltInFn = (function() {
+    function BuiltInFn(fnName) {
+      this.fnName = fnName;
+    }
+
+    return BuiltInFn;
+
+  })();
 
   C.WordList = (function() {
     function WordList(words) {
@@ -822,7 +881,7 @@
   util.formatFloat = function(value, precision) {
     var s;
     if (precision == null) {
-      precision = 6;
+      precision = 4;
     }
     s = value.toFixed(precision);
     if (s.indexOf(".") !== -1) {
@@ -1140,9 +1199,11 @@
 
 }).call(this);
 }, "view/word/LineOutputView": function(exports, require, module) {(function() {
-  var compile;
+  var compile, evaluate;
 
   compile = require("../../compile/compile");
+
+  evaluate = require("../../compile/evaluate");
 
   R.create("LineOutputView", {
     propTypes: {
@@ -1155,11 +1216,7 @@
       id = C.id(this.line);
       compiled = compile(program);
       compiled += "\n" + id + ";";
-      try {
-        value = eval(compiled);
-      } catch (_error) {
-        console.warn("Could not eval", compiled);
-      }
+      value = evaluate(compiled);
       return util.formatFloat(value);
     },
     handleMouseDown: function(e) {
@@ -1690,6 +1747,10 @@
         });
       } else if (this.word instanceof C.That) {
         return R.ThatView({});
+      } else if (this.word instanceof C.Application) {
+        return R.ApplicationView({
+          application: this.word
+        });
       } else if (this.word instanceof C.Line) {
         return R.LineOutputView({
           line: this.word
@@ -1741,6 +1802,39 @@
       return R.div({
         className: "word that"
       }, "That");
+    }
+  });
+
+  R.create("ApplicationView", {
+    propTypes: {
+      application: C.Application
+    },
+    renderParameters: function() {
+      var result, wordList, _i, _len, _ref;
+      result = [];
+      _ref = this.application.params;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        wordList = _ref[_i];
+        result.push(R.WordListView({
+          wordList: wordList
+        }));
+        result.push(R.div({
+          className: "word comma"
+        }, ","));
+      }
+      result.pop();
+      return result;
+    },
+    render: function() {
+      return R.div({
+        className: "application"
+      }, R.div({
+        className: "word builtInFn"
+      }, this.application.fn.fnName), R.div({
+        className: "word paren"
+      }, "("), this.renderParameters(), R.div({
+        className: "word paren"
+      }, ")"));
     }
   });
 

@@ -1,7 +1,7 @@
 module.exports = evaluate = (jsString) ->
   try
     return eval(jsString)
-  catch (e)
+  catch
     console.warn "Unable to evaluate:", jsString
 
 

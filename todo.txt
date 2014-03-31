@@ -1,7 +1,7 @@
-Parens
 Function
 up and down arrows
 enter from anywhere
+Parens
 
 
 graph
@@ -19,3 +19,9 @@ cleanup
   Can PlaceholderView and WordSpacerView be unified?
   How can enter functionality be added to ParamValueView?
   rename C. to M., R. to V.?
+  - shouldn't become subtract if it was followed by an op (e.g. that * -2)
+
+
+Store history
+  Undo
+  Tagging snapshots
