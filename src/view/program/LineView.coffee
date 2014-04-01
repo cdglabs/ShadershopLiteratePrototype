@@ -10,7 +10,7 @@ R.create "LineView",
       isIndependent: !@line.hasReferenceToThat()
     }
     R.div {className: className},
-      R.div {className: "lineLeft"},
+      R.div {className: "lineCell"},
         R.WordListView {wordList: @line.wordList}
-      R.div {className: "lineRight"},
+      R.div {className: "lineCell"},
         R.LineOutputView {line: @line}

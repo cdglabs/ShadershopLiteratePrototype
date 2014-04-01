@@ -4,6 +4,11 @@ lerp = (x, dMin, dMax, rMin, rMax) ->
   return ratio * (rMax - rMin) + rMin
 
 
+clear = (ctx) ->
+  canvas = ctx.canvas
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+
 drawCartesian = (ctx, bounds, fn) ->
   xMin = bounds.domain.min
   xMax = bounds.domain.max
@@ -45,4 +50,4 @@ drawCartesian = (ctx, bounds, fn) ->
 
 
 
-util.canvas = {lerp, drawCartesian}
+util.canvas = {lerp, clear, drawCartesian}

@@ -59,6 +59,14 @@ canvas {
 .line:hover {
   background-color: #f8fbff;
 }
+.lineCell {
+  display: table-cell;
+  padding: 4px 12px 0 12px;
+  border-top: 1px solid transparent;
+}
+.line.isIndependent .lineCell {
+  border-top: 1px solid #aaa;
+}
 .lineLeft,
 .lineRight {
   display: table-cell;
@@ -138,15 +146,15 @@ canvas {
   color: #999;
 }
 .op {
-  color: #c33;
+  color: #333;
   padding: 3px 0;
 }
 .builtInFn {
-  color: #c33;
+  color: #333;
 }
 .paren,
 .comma {
-  color: #c33;
+  color: #333;
   padding: 3px 0;
 }
 .wordSpacer.activeTransclusionDrop:before {

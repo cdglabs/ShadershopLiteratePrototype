@@ -83,6 +83,16 @@ canvas
   &:hover
     background-color: tint(#def, 80%)
 
+.lineCell
+  display table-cell
+  padding lineSpacing 12px 0 12px
+  border-top 1px solid transparent
+
+.line.isIndependent
+  .lineCell
+    border-top 1px solid #aaa
+
+
 .lineLeft, .lineRight
   display table-cell
   padding-top lineSpacing
@@ -164,14 +174,14 @@ canvas
   color #999
 
 .op
-  color #c33
+  color #333
   padding wordPadding 0
 
 .builtInFn
-  color #c33
+  color #333
 
 .paren, .comma
-  color #c33
+  color #333
   padding wordPadding 0
 
 

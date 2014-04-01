@@ -846,12 +846,18 @@
 
 }).call(this);
 }, "util/canvas": function(exports, require, module) {(function() {
-  var drawCartesian, lerp;
+  var clear, drawCartesian, lerp;
 
   lerp = function(x, dMin, dMax, rMin, rMax) {
     var ratio;
     ratio = (x - dMin) / (dMax - dMin);
     return ratio * (rMax - rMin) + rMin;
+  };
+
+  clear = function(ctx) {
+    var canvas;
+    canvas = ctx.canvas;
+    return ctx.clearRect(0, 0, canvas.width, canvas.height);
   };
 
   drawCartesian = function(ctx, bounds, fn) {
@@ -894,6 +900,7 @@
 
   util.canvas = {
     lerp: lerp,
+    clear: clear,
     drawCartesian: drawCartesian
   };
 
@@ -1406,23 +1413,38 @@
 
 }).call(this);
 }, "view/plot/PlotView": function(exports, require, module) {(function() {
+  var Compiler, evaluate;
+
+  Compiler = require("../../compile/Compiler");
+
+  evaluate = require("../../compile/evaluate");
+
   R.create("PlotView", {
     propTypes: {
       plot: C.Plot
     },
     drawFn: function(canvas) {
-      var ctx;
+      var compiled, compiler, ctx, f, program;
       ctx = canvas.getContext("2d");
-      util.canvas.drawCartesian(ctx, this.plot.bounds, function(x) {
-        return Math.sin(x);
-      });
+      program = this.lookup("program");
+      compiler = new Compiler();
+      compiler.substitute(this.plot.x, "x");
+      compiled = compiler.compile(program);
+      compiled = "(function (x) {\n  " + compiled + "\n  return that;\n})";
+      f = evaluate(compiled);
+      util.canvas.clear(ctx);
+      util.canvas.drawCartesian(ctx, this.plot.bounds, f);
       ctx.strokeStyle = "#f00";
       ctx.lineWidth = 1;
       return ctx.stroke();
     },
+    componentDidUpdate: function() {
+      return this.refs.canvas.draw();
+    },
     render: function() {
       return R.div({}, R.CanvasView({
-        drawFn: this.drawFn
+        drawFn: this.drawFn,
+        ref: "canvas"
       }), R.div({
         style: {
           position: "absolute",
@@ -1469,11 +1491,11 @@
       return R.div({
         className: className
       }, R.div({
-        className: "lineLeft"
+        className: "lineCell"
       }, R.WordListView({
         wordList: this.line.wordList
       })), R.div({
-        className: "lineRight"
+        className: "lineCell"
       }, R.LineOutputView({
         line: this.line
       })));
