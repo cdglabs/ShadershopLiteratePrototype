@@ -4,12 +4,15 @@ evaluate = require("../../compile/evaluate")
 R.create "PlotView",
   propTypes: {
     plot: C.Plot
+    line: C.Line
   }
 
   drawFn: (canvas) ->
     ctx = canvas.getContext("2d")
 
     program = @lookup("program")
+    lineId = C.id(@line)
+
     compiler = new Compiler()
     compiler.substitute(@plot.x, "x")
 
@@ -18,7 +21,7 @@ R.create "PlotView",
     compiled = """
     (function (x) {
       #{compiled}
-      return that;
+      return #{lineId};
     })
     """
 

@@ -4,6 +4,9 @@ R.create "LineView",
     lineIndex: Number
   }
 
+  plots: ->
+    @lookup("program").plots
+
   render: ->
     className = R.cx {
       line: true
@@ -14,3 +17,7 @@ R.create "LineView",
         R.WordListView {wordList: @line.wordList}
       R.div {className: "lineCell"},
         R.LineOutputView {line: @line}
+      @plots().map (plot, index) =>
+        R.div {className: "lineCell", key: index},
+          R.div {style: {position: "relative", width: "100", height: "100"}},
+            R.PlotView {plot: plot, line: @line}

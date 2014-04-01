@@ -13,7 +13,7 @@ R.create "ProgramView",
   render: ->
     R.div {className: "program"},
       R.div {className: "mainPlot"},
-        R.PlotView {plot: @program.plots[0]}
+        R.PlotView {plot: @program.plots[0], line: _.last(@program.lines)}
       R.div {className: "programTable"},
         @program.lines.map (line, lineIndex) =>
           R.LineView {line, lineIndex, key: lineIndex}

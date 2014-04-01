@@ -1421,16 +1421,18 @@
 
   R.create("PlotView", {
     propTypes: {
-      plot: C.Plot
+      plot: C.Plot,
+      line: C.Line
     },
     drawFn: function(canvas) {
-      var compiled, compiler, ctx, f, program;
+      var compiled, compiler, ctx, f, lineId, program;
       ctx = canvas.getContext("2d");
       program = this.lookup("program");
+      lineId = C.id(this.line);
       compiler = new Compiler();
       compiler.substitute(this.plot.x, "x");
       compiled = compiler.compile(program);
-      compiled = "(function (x) {\n  " + compiled + "\n  return that;\n})";
+      compiled = "(function (x) {\n  " + compiled + "\n  return " + lineId + ";\n})";
       f = evaluate(compiled);
       util.canvas.clear(ctx);
       util.canvas.drawCartesian(ctx, this.plot.bounds, f);
@@ -1482,6 +1484,9 @@
       line: C.Line,
       lineIndex: Number
     },
+    plots: function() {
+      return this.lookup("program").plots;
+    },
     render: function() {
       var className;
       className = R.cx({
@@ -1498,7 +1503,23 @@
         className: "lineCell"
       }, R.LineOutputView({
         line: this.line
-      })));
+      })), this.plots().map((function(_this) {
+        return function(plot, index) {
+          return R.div({
+            className: "lineCell",
+            key: index
+          }, R.div({
+            style: {
+              position: "relative",
+              width: "100",
+              height: "100"
+            }
+          }, R.PlotView({
+            plot: plot,
+            line: _this.line
+          })));
+        };
+      })(this)));
     }
   });
 
@@ -1522,7 +1543,8 @@
       }, R.div({
         className: "mainPlot"
       }, R.PlotView({
-        plot: this.program.plots[0]
+        plot: this.program.plots[0],
+        line: _.last(this.program.lines)
       })), R.div({
         className: "programTable"
       }, this.program.lines.map((function(_this) {
