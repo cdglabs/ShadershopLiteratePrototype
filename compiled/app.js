@@ -179,61 +179,91 @@
   })());
 
 }).call(this);
-}, "compile/compile": function(exports, require, module) {(function() {
-  var compile, compileLine, compileWord, compileWordList;
+}, "compile/Compiler": function(exports, require, module) {(function() {
+  var Compiler;
 
-  module.exports = compile = function(program) {
-    var line, result, _i, _len, _ref;
-    result = [];
-    result.push("var that = 0;");
-    _ref = program.lines;
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      line = _ref[_i];
-      result.push(compileLine(line));
+  module.exports = Compiler = (function() {
+    function Compiler() {
+      this.substitutions = {};
     }
-    return result.join("\n");
-  };
 
-  compileLine = function(line) {
-    var lineId, s, wordList;
-    lineId = C.id(line);
-    s = "var " + lineId + " = that = ";
-    wordList = line.wordList.effectiveWordList();
-    if (!wordList) {
-      s += "that";
-    } else {
-      s += compileWordList(wordList);
-    }
-    s += ";";
-    return s;
-  };
+    Compiler.prototype.substitute = function(word, value) {
+      var id;
+      if (!word) {
+        return;
+      }
+      id = C.id(word);
+      return this.substitutions[id] = value;
+    };
 
-  compileWordList = function(wordList) {
-    var result;
-    result = _.map(wordList.words, compileWord);
-    return result.join(" ");
-  };
+    Compiler.prototype.compile = function(program) {
+      var line, result, _i, _len, _ref;
+      result = [];
+      result.push("var that = 0;");
+      _ref = program.lines;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        line = _ref[_i];
+        result.push(this.compileLine(line));
+      }
+      return result.join("\n");
+    };
 
-  compileWord = function(word) {
-    var compiledParams;
-    if (word instanceof C.Op) {
-      return word.opString;
-    } else if (word instanceof C.That) {
-      return "that";
-    } else if (word instanceof C.Param) {
-      return "" + word.value();
-    } else if (word instanceof C.Line) {
-      return C.id(word);
-    } else if (word instanceof C.Application) {
-      compiledParams = _.map(word.params, function(wordList) {
-        return compileWordList(wordList);
-      });
-      return word.fn.fnName + "(" + compiledParams.join(", ") + ")";
-    } else {
-      console.warn("Cannot compile:", word);
-      return "that";
-    }
-  };
+    Compiler.prototype.compileLine = function(line) {
+      var lineId, s, substitution, wordList;
+      lineId = C.id(line);
+      s = "var " + lineId + " = that = ";
+      if (substitution = this.substitutions[lineId]) {
+        s += substitution;
+      } else {
+        wordList = line.wordList.effectiveWordList();
+        if (!wordList) {
+          s += "that";
+        } else {
+          s += this.compileWordList(wordList);
+        }
+      }
+      s += ";";
+      return s;
+    };
+
+    Compiler.prototype.compileWordList = function(wordList) {
+      var result;
+      result = _.map(wordList.words, (function(_this) {
+        return function(word) {
+          return _this.compileWord(word);
+        };
+      })(this));
+      return result.join(" ");
+    };
+
+    Compiler.prototype.compileWord = function(word) {
+      var compiledParams, id, _ref, _ref1;
+      if (word instanceof C.Op) {
+        return word.opString;
+      } else if (word instanceof C.That) {
+        return "that";
+      } else if (word instanceof C.Param) {
+        id = C.id(word);
+        return (_ref = this.substitutions[id]) != null ? _ref : "" + word.value();
+      } else if (word instanceof C.Line) {
+        id = C.id(word);
+        return (_ref1 = this.substitutions[id]) != null ? _ref1 : id;
+      } else if (word instanceof C.Application) {
+        compiledParams = _.map(word.params, (function(_this) {
+          return function(wordList) {
+            return _this.compileWordList(wordList);
+          };
+        })(this));
+        return word.fn.fnName + "(" + compiledParams.join(", ") + ")";
+      } else {
+        console.warn("Cannot compile:", word);
+        return "that";
+      }
+    };
+
+    return Compiler;
+
+  })();
 
 }).call(this);
 }, "compile/evaluate": function(exports, require, module) {(function() {
@@ -1487,9 +1517,9 @@
 
 }).call(this);
 }, "view/word/LineOutputView": function(exports, require, module) {(function() {
-  var compile, evaluate;
+  var Compiler, evaluate;
 
-  compile = require("../../compile/compile");
+  Compiler = require("../../compile/Compiler");
 
   evaluate = require("../../compile/evaluate");
 
@@ -1499,10 +1529,11 @@
     },
     mixins: [R.StartTranscludeMixin],
     evaluate: function() {
-      var compiled, id, program, value;
+      var compiled, compiler, id, program, value;
       program = this.lookup("program");
       id = C.id(this.line);
-      compiled = compile(program);
+      compiler = new Compiler();
+      compiled = compiler.compile(program);
       compiled += "\n" + id + ";";
       value = evaluate(compiled);
       return util.formatFloat(value);

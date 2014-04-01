@@ -1,4 +1,4 @@
-compile = require("../../compile/compile")
+Compiler = require("../../compile/Compiler")
 evaluate = require("../../compile/evaluate")
 
 R.create "LineOutputView",
@@ -11,7 +11,10 @@ R.create "LineOutputView",
   evaluate: ->
     program = @lookup("program")
     id = C.id(@line)
-    compiled = compile(program)
+
+    compiler = new Compiler()
+    compiled = compiler.compile(program)
+
     compiled += "\n#{id};"
     value = evaluate(compiled)
     return util.formatFloat(value)

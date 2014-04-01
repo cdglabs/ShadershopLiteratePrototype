@@ -1,3 +1,15 @@
+Need to do better compile organization
+  An intermediate representation where all That's are resolved
+    Useful?
+  Given a line, know what other lines and params it is dependent on
+
+  Plotting
+    ability to substitute for any line or param a "variable"
+    Dealing with spread params
+
+
+
+
 up and down arrows
 enter from anywhere
 fix autofocus
@@ -20,6 +32,9 @@ cleanup
   How can enter functionality be added to ParamValueView?
   rename C. to M., R. to V.?
   - shouldn't become subtract if it was followed by an op (e.g. that * -2)
+  wordIndex on WordView is awkward wrt modularity
+    could make WordSlotView {word, wordIndex} as WordView {word} parent
+
 
 
 Store history
