@@ -12,5 +12,8 @@ R.create "ProgramView",
 
   render: ->
     R.div {className: "program"},
-      @program.lines.map (line, lineIndex) =>
-        R.LineView {line, lineIndex, key: lineIndex}
+      R.div {className: "mainPlot"},
+        R.PlotView {plot: @program.plots[0]}
+      R.div {className: "programTable"},
+        @program.lines.map (line, lineIndex) =>
+          R.LineView {line, lineIndex, key: lineIndex}

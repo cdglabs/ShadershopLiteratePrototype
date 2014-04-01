@@ -4,6 +4,11 @@ R.create "WordView",
     wordIndex: Number
   }
 
+  getDefaultProps: ->
+    {
+      wordIndex: -1
+    }
+
   render: ->
     if @word instanceof C.Placeholder
       R.PlaceholderView {placeholder: @word}

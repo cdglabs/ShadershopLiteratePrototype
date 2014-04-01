@@ -4,11 +4,13 @@ lerp = (x, dMin, dMax, rMin, rMax) ->
   return ratio * (rMax - rMin) + rMin
 
 
-drawGraph = (ctx, bounds, fn) ->
-  {xMin, xMax, yMin, yMax} = bounds
+drawCartesian = (ctx, bounds, fn) ->
+  xMin = bounds.domain.min
+  xMax = bounds.domain.max
+  yMin = bounds.range.min
+  yMax = bounds.range.max
 
   canvas = ctx.canvas
-
   cxMin = 0
   cxMax = canvas.width
   cyMin = canvas.height
@@ -43,4 +45,4 @@ drawGraph = (ctx, bounds, fn) ->
 
 
 
-util.canvas = {lerp, drawGraph}
+util.canvas = {lerp, drawCartesian}

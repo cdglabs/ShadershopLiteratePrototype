@@ -390,7 +390,7 @@
         if (force == null) {
           force = false;
         }
-        if (!force && object.__className) {
+        if (!force && (object != null ? object.__className : void 0)) {
           id = C.id(object);
           if (!objects[id]) {
             objects[id] = serialize(object, true);
@@ -770,11 +770,40 @@
   C.Program = (function() {
     function Program() {
       this.lines = [new C.Line()];
+      this.plots = [new C.CartesianPlot()];
     }
 
     return Program;
 
   })();
+
+  C.Plot = (function() {
+    function Plot() {}
+
+    return Plot;
+
+  })();
+
+  C.CartesianPlot = (function(_super) {
+    __extends(CartesianPlot, _super);
+
+    function CartesianPlot() {
+      this.x = null;
+      this.bounds = {
+        domain: {
+          min: -10,
+          max: 10
+        },
+        range: {
+          min: -10,
+          max: 10
+        }
+      };
+    }
+
+    return CartesianPlot;
+
+  })(C.Plot);
 
   C.Editor = (function() {
     function Editor() {
@@ -787,7 +816,7 @@
 
 }).call(this);
 }, "util/canvas": function(exports, require, module) {(function() {
-  var drawGraph, lerp;
+  var drawCartesian, lerp;
 
   lerp = function(x, dMin, dMax, rMin, rMax) {
     var ratio;
@@ -795,9 +824,12 @@
     return ratio * (rMax - rMin) + rMin;
   };
 
-  drawGraph = function(ctx, bounds, fn) {
+  drawCartesian = function(ctx, bounds, fn) {
     var canvas, cx, cxMax, cxMin, cy, cyMax, cyMin, dCy, i, lastCx, lastCy, lastSample, x, xMax, xMin, y, yMax, yMin, _i;
-    xMin = bounds.xMin, xMax = bounds.xMax, yMin = bounds.yMin, yMax = bounds.yMax;
+    xMin = bounds.domain.min;
+    xMax = bounds.domain.max;
+    yMin = bounds.range.min;
+    yMax = bounds.range.max;
     canvas = ctx.canvas;
     cxMin = 0;
     cxMax = canvas.width;
@@ -832,7 +864,7 @@
 
   util.canvas = {
     lerp: lerp,
-    drawGraph: drawGraph
+    drawCartesian: drawCartesian
   };
 
 }).call(this);
@@ -1204,6 +1236,10 @@
 
   require("./program/LineView");
 
+  require("./plot/PlotView");
+
+  require("./plot/CanvasView");
+
   require("./word/TextFieldView");
 
   require("./word/LineOutputView");
@@ -1299,6 +1335,95 @@
   };
 
 }).call(this);
+}, "view/plot/CanvasView": function(exports, require, module) {(function() {
+  R.create("CanvasView", {
+    propTypes: {
+      drawFn: Function
+    },
+    draw: function() {
+      var canvas;
+      canvas = this.getDOMNode();
+      return this.drawFn(canvas);
+    },
+    sizeCanvas: function() {
+      var canvas, rect;
+      canvas = this.getDOMNode();
+      rect = canvas.getBoundingClientRect();
+      if (canvas.width !== rect.width || canvas.height !== rect.height) {
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        return true;
+      }
+      return false;
+    },
+    handleResize: function() {
+      if (this.sizeCanvas()) {
+        return this.draw();
+      }
+    },
+    componentDidMount: function() {
+      this.sizeCanvas();
+      this.draw();
+      return window.addEventListener("resize", this.handleResize);
+    },
+    componentWillUnmount: function() {
+      return window.removeEventListener("resize", this.handleResize);
+    },
+    render: function() {
+      return R.canvas({});
+    }
+  });
+
+}).call(this);
+}, "view/plot/PlotView": function(exports, require, module) {(function() {
+  R.create("PlotView", {
+    propTypes: {
+      plot: C.Plot
+    },
+    drawFn: function(canvas) {
+      var ctx;
+      ctx = canvas.getContext("2d");
+      util.canvas.drawCartesian(ctx, this.plot.bounds, function(x) {
+        return Math.sin(x);
+      });
+      ctx.strokeStyle = "#f00";
+      ctx.lineWidth = 1;
+      return ctx.stroke();
+    },
+    render: function() {
+      return R.div({}, R.CanvasView({
+        drawFn: this.drawFn
+      }), R.div({
+        style: {
+          position: "absolute",
+          bottom: 0,
+          left: 0
+        }
+      }, R.XParamView({
+        plot: this.plot
+      })));
+    }
+  });
+
+  R.create("XParamView", {
+    propTypes: {
+      plot: C.Plot
+    },
+    handleTransclusionDrop: function(word) {
+      if (word instanceof C.Param) {
+        return this.plot.x = word;
+      }
+    },
+    render: function() {
+      return R.div({}, this.plot.x ? R.WordView({
+        word: this.plot.x
+      }) : R.div({
+        className: "slot"
+      }));
+    }
+  });
+
+}).call(this);
 }, "view/program/LineView": function(exports, require, module) {(function() {
   R.create("LineView", {
     propTypes: {
@@ -1342,6 +1467,12 @@
     render: function() {
       return R.div({
         className: "program"
+      }, R.div({
+        className: "mainPlot"
+      }, R.PlotView({
+        plot: this.program.plots[0]
+      })), R.div({
+        className: "programTable"
       }, this.program.lines.map((function(_this) {
         return function(line, lineIndex) {
           return R.LineView({
@@ -1350,7 +1481,7 @@
             key: lineIndex
           });
         };
-      })(this)));
+      })(this))));
     }
   });
 
@@ -1909,6 +2040,11 @@
     propTypes: {
       word: C.Word,
       wordIndex: Number
+    },
+    getDefaultProps: function() {
+      return {
+        wordIndex: -1
+      };
     },
     render: function() {
       if (this.word instanceof C.Placeholder) {

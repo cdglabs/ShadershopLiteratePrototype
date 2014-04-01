@@ -108,6 +108,9 @@ require("./editor/DraggingView")
 require("./program/ProgramView")
 require("./program/LineView")
 
+require("./plot/PlotView")
+require("./plot/CanvasView")
+
 require("./word/TextFieldView")
 require("./word/LineOutputView")
 require("./word/WordListView")

@@ -161,6 +161,20 @@ class C.Line extends C.Word
 class C.Program
   constructor: ->
     @lines = [new C.Line()]
+    @plots = [new C.CartesianPlot()]
+
+# =============================================================================
+
+class C.Plot
+  constructor: ->
+
+class C.CartesianPlot extends C.Plot
+  constructor: ->
+    @x = null
+    @bounds = {
+      domain: {min: -10, max: 10}
+      range: {min: -10, max: 10}
+    }
 
 # =============================================================================
 

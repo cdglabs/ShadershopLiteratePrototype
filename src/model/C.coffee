@@ -37,7 +37,7 @@ C.id = (obj) ->
 C.deconstruct = (object) ->
   objects = {} # id : object
   serialize = (object, force=false) =>
-    if !force and object.__className
+    if !force and object?.__className
       id = C.id(object)
       if !objects[id]
         objects[id] = serialize(object, true)
