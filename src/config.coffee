@@ -1,6 +1,6 @@
 window.config = config = {
 
-  resolution: 0.5
+  resolution: 0.25
 
 
   cursor: {

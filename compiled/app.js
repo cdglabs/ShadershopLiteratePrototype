@@ -306,7 +306,7 @@
   var config;
 
   window.config = config = {
-    resolution: 0.5,
+    resolution: 0.25,
     cursor: {
       text: "text",
       grab: "-webkit-grab",
@@ -803,6 +803,78 @@
       this.plots = [new C.CartesianPlot()];
     }
 
+    Program.prototype.getDependencies = function(line) {
+      var dependencies, index, recurse, that;
+      index = this.lines.indexOf(line);
+      that = this.lines[index - 1];
+      if (!line.wordList.effectiveWordList()) {
+        return [that];
+      }
+      dependencies = [];
+      recurse = (function(_this) {
+        return function(wordList) {
+          var word, _i, _len, _ref, _results;
+          wordList = wordList.effectiveWordList();
+          if (!wordList) {
+            return;
+          }
+          _ref = wordList.words;
+          _results = [];
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            word = _ref[_i];
+            if (word instanceof C.That) {
+              _results.push(dependencies.push(that));
+            } else if (word instanceof C.Param || word instanceof C.Line) {
+              _results.push(dependencies.push(word));
+            } else if (word instanceof C.Application) {
+              word = word.effectiveWord();
+              _results.push((function() {
+                var _j, _len1, _ref1, _results1;
+                _ref1 = word.params;
+                _results1 = [];
+                for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+                  wordList = _ref1[_j];
+                  _results1.push(recurse(wordList));
+                }
+                return _results1;
+              })());
+            } else {
+              _results.push(void 0);
+            }
+          }
+          return _results;
+        };
+      })(this);
+      recurse(line.wordList);
+      dependencies = _.unique(dependencies);
+      return dependencies;
+    };
+
+    Program.prototype.getDeepDependencies = function(line) {
+      var deepDependencies, recurse;
+      deepDependencies = [];
+      recurse = (function(_this) {
+        return function(line) {
+          var dependencies, word, _i, _len, _results;
+          dependencies = _this.getDependencies(line);
+          deepDependencies = deepDependencies.concat(dependencies);
+          _results = [];
+          for (_i = 0, _len = dependencies.length; _i < _len; _i++) {
+            word = dependencies[_i];
+            if (word instanceof C.Line) {
+              _results.push(recurse(word));
+            } else {
+              _results.push(void 0);
+            }
+          }
+          return _results;
+        };
+      })(this);
+      recurse(line);
+      deepDependencies = _.unique(deepDependencies);
+      return deepDependencies;
+    };
+
     return Program;
 
   })();
@@ -846,12 +918,23 @@
 
 }).call(this);
 }, "util/canvas": function(exports, require, module) {(function() {
-  var clear, drawCartesian, lerp;
+  var canvasBounds, clear, drawCartesian, drawVertical, lerp;
 
   lerp = function(x, dMin, dMax, rMin, rMax) {
     var ratio;
     ratio = (x - dMin) / (dMax - dMin);
     return ratio * (rMax - rMin) + rMin;
+  };
+
+  canvasBounds = function(ctx) {
+    var canvas;
+    canvas = ctx.canvas;
+    return {
+      cxMin: 0,
+      cxMax: canvas.width,
+      cyMin: canvas.height,
+      cyMax: 0
+    };
   };
 
   clear = function(ctx) {
@@ -860,17 +943,14 @@
     return ctx.clearRect(0, 0, canvas.width, canvas.height);
   };
 
-  drawCartesian = function(ctx, bounds, fn) {
-    var canvas, cx, cxMax, cxMin, cy, cyMax, cyMin, dCy, i, lastCx, lastCy, lastSample, x, xMax, xMin, y, yMax, yMin, _i;
-    xMin = bounds.domain.min;
-    xMax = bounds.domain.max;
-    yMin = bounds.range.min;
-    yMax = bounds.range.max;
-    canvas = ctx.canvas;
-    cxMin = 0;
-    cxMax = canvas.width;
-    cyMin = canvas.height;
-    cyMax = 0;
+  drawCartesian = function(ctx, opts) {
+    var cx, cxMax, cxMin, cy, cyMax, cyMin, dCy, fn, i, lastCx, lastCy, lastSample, x, xMax, xMin, y, yMax, yMin, _i, _ref;
+    xMin = opts.xMin;
+    xMax = opts.xMax;
+    yMin = opts.yMin;
+    yMax = opts.yMax;
+    fn = opts.fn;
+    _ref = canvasBounds(ctx), cxMin = _ref.cxMin, cxMax = _ref.cxMax, cyMin = _ref.cyMin, cyMax = _ref.cyMax;
     ctx.beginPath();
     lastSample = cxMax / config.resolution;
     lastCx = null;
@@ -898,10 +978,23 @@
     return ctx.lineTo(cx, cy);
   };
 
+  drawVertical = function(ctx, opts) {
+    var cx, cxMax, cxMin, cyMax, cyMin, x, xMax, xMin, _ref;
+    xMin = opts.xMin;
+    xMax = opts.xMax;
+    x = opts.x;
+    _ref = canvasBounds(ctx), cxMin = _ref.cxMin, cxMax = _ref.cxMax, cyMin = _ref.cyMin, cyMax = _ref.cyMax;
+    ctx.beginPath();
+    cx = lerp(x, xMin, xMax, cxMin, cxMax);
+    ctx.moveTo(cx, cyMin);
+    return ctx.lineTo(cx, cyMax);
+  };
+
   util.canvas = {
     lerp: lerp,
     clear: clear,
-    drawCartesian: drawCartesian
+    drawCartesian: drawCartesian,
+    drawVertical: drawVertical
   };
 
 }).call(this);
@@ -1425,7 +1518,7 @@
       line: C.Line
     },
     drawFn: function(canvas) {
-      var compiled, compiler, ctx, f, lineId, program;
+      var compiled, compiler, ctx, f, lineId, program, value;
       ctx = canvas.getContext("2d");
       program = this.lookup("program");
       lineId = C.id(this.line);
@@ -1435,8 +1528,30 @@
       compiled = "(function (x) {\n  " + compiled + "\n  return " + lineId + ";\n})";
       f = evaluate(compiled);
       util.canvas.clear(ctx);
-      util.canvas.drawCartesian(ctx, this.plot.bounds, f);
+      util.canvas.drawCartesian(ctx, {
+        xMin: this.plot.bounds.domain.min,
+        xMax: this.plot.bounds.domain.max,
+        yMin: this.plot.bounds.range.min,
+        yMax: this.plot.bounds.range.max,
+        fn: f
+      });
       ctx.strokeStyle = "#f00";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      if (this.plot.x instanceof C.Param) {
+        value = this.plot.x.value();
+      } else {
+        compiler = new Compiler();
+        compiled = compiler.compile(program);
+        compiled += "\n" + (C.id(this.plot.x)) + ";";
+        value = evaluate(compiled);
+      }
+      util.canvas.drawVertical(ctx, {
+        xMin: this.plot.bounds.domain.min,
+        xMax: this.plot.bounds.domain.max,
+        x: value
+      });
+      ctx.strokeStyle = "#090";
       ctx.lineWidth = 1;
       return ctx.stroke();
     },
@@ -1464,9 +1579,7 @@
       plot: C.Plot
     },
     handleTransclusionDrop: function(word) {
-      if (word instanceof C.Param) {
-        return this.plot.x = word;
-      }
+      return this.plot.x = word;
     },
     render: function() {
       return R.div({}, this.plot.x ? R.WordView({
@@ -1486,6 +1599,11 @@
     },
     plots: function() {
       return this.lookup("program").plots;
+    },
+    shouldRenderPlot: function(plot) {
+      var deepDependencies;
+      deepDependencies = this.lookup("program").getDeepDependencies(this.line);
+      return _.contains(deepDependencies, plot.x);
     },
     render: function() {
       var className;
@@ -1508,16 +1626,12 @@
           return R.div({
             className: "lineCell",
             key: index
-          }, R.div({
-            style: {
-              position: "relative",
-              width: "100",
-              height: "100"
-            }
+          }, _this.shouldRenderPlot(plot) ? R.div({
+            className: "plotThumbnail"
           }, R.PlotView({
             plot: plot,
             line: _this.line
-          })));
+          })) : void 0);
         };
       })(this)));
     }
@@ -1537,6 +1651,19 @@
     removeLineAt: function(index) {
       return this.program.lines.splice(index, 1);
     },
+    lastLineForPlot: function(plot) {
+      var deepDependencies, lastLine, line, _i, _len, _ref;
+      lastLine = null;
+      _ref = this.program.lines;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        line = _ref[_i];
+        deepDependencies = this.program.getDeepDependencies(line);
+        if (_.contains(deepDependencies, plot.x)) {
+          lastLine = line;
+        }
+      }
+      return lastLine;
+    },
     render: function() {
       return R.div({
         className: "program"
@@ -1544,7 +1671,7 @@
         className: "mainPlot"
       }, R.PlotView({
         plot: this.program.plots[0],
-        line: _.last(this.program.lines)
+        line: this.lastLineForPlot(this.program.plots[0])
       })), R.div({
         className: "programTable"
       }, this.program.lines.map((function(_this) {

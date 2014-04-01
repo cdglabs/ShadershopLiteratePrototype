@@ -28,9 +28,33 @@ R.create "PlotView",
     f = evaluate(compiled)
 
     util.canvas.clear(ctx)
-    util.canvas.drawCartesian(ctx, @plot.bounds, f)
+
+    util.canvas.drawCartesian ctx,
+      xMin: @plot.bounds.domain.min
+      xMax: @plot.bounds.domain.max
+      yMin: @plot.bounds.range.min
+      yMax: @plot.bounds.range.max
+      fn: f
 
     ctx.strokeStyle = "#f00"
+    ctx.lineWidth = 1
+    ctx.stroke()
+
+    if @plot.x instanceof C.Param
+      value = @plot.x.value()
+    else
+      compiler = new Compiler()
+      compiled = compiler.compile(program)
+
+      compiled += "\n#{C.id(@plot.x)};"
+      value = evaluate(compiled)
+
+    util.canvas.drawVertical ctx,
+      xMin: @plot.bounds.domain.min
+      xMax: @plot.bounds.domain.max
+      x: value
+
+    ctx.strokeStyle = "#090"
     ctx.lineWidth = 1
     ctx.stroke()
 
@@ -51,8 +75,7 @@ R.create "XParamView",
   }
 
   handleTransclusionDrop: (word) ->
-    if word instanceof C.Param
-      @plot.x = word
+    @plot.x = word
 
   render: ->
     R.div {},

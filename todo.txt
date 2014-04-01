@@ -1,13 +1,3 @@
-Need to do better compile organization
-  An intermediate representation where all That's are resolved
-    Useful?
-  Given a line, know what other lines and params it is dependent on
-
-  Plotting
-    ability to substitute for any line or param a "variable"
-    Dealing with spread params
-
-
 
 
 up and down arrows

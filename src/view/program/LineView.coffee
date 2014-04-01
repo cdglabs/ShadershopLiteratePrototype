@@ -4,8 +4,11 @@ R.create "LineView",
     lineIndex: Number
   }
 
-  plots: ->
-    @lookup("program").plots
+  plots: -> @lookup("program").plots
+
+  shouldRenderPlot: (plot) ->
+    deepDependencies = @lookup("program").getDeepDependencies(@line)
+    return _.contains(deepDependencies, plot.x)
 
   render: ->
     className = R.cx {
@@ -19,5 +22,6 @@ R.create "LineView",
         R.LineOutputView {line: @line}
       @plots().map (plot, index) =>
         R.div {className: "lineCell", key: index},
-          R.div {style: {position: "relative", width: "100", height: "100"}},
-            R.PlotView {plot: plot, line: @line}
+          if @shouldRenderPlot(plot)
+            R.div {className: "plotThumbnail"},
+              R.PlotView {plot: plot, line: @line}

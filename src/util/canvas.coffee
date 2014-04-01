@@ -4,22 +4,29 @@ lerp = (x, dMin, dMax, rMin, rMax) ->
   return ratio * (rMax - rMin) + rMin
 
 
+canvasBounds = (ctx) ->
+  canvas = ctx.canvas
+  {
+    cxMin: 0
+    cxMax: canvas.width
+    cyMin: canvas.height
+    cyMax: 0
+  }
+
+
 clear = (ctx) ->
   canvas = ctx.canvas
   ctx.clearRect(0, 0, canvas.width, canvas.height)
 
 
-drawCartesian = (ctx, bounds, fn) ->
-  xMin = bounds.domain.min
-  xMax = bounds.domain.max
-  yMin = bounds.range.min
-  yMax = bounds.range.max
+drawCartesian = (ctx, opts) ->
+  xMin = opts.xMin
+  xMax = opts.xMax
+  yMin = opts.yMin
+  yMax = opts.yMax
+  fn = opts.fn
 
-  canvas = ctx.canvas
-  cxMin = 0
-  cxMax = canvas.width
-  cyMin = canvas.height
-  cyMax = 0
+  {cxMin, cxMax, cyMin, cyMax} = canvasBounds(ctx)
 
   ctx.beginPath()
 
@@ -48,6 +55,19 @@ drawCartesian = (ctx, bounds, fn) ->
   ctx.lineTo(cx, cy)
 
 
+drawVertical = (ctx, opts) ->
+  xMin = opts.xMin
+  xMax = opts.xMax
+  x = opts.x
+
+  {cxMin, cxMax, cyMin, cyMax} = canvasBounds(ctx)
+
+  ctx.beginPath()
+  cx = lerp(x, xMin, xMax, cxMin, cxMax)
+  ctx.moveTo(cx, cyMin)
+  ctx.lineTo(cx, cyMax)
 
 
-util.canvas = {lerp, clear, drawCartesian}
+
+
+util.canvas = {lerp, clear, drawCartesian, drawVertical}

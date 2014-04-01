@@ -155,13 +155,51 @@ class C.Line extends C.Word
     recurse(@wordList)
     return found
 
-
 # =============================================================================
 
 class C.Program
   constructor: ->
     @lines = [new C.Line()]
     @plots = [new C.CartesianPlot()]
+
+  getDependencies: (line) ->
+    # returns a list of Lines and Params that are directly referenced by line
+    index = @lines.indexOf(line)
+    that = @lines[index - 1]
+
+    return [that] if !line.wordList.effectiveWordList()
+
+    dependencies = []
+    recurse = (wordList) =>
+      wordList = wordList.effectiveWordList()
+      return unless wordList
+      for word in wordList.words
+        if word instanceof C.That
+          dependencies.push(that)
+        else if word instanceof C.Param or word instanceof C.Line
+          dependencies.push(word)
+        else if word instanceof C.Application
+          word = word.effectiveWord()
+          for wordList in word.params
+            recurse(wordList)
+    recurse(line.wordList)
+
+    dependencies = _.unique(dependencies)
+    return dependencies
+
+  getDeepDependencies: (line) ->
+    deepDependencies = []
+    recurse = (line) =>
+      dependencies = @getDependencies(line)
+      deepDependencies = deepDependencies.concat(dependencies)
+      for word in dependencies
+        if word instanceof C.Line
+          recurse(word)
+    recurse(line)
+
+    deepDependencies = _.unique(deepDependencies)
+    return deepDependencies
+
 
 # =============================================================================
 
