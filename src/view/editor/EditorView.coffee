@@ -28,6 +28,8 @@ R.create "CustomFnView",
         @customFn.paramVariables.map (paramVariable) =>
           R.VariableView {variable: paramVariable}
       R.div {className: "CustomFnDefinition"}
+        R.div {className: "MainPlot"},
+          R.PlotView {expr: @customFn.rootExprs[0]}
         @customFn.rootExprs.map (rootExpr) =>
           R.ExprTreeView {expr: rootExpr}
 
@@ -100,7 +102,8 @@ R.create "ExprNodeView",
           application: expr
           render: ->
             R.div {style: {"min-width": myWidth, height: myHeight, overflow: "hidden", "background-color": "#fff"}},
-              R.ExprNodeView {expr, isDraggingCopy: true}
+              # HACK: This is a really loopy way to pass in customFn
+              R.ExprNodeView {expr, customFn, isDraggingCopy: true}
           onMove: (e) ->
             if customFn?
               customFn.removeApplication(expr)
@@ -177,7 +180,8 @@ R.create "ExprThumbnailView",
     expr: C.Expr
 
   render: ->
-    R.div {className: "ExprThumbnail"}
+    R.div {className: "ExprThumbnail"},
+      R.PlotView {expr: @expr}
 
 
 

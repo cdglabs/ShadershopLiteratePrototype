@@ -187,77 +187,33 @@
       this.substitutions = {};
     }
 
-    Compiler.prototype.substitute = function(word, value) {
+    Compiler.prototype.substitute = function(expr, value) {
       var id;
-      if (!word) {
+      if (!expr) {
         return;
       }
-      id = C.id(word);
+      id = C.id(expr);
       return this.substitutions[id] = value;
     };
 
-    Compiler.prototype.compile = function(program) {
-      var line, result, _i, _len, _ref;
-      result = [];
-      result.push("var that = 0;");
-      _ref = program.lines;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        line = _ref[_i];
-        result.push(this.compileLine(line));
+    Compiler.prototype.compile = function(expr) {
+      var compiledParamExprs, fn, found, id, paramExprs;
+      id = C.id(expr);
+      if (found = this.substitutions[id]) {
+        return found;
       }
-      return result.join("\n");
-    };
-
-    Compiler.prototype.compileLine = function(line) {
-      var lineId, s, substitution, wordList;
-      lineId = C.id(line);
-      s = "var " + lineId + " = that = ";
-      if (substitution = this.substitutions[lineId]) {
-        s += substitution;
-      } else {
-        wordList = line.wordList.effectiveWordList();
-        if (!wordList) {
-          s += "that";
-        } else {
-          s += this.compileWordList(wordList);
-        }
+      if (expr instanceof C.Variable) {
+        return "" + expr.getValue();
       }
-      s += ";";
-      return s;
-    };
-
-    Compiler.prototype.compileWordList = function(wordList) {
-      var result;
-      result = _.map(wordList.words, (function(_this) {
-        return function(word) {
-          return _this.compileWord(word);
-        };
-      })(this));
-      return result.join(" ");
-    };
-
-    Compiler.prototype.compileWord = function(word) {
-      var compiledParams, id, _ref, _ref1;
-      if (word instanceof C.Op) {
-        return word.opString;
-      } else if (word instanceof C.That) {
-        return "that";
-      } else if (word instanceof C.Param) {
-        id = C.id(word);
-        return (_ref = this.substitutions[id]) != null ? _ref : "" + word.value();
-      } else if (word instanceof C.Line) {
-        id = C.id(word);
-        return (_ref1 = this.substitutions[id]) != null ? _ref1 : id;
-      } else if (word instanceof C.Application) {
-        compiledParams = _.map(word.params, (function(_this) {
-          return function(wordList) {
-            return _this.compileWordList(wordList);
+      if (expr instanceof C.Application) {
+        fn = expr.fn;
+        paramExprs = expr.paramExprs;
+        compiledParamExprs = paramExprs.map((function(_this) {
+          return function(expr) {
+            return _this.compile(expr);
           };
         })(this));
-        return word.fn.fnName + "(" + compiledParams.join(", ") + ")";
-      } else {
-        console.warn("Cannot compile:", word);
-        return "that";
+        return fn.fnName + "(" + compiledParamExprs.join(",") + ")";
       }
     };
 
@@ -327,7 +283,7 @@
 
   window.config = config = {
     storageName: "spaceshader4",
-    resolution: 0.25,
+    resolution: 1,
     cursor: {
       text: "text",
       grab: "-webkit-grab",
@@ -1215,6 +1171,10 @@
 
   require("./VariableView");
 
+  require("./plot/PlotView");
+
+  require("./plot/CanvasView");
+
 }).call(this);
 }, "view/VariableView": function(exports, require, module) {(function() {
   R.create("VariableView", {
@@ -1300,7 +1260,11 @@
         };
       })(this))), R.div({
         className: "CustomFnDefinition"
-      }), this.customFn.rootExprs.map((function(_this) {
+      }), R.div({
+        className: "MainPlot"
+      }, R.PlotView({
+        expr: this.customFn.rootExprs[0]
+      })), this.customFn.rootExprs.map((function(_this) {
         return function(rootExpr) {
           return R.ExprTreeView({
             expr: rootExpr
@@ -1402,6 +1366,7 @@
                 }
               }, R.ExprNodeView({
                 expr: expr,
+                customFn: customFn,
                 isDraggingCopy: true
               }));
             },
@@ -1517,7 +1482,9 @@
     render: function() {
       return R.div({
         className: "ExprThumbnail"
-      });
+      }, R.PlotView({
+        expr: this.expr
+      }));
     }
   });
 
@@ -1612,45 +1579,38 @@
 
   R.create("PlotView", {
     propTypes: {
-      plot: C.Plot,
-      line: C.Line
+      expr: C.Expr
+    },
+    compile: function() {
+      var compiled, compiler, customFn, xVariable;
+      customFn = this.lookup("customFn");
+      if (!customFn) {
+        return;
+      }
+      xVariable = customFn.paramVariables[0];
+      compiler = new Compiler();
+      compiler.substitute(xVariable, "x");
+      compiled = compiler.compile(this.expr);
+      return compiled = "(function (x) { return " + compiled + " ; })";
     },
     drawFn: function(canvas) {
-      var compiled, compiler, ctx, f, lineId, program, value;
+      var compiled, ctx, fn;
       ctx = canvas.getContext("2d");
-      program = this.lookup("program");
-      lineId = C.id(this.line);
-      compiler = new Compiler();
-      compiler.substitute(this.plot.x, "x");
-      compiled = compiler.compile(program);
-      compiled = "(function (x) {\n  " + compiled + "\n  return " + lineId + ";\n})";
-      f = evaluate(compiled);
+      compiled = this.compile();
+      if (!compiled) {
+        return;
+      }
+      fn = evaluate(compiled);
       util.canvas.clear(ctx);
       util.canvas.drawCartesian(ctx, {
-        xMin: this.plot.bounds.domain.min,
-        xMax: this.plot.bounds.domain.max,
-        yMin: this.plot.bounds.range.min,
-        yMax: this.plot.bounds.range.max,
-        fn: f
+        xMin: -5,
+        xMax: 5,
+        yMin: -5,
+        yMax: 5,
+        fn: fn
       });
-      ctx.strokeStyle = "#f00";
-      ctx.lineWidth = 1;
-      ctx.stroke();
-      if (this.plot.x instanceof C.Param) {
-        value = this.plot.x.value();
-      } else {
-        compiler = new Compiler();
-        compiled = compiler.compile(program);
-        compiled += "\n" + (C.id(this.plot.x)) + ";";
-        value = evaluate(compiled);
-      }
-      util.canvas.drawVertical(ctx, {
-        xMin: this.plot.bounds.domain.min,
-        xMax: this.plot.bounds.domain.max,
-        x: value
-      });
-      ctx.strokeStyle = "#090";
-      ctx.lineWidth = 1;
+      ctx.strokeStyle = "#000";
+      ctx.lineWidth = 1.5;
       return ctx.stroke();
     },
     componentDidUpdate: function() {
@@ -1660,22 +1620,6 @@
       return R.div({}, R.CanvasView({
         drawFn: this.drawFn,
         ref: "canvas"
-      }));
-    }
-  });
-
-  R.create("XParamView", {
-    propTypes: {
-      plot: C.Plot
-    },
-    handleTransclusionDrop: function(word) {
-      return this.plot.x = word;
-    },
-    render: function() {
-      return R.div({}, this.plot.x ? R.WordView({
-        word: this.plot.x
-      }) : R.div({
-        className: "slot"
       }));
     }
   });

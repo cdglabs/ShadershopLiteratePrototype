@@ -2,7 +2,7 @@ window.config = config = {
 
   storageName: "spaceshader4"
 
-  resolution: 0.25
+  resolution: 1
 
 
   cursor: {

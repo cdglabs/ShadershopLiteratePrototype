@@ -18,10 +18,7 @@ canvas {
   height: 100%;
 }
 #editor {
-  display: inline-block;
-  vertical-align: top;
   margin: 24px;
-  min-width: 600px;
 }
 .draggingObject {
   position: absolute;
@@ -39,10 +36,18 @@ canvas {
   right: 0;
   z-index: 200;
 }
+.MainPlot {
+  position: relative;
+  display: inline-block;
+  vertical-align: top;
+  width: 360px;
+  height: 360px;
+  margin-right: 12px;
+}
 .ExprTree {
   white-space: nowrap;
   display: inline-block;
-  vertical-align: bottom;
+  vertical-align: top;
 }
 .ExprNode {
   position: relative;
@@ -52,7 +57,11 @@ canvas {
   width: 210px;
 }
 .ExprNode:hover {
-  background-color: #eef;
+  background-color: #eff;
+}
+.ExprNode .ExprTree {
+  display: inline-block;
+  vertical-align: bottom;
 }
 .ExprNodePlaceholder {
   width: 216px;
@@ -62,6 +71,7 @@ canvas {
   box-shadow: inset 0px 1px 3px rgba(0,0,0,0.5);
 }
 .ExprThumbnail {
+  position: relative;
   display: inline-block;
   vertical-align: middle;
   border: 1px solid #eee;
@@ -118,6 +128,7 @@ canvas {
 .ApplicationAutoComplete {
   position: absolute;
   z-index: 20;
+  cursor: default;
   left: 0;
   top: 100%;
   padding: 6px;
@@ -142,12 +153,13 @@ canvas {
   position: absolute;
   z-index: 10;
   left: 50%;
-  margin-left: -8px;
-  bottom: -8px;
-  width: 16px;
-  height: 16px;
+  margin-left: -7px;
+  bottom: -7px;
+  width: 14px;
+  height: 14px;
   padding: 0;
-  line-height: 16px;
+  line-height: 14px;
+  font-size: 9px;
   opacity: 0;
   color: #777;
   font-family: verdana;

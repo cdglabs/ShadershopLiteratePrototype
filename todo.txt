@@ -1,9 +1,7 @@
 Variable
   Scrubbing
   ContentEditable stuff
-
-Plot
-  Compiler
+  Transclude
 
 CustomFn
   Add new custom fn
@@ -12,3 +10,11 @@ CustomFn
 Add new exprRoot
 
 
+
+Add grid to main plot
+Pan and zoom plot
+
+
+
+Cleanup
+  Get rid of lookup calls and do explicit passing?

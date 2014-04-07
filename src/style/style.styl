@@ -37,9 +37,7 @@ canvas
   height 100%
 
 #editor
-  inline(top)
   margin 24px
-  min-width 600px
 
 // ============================================================================
 // Dragging
@@ -62,12 +60,17 @@ canvas
 
 
 
-
+.MainPlot
+  position relative
+  inline(top)
+  width 360px
+  height 360px
+  margin-right 12px
 
 
 .ExprTree
   white-space nowrap
-  inline(bottom)
+  inline(top)
 
 .ExprNode
   position relative
@@ -76,7 +79,9 @@ canvas
   margin-right 6px
   width 210px
   &:hover
-    background-color #eef
+    background-color #eff
+  .ExprTree
+    inline(bottom)
 
 .ExprNodePlaceholder
   width 216px
@@ -87,6 +92,7 @@ canvas
 
 
 .ExprThumbnail
+  position relative
   inline(middle)
   border 1px solid #eee
   background-color #fff
@@ -140,6 +146,7 @@ canvas
 .ApplicationAutoComplete
   position absolute
   z-index 20
+  cursor default
   left 0
   top 100%
   padding 6px
@@ -159,6 +166,7 @@ canvas
 
 
 
+CreateExprButtonSize = 14px
 
 .ExprNode:hover .CreateExprButton
   opacity 1.0
@@ -167,12 +175,14 @@ canvas
   position absolute
   z-index 10
   left 50%
-  margin-left -8px
-  bottom -8px
-  width 16px
-  height 16px
+  margin-left -0.5 * CreateExprButtonSize
+  bottom -0.5 * CreateExprButtonSize
+  width CreateExprButtonSize
+  height CreateExprButtonSize
   padding 0
-  line-height 16px
+  line-height CreateExprButtonSize
+  font-size 9px
+
   opacity 0
 
   color #777
