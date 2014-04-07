@@ -12,7 +12,7 @@ require("./UI")
 
 
 
-storageName = "spaceShaderTyper"
+storageName = config.storageName
 
 window.reset = ->
   delete window.localStorage[storageName]

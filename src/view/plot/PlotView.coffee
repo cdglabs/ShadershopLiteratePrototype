@@ -64,8 +64,6 @@ R.create "PlotView",
   render: ->
     R.div {},
       R.CanvasView {drawFn: @drawFn, ref: "canvas"}
-      R.div {style: {position: "absolute", bottom: 0, left: 0}},
-        R.XParamView {plot: @plot}
 
 
 

@@ -1,221 +1,102 @@
-builtInFns = require("./builtInFns")
+builtInFnDefinitions = require("./builtInFnDefinitions")
 
 
-# =============================================================================
-
-class C.Word
-  constructor: ->
-  effectiveWord: ->
-    return this
-
-# =============================================================================
-
-class C.Param extends C.Word
-  constructor: (@valueString = "0", @label = "", @precision = 1) ->
-  value: ->
-    number = parseFloat(@valueString)
-    return 0 if _.isNaN(number) or !_.isFinite(number)
-    return number
-  fixPrecision: ->
-    if @valueString.indexOf(".") == -1
-      zeros = @valueString.match(/0*$/)[0]
-      numZeros = zeros.length
-      @precision = Math.pow(10, numZeros)
-    else
-      digits = @valueString.match(/\..*$/)[0]
-      numDigits = digits.length - 1 # -1 for the .
-      @precision = Math.pow(0.1, numDigits)
-
-
-# =============================================================================
-
-class C.Op extends C.Word
-  constructor: (@opString = "+") ->
-
-# =============================================================================
-
-class C.That extends C.Word
+class C.Expr
   constructor: ->
 
-# =============================================================================
 
-class C.Placeholder extends C.Word
-  constructor: (@string = "") ->
-  convert: ->
-    string = @string.trim()
-    if string == "that"
-      return new C.That()
+class C.Variable extends C.Expr
+  constructor: (@valueString="0", @label="") ->
+  getValue: ->
+    parseFloat(@valueString)
 
-    if _.contains(["+", "-", "*", "/"], string)
-      return new C.Op(string)
 
-    if /[0-9]/.test(string)
-      return new C.Param(string)
-
-    if /:$/.test(string)
-      return new C.Param("", string.slice(0, -1))
-
-    if /.+\($/.test(string)
-      fnName = string.slice(0, -1)
-      fnDefinition = builtInFns[fnName]
-      if fnDefinition
-        params = fnDefinition.map (value) ->
-          new C.Param(""+value)
-        params[0] = new C.That
-        params = params.map (word) ->
-          new C.WordList([word])
-
-        application = new C.Application()
-        application.fn = new C.BuiltInFn(fnName)
-        application.params = params
-
-        return application
-
-    return this
-
-  effectiveWord: ->
-    return null
-
-# =============================================================================
-
-class C.Parens extends C.Word
+class C.Application extends C.Expr
   constructor: ->
-    @wordList = new C.WordList()
+    @fn = new C.BuiltInFn("identity")
+    @paramExprs = []
+    @isProvisional = false
 
-# =============================================================================
+  getPossibleApplications: ->
+    builtInFnDefinitions.map (definition) =>
+      application = new C.Application()
+      application.fn = new C.BuiltInFn(definition.fnName)
+      application.paramExprs = definition.defaultParamValues.map (value) =>
+        new C.Variable(""+value)
+      application.paramExprs[0] = @paramExprs[0]
+      return application
 
-class C.Application extends C.Word
+  setStagedApplication: (application) ->
+    @fn = application.fn
+    @paramExprs = application.paramExprs
+
+  commitApplication: ->
+    @isProvisional = false
+
+
+
+class C.Fn
   constructor: ->
-    @fn = null
-    @params = [] # list of WordLists
 
-  effectiveWord: ->
-    effectiveParams = _.map @params, (wordList) =>
-      wordList.effectiveWordList()
-    return null unless _.all(effectiveParams)
-    result = new C.Application()
-    result.fn = @fn
-    result.params = effectiveParams
-    return result
 
-# =============================================================================
-
-class C.BuiltInFn
+class C.BuiltInFn extends C.Fn
   constructor: (@fnName) ->
+  getLabel: ->
+    builtInFnDefinitions[@fnName].label
 
-# =============================================================================
 
-class C.WordList
-  constructor: (@words = []) ->
-
-  splice: (args...) ->
-    @words.splice(args...)
-
-  isEmpty: ->
-    @words.length == 0
-
-  effectiveWordList: ->
-    words = []
-
-    # Words need to alternate non-op, op, non-op, etc.
-    lookingForOp = false
-    for word in @words
-      word = word.effectiveWord()
-      continue unless word
-      wordIsOp = word instanceof C.Op
-      if wordIsOp == lookingForOp
-        words.push(word)
-        lookingForOp = !lookingForOp
-
-    # Last word can't be an op.
-    if _.last(words) instanceof C.Op
-      words = _.initial(words)
-
-    return null if words.length == 0
-    return new C.WordList(words)
-
-# =============================================================================
-
-class C.Line extends C.Word
+class C.CustomFn extends C.Fn
   constructor: ->
-    @wordList = new C.WordList()
+    @label = ""
+    variable = new C.Variable("0", "x")
+    @paramVariables = [variable]
+    @rootExprs = [variable]
 
-  hasReferenceToThat: ->
-    return true if !@wordList.effectiveWordList()
-    found = false
-    recurse = (wordList) ->
-      wordList = wordList.effectiveWordList()
-      return unless wordList
-      for word in wordList.words
-        found = true if word instanceof C.That
-        if word instanceof C.Application
-          word = word.effectiveWord()
-          for wordList in word.params
-            recurse(wordList)
-    recurse(@wordList)
-    return found
+  getLabel: -> @label
 
-# =============================================================================
+  createRootExpr: ->
+    variable = new C.Variable()
+    @rootExprs.push(variable)
 
-class C.Program
-  constructor: ->
-    @lines = [new C.Line()]
-    @plots = [new C.CartesianPlot()]
+  _findExpr: (refExpr) ->
+    # returns {array, index} such that
+    #   array[index] == refExpr
+    #   array is either @rootExprs or an Application.paramExprs
+    search = (array) =>
+      found = null
+      for expr, index in array
+        if expr == refExpr
+          found ?= {array, index}
+        if expr instanceof C.Application
+          found ?= search(expr.paramExprs)
+      return found
+    return search(@rootExprs)
 
-  getDependencies: (line) ->
-    # returns a list of Lines and Params that are directly referenced by line
-    index = @lines.indexOf(line)
-    that = @lines[index - 1]
+  insertApplicationAfter: (application, refExpr) ->
+    {array, index} = @_findExpr(refExpr)
+    application.paramExprs[0] = refExpr
+    array[index] = application
 
-    return [that] if !line.wordList.effectiveWordList()
+  createApplicationAfter: (refExpr) ->
+    application = new C.Application()
+    application.isProvisional = true
+    @insertApplicationAfter(application, refExpr)
 
-    dependencies = []
-    recurse = (wordList) =>
-      wordList = wordList.effectiveWordList()
-      return unless wordList
-      for word in wordList.words
-        if word instanceof C.That
-          dependencies.push(that)
-        else if word instanceof C.Param or word instanceof C.Line
-          dependencies.push(word)
-        else if word instanceof C.Application
-          word = word.effectiveWord()
-          for wordList in word.params
-            recurse(wordList)
-    recurse(line.wordList)
-
-    dependencies = _.unique(dependencies)
-    return dependencies
-
-  getDeepDependencies: (line) ->
-    deepDependencies = []
-    recurse = (line) =>
-      dependencies = @getDependencies(line)
-      deepDependencies = deepDependencies.concat(dependencies)
-      for word in dependencies
-        if word instanceof C.Line
-          recurse(word)
-    recurse(line)
-
-    deepDependencies = _.unique(deepDependencies)
-    return deepDependencies
+  removeApplication: (refApplication) ->
+    {array, index} = @_findExpr(refApplication)
+    previousExpr = refApplication.paramExprs[0]
+    array[index] = previousExpr
+    # TODO should look at refApplication.paramExprs[1...] and add them to
+    # @rootExprs if they're Applications (maybe that's a separate method)
 
 
-# =============================================================================
 
-class C.Plot
-  constructor: ->
-
-class C.CartesianPlot extends C.Plot
-  constructor: ->
-    @x = null
-    @bounds = {
-      domain: {min: -10, max: 10}
-      range: {min: -10, max: 10}
-    }
-
-# =============================================================================
 
 class C.Editor
   constructor: ->
-    @programs = [new C.Program()]
+    @customFns = []
+    @createCustomFn()
+
+  createCustomFn: ->
+    customFn = new C.CustomFn()
+    @customFns.push(customFn)

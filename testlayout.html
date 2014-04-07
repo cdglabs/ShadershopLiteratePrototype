@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>SpaceShader</title>
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<link rel="apple-touch-icon" href="assets/icon.png" />
+<link rel="stylesheet" href="compiled/app.css" type="text/css" media="screen" charset="utf-8" />
+</head>
+<body spellcheck="false">
+
+<div id="editor">
+
+
+<div class="customFnHeader">
+  <div class="node"><div class="fnName">smooth mix</div><div class="variable"><div class="variableLabel">x</div><div class="variableValue">0.5</div></div><div class="variable"><div class="variableLabel">a</div><div class="variableValue">2</div></div><div class="variable"><div class="variableLabel">b</div><div class="variableValue">4</div></div></div>
+</div>
+
+<div class="tree">
+  <div class="children">
+    <div class="tree">
+      <div class="children">
+        <div class="tree">
+          <div class="children">
+
+          </div>
+          <div class="node"><div class="variable"><div class="variableLabel">x</div><div class="variableValue">0.5</div></div></div>
+        </div>
+        <div class="tree">
+          <div class="children">
+            <div class="tree">
+              <div class="children">
+
+              </div>
+              <div class="node"><div class="variable"><div class="variableLabel">x</div><div class="variableValue">0.5</div></div></div>
+            </div>
+          </div>
+          <div class="node"><div class="fnName">square</div></div>
+        </div>
+        <div class="tree">
+          <div class="children">
+            <div class="tree">
+              <div class="children">
+                <div class="tree">
+                  <div class="children">
+                    <div class="tree">
+                      <div class="children">
+                        <div class="tree">
+                          <div class="children">
+
+                          </div>
+                          <div class="node"><div class="variable"><div class="variableLabel">x</div><div class="variableValue">0.5</div></div></div>
+                        </div>
+                      </div>
+                      <div class="node"><div class="fnName">-</div><div class="variable"><div class="variableLabel">&nbsp;</div><div class="variableValue">1</div></div></div>
+                    </div>
+                  </div>
+                  <div class="node"><div class="fnName">square</div></div>
+                </div>
+              </div>
+              <div class="node"><div class="fnName">*</div><div class="variable"><div class="variableLabel">&nbsp;</div><div class="variableValue">-1</div></div></div>
+            </div>
+          </div>
+          <div class="node"><div class="fnName">+</div><div class="variable"><div class="variableLabel">&nbsp;</div><div class="variableValue">1</div></div></div>
+        </div>
+      </div>
+      <div class="node"><div class="fnName">mix</div><div class="thumb"></div><div class="thumb"></div></div>
+    </div>
+  </div>
+  <div class="node"><div class="fnName">mix</div><div class="variable"><div class="variableLabel">a</div><div class="variableValue">2</div></div><div class="variable"><div class="variableLabel">b</div><div class="variableValue">4</div></div></div>
+</div>
+
+
+</div>
+
+
+</body>
+</html>

@@ -1,9 +1,10 @@
 html,
 body {
   font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
-  font-size: 14px;
-  color: #333;
+  font-size: 13px;
+  color: #444;
   cursor: default;
+  margin: 0;
 }
 [contenteditable]:active,
 [contenteditable]:focus,
@@ -16,145 +17,132 @@ canvas {
   width: 100%;
   height: 100%;
 }
-.draggingObject {
-  position: absolute;
-  z-index: 100;
-  pointer-events: none;
-}
-.draggingObject > * {
-  box-shadow: 0px 2px 6px rgba(0,0,0,0.5);
-}
-.draggingOverlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
-  z-index: 200;
-}
-.programTable {
-  display: table;
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  background-color: #fff;
-  box-shadow: 0px 2px 6px rgba(0,0,0,0.5);
-}
-.mainPlot {
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
-}
-.slot {
-  width: 30px;
-  height: 20px;
-  border: 2px dashed #00f;
-}
-.line {
-  display: table-row;
-}
-.line:hover {
-  background-color: #f8fbff;
-}
-.lineCell {
-  display: table-cell;
+#editor {
+  display: inline-block;
   vertical-align: top;
-  padding: 4px 12px 4px 12px;
-  border-top: 1px solid transparent;
+  margin: 24px;
+  min-width: 600px;
 }
-.line.isIndependent .lineCell {
-  border-top: 1px solid #aaa;
+.ExprTree {
+  white-space: nowrap;
+  display: inline-block;
+  vertical-align: bottom;
 }
-.plotThumbnail {
+.ExprNode {
   position: relative;
-  width: 60px;
-  height: 60px;
-  background-color: #eee;
+  margin-bottom: -1px;
+  padding-right: 6px;
+  margin-right: 6px;
+  width: 210px;
 }
-.wordList {
-  display: inline-block;
-}
-.application {
-  display: inline-block;
-}
-.word {
-  display: inline-block;
-  padding: 3px;
-  border-radius: 5px;
-  margin-bottom: 4px;
-}
-.highlighted {
-  box-shadow: 0px 0px 8px 4px #6cf;
-}
-.wordSpacer {
-  position: relative;
-  display: inline-block;
-  cursor: text;
-  padding: 3px 3px;
-  color: #999;
-  margin-bottom: 4px;
-}
-.lineLeft > .wordList > *:last-child {
-  padding-right: 18px;
-}
-.lineOutput {
+.ExprNode:hover {
   background-color: #eef;
-  color: #000;
-  font-weight: bold;
 }
-.param {
-  padding: 0;
-}
-.paramLabel {
+.ExprThumbnail {
   display: inline-block;
-  min-width: 3px;
-  border-radius: 5px 0 0 5px;
-  background-color: #efefdf;
-  color: #7f7f77;
-  padding: 3px;
+  vertical-align: middle;
+  border: 1px solid #eee;
+  background-color: #fff;
+  width: 40px;
+  height: 40px;
 }
-.paramLabel:not(:empty):after {
-  content: ":";
-}
-.paramValue {
+.ExprInternals {
   display: inline-block;
-  min-width: 3px;
-  border-radius: 0 5px 5px 0;
-  background-color: #ffe;
-  padding: 3px;
-  color: #000;
+  vertical-align: middle;
+}
+.ExprInternals .ExprThumbnail {
+  margin-left: 6px;
+  width: 28px;
+  height: 28px;
+}
+.Variable {
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 6px;
+  background-color: #fff;
+  border-radius: 4px;
+}
+.VariableLabel,
+.VariableValue {
+  display: inline-block;
+  vertical-align: middle;
+  padding: 2px 4px;
+}
+.VariableLabel {
+  background-color: rgba(0,0,0,0.2);
+  border-radius: 4px 0px 0px 4px;
+}
+.VariableValue {
+  background-color: rgba(0,0,0,0.1);
+  border-radius: 0px 4px 4px 0px;
+  min-width: 30px;
+}
+.FnLabel {
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 6px;
+  min-width: 11px;
+}
+.CustomFnHeader {
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #eee;
+}
+.CustomFnHeader .FnLabel {
   font-weight: bold;
+  margin-left: 0px;
 }
-.that {
-  background-color: #eef;
-  color: #77777f;
-  font-style: italic;
-}
-.placeholder {
-  cursor: text;
-  color: #999;
-}
-.op {
-  color: #333;
-  padding: 3px 0;
-}
-.builtInFn {
-  color: #333;
-}
-.paren,
-.comma {
-  color: #333;
-  padding: 3px 0;
-}
-.wordSpacer.activeTransclusionDrop:before {
+.ApplicationAutoComplete {
   position: absolute;
-  content: "";
-  top: 0;
-  left: 2px;
-  width: 2px;
-  height: 100%;
-  box-shadow: 0px 0px 8px 4px #def;
-  background-color: #6e777f;
+  z-index: 20;
+  left: 0;
+  top: 100%;
+  padding: 6px;
+  margin: -6px;
+  background-color: #fff;
+  border-radius: 6px;
+  box-shadow: 0px 2px 18px rgba(0,0,0,0.3);
+}
+.ApplicationAutoComplete .CreateExprButton {
+  display: none;
+}
+.ApplicationAutoComplete .Scroller {
+  width: 216px;
+  height: 200px;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+.ExprNode:hover .CreateExprButton {
+  opacity: 1;
+}
+.CreateExprButton {
+  position: absolute;
+  z-index: 10;
+  left: 50%;
+  margin-left: -8px;
+  bottom: -8px;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  line-height: 16px;
+  opacity: 0;
+  color: #777;
+  font-family: verdana;
+  font-weight: bold;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.5);
+  background-color: #ddd;
+  background-image: linear-gradient(to bottom, #eee, #ccc);
+  box-shadow: 0 2px 1px rgba(0,0,0,0.16), 0 0 1px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.55);
+  border-radius: 20px;
+  border: 0px;
+}
+.CreateExprButton:before {
+  content: "+";
+}
+.CreateExprButton:hover {
+  background-image: linear-gradient(to bottom, #f3f3f3, #d3d3d3);
+}
+.CreateExprButton:active {
+  background-image: linear-gradient(to bottom, #cacaca, #d5d5d5);
+  box-shadow: 0 1px 1px rgba(255,255,255,0.35), inset 0 0 1px rgba(0,0,0,0.5), inset 0 1px 4px rgba(0,0,0,0.4);
 }

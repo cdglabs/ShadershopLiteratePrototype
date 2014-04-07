@@ -8,7 +8,7 @@ R.create "LineView",
 
   shouldRenderPlot: (plot) ->
     deepDependencies = @lookup("program").getDeepDependencies(@line)
-    return _.contains(deepDependencies, plot.x)
+    return _.contains(deepDependencies, plot.x) or @line == plot.x
 
   render: ->
     className = R.cx {

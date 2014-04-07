@@ -10,6 +10,11 @@ paramColor = #ffe
 lineOutputColor = #eef
 
 
+inline(va)
+  display inline-block
+  vertical-align va
+
+
 // ============================================================================
 // Generic
 // ============================================================================
@@ -17,10 +22,11 @@ lineOutputColor = #eef
 html, body
   // overflow hidden
   font-family "Lucida Sans Unicode", "Lucida Grande", sans-serif
-  font-size 14px
+  font-size 13px
   // line-height 14px
-  color #333
+  color #444
   cursor default
+  margin 0
 
 [contenteditable]:active, [contenteditable]:focus, button:active, button:focus
   outline none
@@ -30,160 +36,132 @@ canvas
   width 100%
   height 100%
 
-
-// ============================================================================
-// Dragging
-// ============================================================================
-
-.draggingObject
-  position: absolute;
-  z-index: 100;
-  pointer-events: none;
-.draggingObject > *
-  box-shadow: 0px 2px 6px rgba(0,0,0,0.5);
-
-.draggingOverlay
-  position: absolute
-  top: 0; left: 0; bottom: 0; right: 0;
-  z-index: 200
+#editor
+  inline(top)
+  margin 24px
+  min-width 600px
 
 
 
-// ============================================================================
-// Program
-// ============================================================================
 
-.programTable
-  display table
-  position absolute
-  top 20px
-  left 20px
-  background-color white
-  box-shadow 0px 2px 6px rgba(0,0,0,0.5);
+.ExprTree
+  white-space nowrap
+  inline(bottom)
 
-.mainPlot
-  position absolute
-  top 0
-  left 0
-  bottom 0
-  right 0
-
-.slot
-  width: 30px
-  height: 20px
-  border: 2px dashed #00f
-
-
-// ============================================================================
-// Lines
-// ============================================================================
-
-.line
-  display table-row
+.ExprNode
+  position relative
+  margin-bottom -1px
+  padding-right 6px
+  margin-right 6px
+  width 210px
   &:hover
-    background-color: tint(#def, 80%)
+    background-color #eef
 
-.lineCell
-  display table-cell
-  vertical-align top
-  padding lineSpacing 12px lineSpacing 12px
-  border-top 1px solid transparent
 
-.line.isIndependent
-  .lineCell
-    border-top 1px solid #aaa
+.ExprThumbnail
+  inline(middle)
+  border 1px solid #eee
+  background-color #fff
+  width 40px
+  height 40px
 
-.plotThumbnail
-  position relative
-  width 60px
-  height 60px
-  background-color #eee
 
-// ============================================================================
-// Words
-// ============================================================================
+.ExprInternals
+  inline(middle)
+  .ExprThumbnail
+    margin-left 6px
+    width 28px
+    height 28px
 
-.wordList
-  display inline-block
+.Variable
+  inline(middle)
+  margin-left 6px
+  background-color #fff
+  border-radius 4px
 
-.application
-  display inline-block
+.VariableLabel, .VariableValue
+  inline(middle)
+  padding 2px 4px
 
-.word
-  display inline-block
-  padding wordPadding
-  border-radius wordBorderRadius
-  margin-bottom lineSpacing
+.VariableLabel
+  background-color rgba(0, 0, 0, 0.2)
+  border-radius 4px 0px 0px 4px
 
-.highlighted
-  box-shadow 0px 0px 8px 4px #6cf
+.VariableValue
+  background-color rgba(0, 0, 0, 0.1)
+  border-radius 0px 4px 4px 0px
+  min-width 30px
 
-.wordSpacer
-  position relative
-  display inline-block
-  cursor text
-  padding wordPadding 3px
-  color #999
-  margin-bottom lineSpacing
+.FnLabel
+  inline(middle)
+  margin-left 6px
+  min-width 11px
 
-.lineLeft > .wordList > *:last-child
-  padding-right: 18px
-
-.lineOutput
-  background-color lineOutputColor
-  color #000
-  font-weight bold
-
-.param
-  padding 0
-
-.paramLabel
-  display inline-block
-  min-width wordPadding
-  border-radius wordBorderRadius 0 0 wordBorderRadius
-  background-color shade(paramColor, 6%)
-  color shade(paramColor, 50%)
-  padding wordPadding
-  &:not(:empty):after
-    content: ":"
-
-.paramValue
-  display inline-block
-  min-width wordPadding
-  border-radius 0 wordBorderRadius wordBorderRadius 0
-  background-color paramColor
-  padding wordPadding
-  color #000
-  font-weight bold
-
-.that
-  background-color lineOutputColor
-  color shade(lineOutputColor, 50%)
-  font-style italic
-
-.placeholder
-  cursor text
-  color #999
-
-.op
-  color #333
-  padding wordPadding 0
-
-.builtInFn
-  color #333
-
-.paren, .comma
-  color #333
-  padding wordPadding 0
+.CustomFnHeader
+  padding-bottom 12px
+  margin-bottom 12px
+  border-bottom 1px solid #eee
+  .FnLabel
+    font-weight bold
+    margin-left 0px
 
 
 
-.wordSpacer.activeTransclusionDrop:before
+
+
+.ApplicationAutoComplete
   position absolute
-  content ""
-  top 0
-  left 2px
-  width 2px
-  height 100%
-  box-shadow 0px 0px 8px 4px #def
-  background-color shade(#def, 50%)
+  z-index 20
+  left 0
+  top 100%
+  padding 6px
+  margin -6px
+  background-color #fff
+  border-radius 6px
+  box-shadow 0px 2px 18px rgba(0,0,0,0.3)
+  .CreateExprButton
+    display none
+  .Scroller
+    width 216px
+    height 200px
+    overflow-x hidden
+    overflow-y auto
+
+
+
+
+
+
+.ExprNode:hover .CreateExprButton
+  opacity 1.0
+
+.CreateExprButton
+  position absolute
+  z-index 10
+  left 50%
+  margin-left -8px
+  bottom -8px
+  width 16px
+  height 16px
+  padding 0
+  line-height 16px
+  opacity 0
+
+  color #777
+  font-family verdana
+  font-weight bold
+  text-shadow 0 1px 0 rgba(255,255,255,0.5)
+  background-color #ddd
+  background-image linear-gradient(to bottom, #eee, #ccc)
+  box-shadow 0 2px 1px rgba(0,0,0,0.16), 0 0 1px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.55)
+  border-radius 20px
+  border 0px
+
+  &:before
+    content "+"
+  &:hover
+    background-image linear-gradient(to bottom, #f3f3f3, #d3d3d3)
+  &:active
+    background-image linear-gradient(to bottom, #cacaca, #d5d5d5)
+    box-shadow 0 1px 1px rgba(255,255,255,0.35), inset 0 0 1px rgba(0,0,0,0.5), inset 0 1px 4px rgba(0,0,0,0.4)
+

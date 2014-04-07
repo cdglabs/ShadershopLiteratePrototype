@@ -267,7 +267,7 @@
 
 }).call(this);
 }, "compile/evaluate": function(exports, require, module) {(function() {
-  var abs, ceil, cos, evaluate, floor, fract, max, min, pow, sin, sqrt;
+  var abs, add, ceil, cos, div, evaluate, floor, fract, identity, max, min, mul, pow, sin, sqrt, sub;
 
   module.exports = evaluate = function(jsString) {
     try {
@@ -277,16 +277,30 @@
     }
   };
 
-  sin = Math.sin;
+  identity = function(a) {
+    return a;
+  };
 
-  cos = Math.cos;
+  add = function(a, b) {
+    return a + b;
+  };
+
+  sub = function(a, b) {
+    return a - b;
+  };
+
+  mul = function(a, b) {
+    return a * b;
+  };
+
+  div = function(a, b) {
+    return a / b;
+  };
 
   abs = Math.abs;
 
-  sqrt = Math.sqrt;
-
-  pow = function(a, b) {
-    return Math.pow(Math.abs(a), b);
+  fract = function(a) {
+    return a - Math.floor(a);
   };
 
   floor = Math.floor;
@@ -297,8 +311,14 @@
 
   max = Math.max;
 
-  fract = function(a) {
-    return a - Math.floor(a);
+  sin = Math.sin;
+
+  cos = Math.cos;
+
+  sqrt = Math.sqrt;
+
+  pow = function(a, b) {
+    return Math.pow(Math.abs(a), b);
   };
 
 }).call(this);
@@ -306,6 +326,7 @@
   var config;
 
   window.config = config = {
+    storageName: "spaceshader4",
     resolution: 0.25,
     cursor: {
       text: "text",
@@ -330,7 +351,7 @@
 
   require("./UI");
 
-  storageName = "spaceShaderTyper";
+  storageName = config.storageName;
 
   window.reset = function() {
     delete window.localStorage[storageName];
@@ -513,404 +534,230 @@
   };
 
 }).call(this);
-}, "model/builtInFns": function(exports, require, module) {(function() {
-  module.exports = {
-    sin: [0],
-    cos: [0],
-    abs: [0],
-    sqrt: [0],
-    pow: [1, 1],
-    floor: [0],
-    ceil: [0],
-    min: [0, 0],
-    max: [0, 0],
-    fract: [0]
+}, "model/builtInFnDefinitions": function(exports, require, module) {(function() {
+  var builtInFnDefinitions, define;
+
+  module.exports = builtInFnDefinitions = [];
+
+  define = function(fnName, defaultParamValues, label) {
+    var definition;
+    if (label == null) {
+      label = fnName;
+    }
+    definition = {
+      fnName: fnName,
+      label: label,
+      defaultParamValues: defaultParamValues
+    };
+    builtInFnDefinitions.push(definition);
+    return builtInFnDefinitions[fnName] = definition;
   };
+
+  define("identity", [0]);
+
+  define("add", [0, 0], "+");
+
+  define("sub", [0, 0], "-");
+
+  define("mul", [1, 1], "*");
+
+  define("div", [1, 1], "/");
+
+  define("abs", [0]);
+
+  define("fract", [0]);
+
+  define("floor", [0]);
+
+  define("ceil", [0]);
+
+  define("min", [0, 0]);
+
+  define("max", [0, 0]);
+
+  define("sin", [0]);
+
+  define("cos", [0]);
+
+  define("sqrt", [0]);
+
+  define("pow", [1, 1]);
 
 }).call(this);
 }, "model/model": function(exports, require, module) {(function() {
-  var builtInFns,
+  var builtInFnDefinitions,
     __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    __slice = [].slice;
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  builtInFns = require("./builtInFns");
+  builtInFnDefinitions = require("./builtInFnDefinitions");
 
-  C.Word = (function() {
-    function Word() {}
+  C.Expr = (function() {
+    function Expr() {}
 
-    Word.prototype.effectiveWord = function() {
-      return this;
-    };
-
-    return Word;
+    return Expr;
 
   })();
 
-  C.Param = (function(_super) {
-    __extends(Param, _super);
+  C.Variable = (function(_super) {
+    __extends(Variable, _super);
 
-    function Param(valueString, label, precision) {
+    function Variable(valueString, label) {
       this.valueString = valueString != null ? valueString : "0";
       this.label = label != null ? label : "";
-      this.precision = precision != null ? precision : 1;
     }
 
-    Param.prototype.value = function() {
-      var number;
-      number = parseFloat(this.valueString);
-      if (_.isNaN(number) || !_.isFinite(number)) {
-        return 0;
-      }
-      return number;
+    Variable.prototype.getValue = function() {
+      return parseFloat(this.valueString);
     };
 
-    Param.prototype.fixPrecision = function() {
-      var digits, numDigits, numZeros, zeros;
-      if (this.valueString.indexOf(".") === -1) {
-        zeros = this.valueString.match(/0*$/)[0];
-        numZeros = zeros.length;
-        return this.precision = Math.pow(10, numZeros);
-      } else {
-        digits = this.valueString.match(/\..*$/)[0];
-        numDigits = digits.length - 1;
-        return this.precision = Math.pow(0.1, numDigits);
-      }
-    };
+    return Variable;
 
-    return Param;
-
-  })(C.Word);
-
-  C.Op = (function(_super) {
-    __extends(Op, _super);
-
-    function Op(opString) {
-      this.opString = opString != null ? opString : "+";
-    }
-
-    return Op;
-
-  })(C.Word);
-
-  C.That = (function(_super) {
-    __extends(That, _super);
-
-    function That() {}
-
-    return That;
-
-  })(C.Word);
-
-  C.Placeholder = (function(_super) {
-    __extends(Placeholder, _super);
-
-    function Placeholder(string) {
-      this.string = string != null ? string : "";
-    }
-
-    Placeholder.prototype.convert = function() {
-      var application, fnDefinition, fnName, params, string;
-      string = this.string.trim();
-      if (string === "that") {
-        return new C.That();
-      }
-      if (_.contains(["+", "-", "*", "/"], string)) {
-        return new C.Op(string);
-      }
-      if (/[0-9]/.test(string)) {
-        return new C.Param(string);
-      }
-      if (/:$/.test(string)) {
-        return new C.Param("", string.slice(0, -1));
-      }
-      if (/.+\($/.test(string)) {
-        fnName = string.slice(0, -1);
-        fnDefinition = builtInFns[fnName];
-        if (fnDefinition) {
-          params = fnDefinition.map(function(value) {
-            return new C.Param("" + value);
-          });
-          params[0] = new C.That;
-          params = params.map(function(word) {
-            return new C.WordList([word]);
-          });
-          application = new C.Application();
-          application.fn = new C.BuiltInFn(fnName);
-          application.params = params;
-          return application;
-        }
-      }
-      return this;
-    };
-
-    Placeholder.prototype.effectiveWord = function() {
-      return null;
-    };
-
-    return Placeholder;
-
-  })(C.Word);
-
-  C.Parens = (function(_super) {
-    __extends(Parens, _super);
-
-    function Parens() {
-      this.wordList = new C.WordList();
-    }
-
-    return Parens;
-
-  })(C.Word);
+  })(C.Expr);
 
   C.Application = (function(_super) {
     __extends(Application, _super);
 
     function Application() {
-      this.fn = null;
-      this.params = [];
+      this.fn = new C.BuiltInFn("identity");
+      this.paramExprs = [];
+      this.isProvisional = false;
     }
 
-    Application.prototype.effectiveWord = function() {
-      var effectiveParams, result;
-      effectiveParams = _.map(this.params, (function(_this) {
-        return function(wordList) {
-          return wordList.effectiveWordList();
+    Application.prototype.getPossibleApplications = function() {
+      return builtInFnDefinitions.map((function(_this) {
+        return function(definition) {
+          var application;
+          application = new C.Application();
+          application.fn = new C.BuiltInFn(definition.fnName);
+          application.paramExprs = definition.defaultParamValues.map(function(value) {
+            return new C.Variable("" + value);
+          });
+          application.paramExprs[0] = _this.paramExprs[0];
+          return application;
         };
       })(this));
-      if (!_.all(effectiveParams)) {
-        return null;
-      }
-      result = new C.Application();
-      result.fn = this.fn;
-      result.params = effectiveParams;
-      return result;
+    };
+
+    Application.prototype.setStagedApplication = function(application) {
+      this.fn = application.fn;
+      return this.paramExprs = application.paramExprs;
+    };
+
+    Application.prototype.commitApplication = function() {
+      return this.isProvisional = false;
     };
 
     return Application;
 
-  })(C.Word);
+  })(C.Expr);
 
-  C.BuiltInFn = (function() {
+  C.Fn = (function() {
+    function Fn() {}
+
+    return Fn;
+
+  })();
+
+  C.BuiltInFn = (function(_super) {
+    __extends(BuiltInFn, _super);
+
     function BuiltInFn(fnName) {
       this.fnName = fnName;
     }
 
+    BuiltInFn.prototype.getLabel = function() {
+      return builtInFnDefinitions[this.fnName].label;
+    };
+
     return BuiltInFn;
 
-  })();
+  })(C.Fn);
 
-  C.WordList = (function() {
-    function WordList(words) {
-      this.words = words != null ? words : [];
+  C.CustomFn = (function(_super) {
+    __extends(CustomFn, _super);
+
+    function CustomFn() {
+      var variable;
+      this.label = "";
+      variable = new C.Variable("0", "x");
+      this.paramVariables = [variable];
+      this.rootExprs = [variable];
     }
 
-    WordList.prototype.splice = function() {
-      var args, _ref;
-      args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-      return (_ref = this.words).splice.apply(_ref, args);
+    CustomFn.prototype.getLabel = function() {
+      return this.label;
     };
 
-    WordList.prototype.isEmpty = function() {
-      return this.words.length === 0;
+    CustomFn.prototype.createRootExpr = function() {
+      var variable;
+      variable = new C.Variable();
+      return this.rootExprs.push(variable);
     };
 
-    WordList.prototype.effectiveWordList = function() {
-      var lookingForOp, word, wordIsOp, words, _i, _len, _ref;
-      words = [];
-      lookingForOp = false;
-      _ref = this.words;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        word = _ref[_i];
-        word = word.effectiveWord();
-        if (!word) {
-          continue;
-        }
-        wordIsOp = word instanceof C.Op;
-        if (wordIsOp === lookingForOp) {
-          words.push(word);
-          lookingForOp = !lookingForOp;
-        }
-      }
-      if (_.last(words) instanceof C.Op) {
-        words = _.initial(words);
-      }
-      if (words.length === 0) {
-        return null;
-      }
-      return new C.WordList(words);
-    };
-
-    return WordList;
-
-  })();
-
-  C.Line = (function(_super) {
-    __extends(Line, _super);
-
-    function Line() {
-      this.wordList = new C.WordList();
-    }
-
-    Line.prototype.hasReferenceToThat = function() {
-      var found, recurse;
-      if (!this.wordList.effectiveWordList()) {
-        return true;
-      }
-      found = false;
-      recurse = function(wordList) {
-        var word, _i, _len, _ref, _results;
-        wordList = wordList.effectiveWordList();
-        if (!wordList) {
-          return;
-        }
-        _ref = wordList.words;
-        _results = [];
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          word = _ref[_i];
-          if (word instanceof C.That) {
-            found = true;
-          }
-          if (word instanceof C.Application) {
-            word = word.effectiveWord();
-            _results.push((function() {
-              var _j, _len1, _ref1, _results1;
-              _ref1 = word.params;
-              _results1 = [];
-              for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-                wordList = _ref1[_j];
-                _results1.push(recurse(wordList));
+    CustomFn.prototype._findExpr = function(refExpr) {
+      var search;
+      search = (function(_this) {
+        return function(array) {
+          var expr, found, index, _i, _len;
+          found = null;
+          for (index = _i = 0, _len = array.length; _i < _len; index = ++_i) {
+            expr = array[index];
+            if (expr === refExpr) {
+              if (found == null) {
+                found = {
+                  array: array,
+                  index: index
+                };
               }
-              return _results1;
-            })());
-          } else {
-            _results.push(void 0);
-          }
-        }
-        return _results;
-      };
-      recurse(this.wordList);
-      return found;
-    };
-
-    return Line;
-
-  })(C.Word);
-
-  C.Program = (function() {
-    function Program() {
-      this.lines = [new C.Line()];
-      this.plots = [new C.CartesianPlot()];
-    }
-
-    Program.prototype.getDependencies = function(line) {
-      var dependencies, index, recurse, that;
-      index = this.lines.indexOf(line);
-      that = this.lines[index - 1];
-      if (!line.wordList.effectiveWordList()) {
-        return [that];
-      }
-      dependencies = [];
-      recurse = (function(_this) {
-        return function(wordList) {
-          var word, _i, _len, _ref, _results;
-          wordList = wordList.effectiveWordList();
-          if (!wordList) {
-            return;
-          }
-          _ref = wordList.words;
-          _results = [];
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            word = _ref[_i];
-            if (word instanceof C.That) {
-              _results.push(dependencies.push(that));
-            } else if (word instanceof C.Param || word instanceof C.Line) {
-              _results.push(dependencies.push(word));
-            } else if (word instanceof C.Application) {
-              word = word.effectiveWord();
-              _results.push((function() {
-                var _j, _len1, _ref1, _results1;
-                _ref1 = word.params;
-                _results1 = [];
-                for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-                  wordList = _ref1[_j];
-                  _results1.push(recurse(wordList));
-                }
-                return _results1;
-              })());
-            } else {
-              _results.push(void 0);
+            }
+            if (expr instanceof C.Application) {
+              if (found == null) {
+                found = search(expr.paramExprs);
+              }
             }
           }
-          return _results;
+          return found;
         };
       })(this);
-      recurse(line.wordList);
-      dependencies = _.unique(dependencies);
-      return dependencies;
+      return search(this.rootExprs);
     };
 
-    Program.prototype.getDeepDependencies = function(line) {
-      var deepDependencies, recurse;
-      deepDependencies = [];
-      recurse = (function(_this) {
-        return function(line) {
-          var dependencies, word, _i, _len, _results;
-          dependencies = _this.getDependencies(line);
-          deepDependencies = deepDependencies.concat(dependencies);
-          _results = [];
-          for (_i = 0, _len = dependencies.length; _i < _len; _i++) {
-            word = dependencies[_i];
-            if (word instanceof C.Line) {
-              _results.push(recurse(word));
-            } else {
-              _results.push(void 0);
-            }
-          }
-          return _results;
-        };
-      })(this);
-      recurse(line);
-      deepDependencies = _.unique(deepDependencies);
-      return deepDependencies;
+    CustomFn.prototype.insertApplicationAfter = function(application, refExpr) {
+      var array, index, _ref;
+      _ref = this._findExpr(refExpr), array = _ref.array, index = _ref.index;
+      application.paramExprs[0] = refExpr;
+      return array[index] = application;
     };
 
-    return Program;
+    CustomFn.prototype.createApplicationAfter = function(refExpr) {
+      var application;
+      application = new C.Application();
+      application.isProvisional = true;
+      return this.insertApplicationAfter(application, refExpr);
+    };
 
-  })();
+    CustomFn.prototype.removeApplication = function(refApplication) {
+      var array, index, previousExpr, _ref;
+      _ref = this._findExpr(refApplication), array = _ref.array, index = _ref.index;
+      previousExpr = refApplication.paramExprs[0];
+      return array[index] = previousExpr;
+    };
 
-  C.Plot = (function() {
-    function Plot() {}
+    return CustomFn;
 
-    return Plot;
-
-  })();
-
-  C.CartesianPlot = (function(_super) {
-    __extends(CartesianPlot, _super);
-
-    function CartesianPlot() {
-      this.x = null;
-      this.bounds = {
-        domain: {
-          min: -10,
-          max: 10
-        },
-        range: {
-          min: -10,
-          max: 10
-        }
-      };
-    }
-
-    return CartesianPlot;
-
-  })(C.Plot);
+  })(C.Fn);
 
   C.Editor = (function() {
     function Editor() {
-      this.programs = [new C.Program()];
+      this.customFns = [];
+      this.createCustomFn();
     }
+
+    Editor.prototype.createCustomFn = function() {
+      var customFn;
+      customFn = new C.CustomFn();
+      return this.customFns.push(customFn);
+    };
 
     return Editor;
 
@@ -1356,31 +1203,9 @@
     return R[name] = React.createClass(opts);
   };
 
-  require("./mixins/StartTranscludeMixin");
-
   require("./editor/EditorView");
 
   require("./editor/DraggingView");
-
-  require("./program/ProgramView");
-
-  require("./program/LineView");
-
-  require("./plot/PlotView");
-
-  require("./plot/CanvasView");
-
-  require("./word/TextFieldView");
-
-  require("./word/LineOutputView");
-
-  require("./word/WordListView");
-
-  require("./word/WordView");
-
-  require("./word/ParamView");
-
-  require("./word/WordSpacerView");
 
 }).call(this);
 }, "view/editor/DraggingView": function(exports, require, module) {(function() {
@@ -1415,54 +1240,221 @@
         style: {
           cursor: this.cursor()
         }
-      }, R.ProgramView({
-        program: this.editor.programs[0]
-      }), R.div({
+      }, R.div({
+        className: "customFns"
+      }, this.editor.customFns.map((function(_this) {
+        return function(customFn) {
+          return R.CustomFnView({
+            customFn: customFn
+          });
+        };
+      })(this))), R.div({
         className: "dragging"
       }, R.DraggingView({})));
     }
   });
 
-}).call(this);
-}, "view/mixins/StartTranscludeMixin": function(exports, require, module) {(function() {
-  R.StartTranscludeMixin = {
-    startTransclude: function(e, word, render) {
-      UI.setActiveWord(word);
-      UI.dragging = {
-        cursor: config.cursor.grabbing,
-        onUp: (function(_this) {
-          return function() {
-            return UI.setActiveWord(null);
-          };
-        })(this)
-      };
-      return util.onceDragConsummated(e, (function(_this) {
-        return function() {
-          return UI.dragging = {
-            cursor: config.cursor.grabbing,
-            offset: {
-              x: -10,
-              y: -10
-            },
-            render: render,
-            onMove: function(e) {
-              var dropView;
-              dropView = UI.getViewUnderMouse();
-              dropView = dropView != null ? dropView.lookupViewWithKey("handleTransclusionDrop") : void 0;
-              return UI.activeTransclusionDropView = dropView;
-            },
-            onUp: function(e) {
-              if (UI.activeTransclusionDropView) {
-                UI.activeTransclusionDropView.handleTransclusionDrop(word);
-              }
-              UI.activeTransclusionDropView = null;
-              return UI.setActiveWord(null);
-            }
-          };
+  R.create("CustomFnView", {
+    propTypes: {
+      customFn: C.CustomFn
+    },
+    render: function() {
+      return R.div({
+        className: "CustomFn"
+      }, R.div({
+        className: "CustomFnHeader"
+      }, R.div({
+        className: "FnLabel"
+      }, this.customFn.getLabel()), this.customFn.paramVariables.map((function(_this) {
+        return function(paramVariable) {
+          return R.VariableView({
+            variable: paramVariable
+          });
         };
-      })(this));
+      })(this))), R.div({
+        className: "CustomFnDefinition"
+      }), this.customFn.rootExprs.map((function(_this) {
+        return function(rootExpr) {
+          return R.ExprTreeView({
+            expr: rootExpr
+          });
+        };
+      })(this)));
     }
-  };
+  });
+
+  R.create("ExprTreeView", {
+    propTypes: {
+      expr: C.Expr
+    },
+    render: function() {
+      return R.div({
+        className: "ExprTree"
+      }, this.expr instanceof C.Application ? R.div({
+        className: "ExprTreeChildren"
+      }, this.expr.paramExprs.map((function(_this) {
+        return function(paramExpr, paramIndex) {
+          if (paramIndex === 0) {
+            return R.ExprTreeView({
+              expr: paramExpr
+            });
+          } else if (paramExpr instanceof C.Application) {
+            return R.ExprTreeView({
+              expr: paramExpr
+            });
+          }
+        };
+      })(this))) : void 0, R.ExprNodeView({
+        expr: this.expr
+      }));
+    }
+  });
+
+  R.create("ExprNodeView", {
+    propTypes: {
+      expr: C.Expr
+    },
+    handleCreateExprButtonClick: function() {
+      var customFn;
+      customFn = this.lookup("customFn");
+      return customFn.createApplicationAfter(this.expr);
+    },
+    render: function() {
+      return R.div({
+        className: "ExprNode"
+      }, R.ExprThumbnailView({
+        expr: this.expr
+      }), R.ExprInternalsView({
+        expr: this.expr
+      }), this.expr.isProvisional ? R.ApplicationAutoCompleteView({
+        application: this.expr
+      }) : R.button({
+        className: "CreateExprButton",
+        onClick: this.handleCreateExprButtonClick
+      }));
+    }
+  });
+
+  R.create("ExprInternalsView", {
+    propTypes: {
+      expr: C.Expr
+    },
+    render: function() {
+      if (this.expr instanceof C.Application) {
+        if (this.expr.isProvisional) {
+          return R.div({
+            className: "ExprInternals"
+          });
+        } else {
+          return R.div({
+            className: "ExprInternals"
+          }, R.div({
+            className: "FnLabel"
+          }, this.expr.fn.getLabel()), this.expr.paramExprs.map((function(_this) {
+            return function(paramExpr, paramIndex) {
+              if (paramIndex > 0) {
+                return R.ParamExprView({
+                  expr: paramExpr
+                });
+              }
+            };
+          })(this)));
+        }
+      } else if (this.expr instanceof C.Variable) {
+        return R.div({
+          className: "ExprInternals"
+        }, R.VariableView({
+          variable: this.expr
+        }));
+      }
+    }
+  });
+
+  R.create("ParamExprView", {
+    propTypes: {
+      expr: C.Expr
+    },
+    render: function() {
+      if (this.expr instanceof C.Application) {
+        return R.ExprThumbnailView({
+          expr: this.expr
+        });
+      } else if (this.expr instanceof C.Variable) {
+        return R.VariableView({
+          variable: this.expr
+        });
+      }
+    }
+  });
+
+  R.create("ExprThumbnailView", {
+    propTypes: {
+      expr: C.Expr
+    },
+    render: function() {
+      return R.div({
+        className: "ExprThumbnail"
+      });
+    }
+  });
+
+  R.create("VariableView", {
+    propTypes: {
+      variable: C.Variable
+    },
+    render: function() {
+      return R.div({
+        className: "Variable"
+      }, R.div({
+        className: "VariableLabel",
+        contentEditable: true
+      }, this.variable.label), R.div({
+        className: "VariableValue",
+        contentEditable: true
+      }, this.variable.valueString));
+    }
+  });
+
+  R.create("ApplicationAutoCompleteView", {
+    propTypes: {
+      application: C.Application
+    },
+    render: function() {
+      return R.div({
+        className: "ApplicationAutoComplete"
+      }, R.div({
+        className: "Scroller"
+      }, this.application.getPossibleApplications().map((function(_this) {
+        return function(possibleApplication) {
+          return R.ApplicationAutoCompleteRowView({
+            application: _this.application,
+            possibleApplication: possibleApplication
+          });
+        };
+      })(this))));
+    }
+  });
+
+  R.create("ApplicationAutoCompleteRowView", {
+    propTypes: {
+      application: C.Application,
+      possibleApplication: C.Application
+    },
+    handleMouseEnter: function() {
+      return this.application.setStagedApplication(this.possibleApplication);
+    },
+    handleClick: function() {
+      return this.application.commitApplication();
+    },
+    render: function() {
+      return R.div({
+        onMouseEnter: this.handleMouseEnter,
+        onClick: this.handleClick
+      }, R.ExprNodeView({
+        expr: this.possibleApplication
+      }));
+    }
+  });
 
 }).call(this);
 }, "view/plot/CanvasView": function(exports, require, module) {(function() {
@@ -1562,15 +1554,7 @@
       return R.div({}, R.CanvasView({
         drawFn: this.drawFn,
         ref: "canvas"
-      }), R.div({
-        style: {
-          position: "absolute",
-          bottom: 0,
-          left: 0
-        }
-      }, R.XParamView({
-        plot: this.plot
-      })));
+      }));
     }
   });
 
@@ -1603,7 +1587,7 @@
     shouldRenderPlot: function(plot) {
       var deepDependencies;
       deepDependencies = this.lookup("program").getDeepDependencies(this.line);
-      return _.contains(deepDependencies, plot.x);
+      return _.contains(deepDependencies, plot.x) || this.line === plot.x;
     },
     render: function() {
       var className;
@@ -1674,7 +1658,9 @@
         line: this.lastLineForPlot(this.program.plots[0])
       })), R.div({
         className: "programTable"
-      }, this.program.lines.map((function(_this) {
+      }, R.ProgramTableHeadersView({
+        program: this.program
+      }), this.program.lines.map((function(_this) {
         return function(line, lineIndex) {
           return R.LineView({
             line: line,
@@ -1683,6 +1669,48 @@
           });
         };
       })(this))));
+    }
+  });
+
+  R.create("ProgramTableHeadersView", {
+    propTypes: {
+      program: C.Program
+    },
+    addPlot: function() {
+      return this.program.plots.push(new C.CartesianPlot());
+    },
+    render: function() {
+      return R.div({
+        className: "programHeader"
+      }, R.div({
+        className: "lineCell"
+      }, "Program"), R.div({
+        className: "lineCell"
+      }, "Result"), this.program.plots.map((function(_this) {
+        return function(plot, index) {
+          return R.PlotHeaderView({
+            plot: plot,
+            key: index
+          });
+        };
+      })(this)), R.div({
+        className: "lineCell"
+      }, R.button({
+        onClick: this.addPlot
+      }, "+")));
+    }
+  });
+
+  R.create("PlotHeaderView", {
+    propTypes: {
+      plot: C.Plot
+    },
+    render: function() {
+      return R.div({
+        className: "lineCell"
+      }, R.div({}, "Cartesian"), R.XParamView({
+        plot: this.plot
+      }));
     }
   });
 

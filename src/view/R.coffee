@@ -100,20 +100,5 @@ R.create = (name, opts) ->
 # Include all the view code
 # =============================================================================
 
-require("./mixins/StartTranscludeMixin")
-
 require("./editor/EditorView")
 require("./editor/DraggingView")
-
-require("./program/ProgramView")
-require("./program/LineView")
-
-require("./plot/PlotView")
-require("./plot/CanvasView")
-
-require("./word/TextFieldView")
-require("./word/LineOutputView")
-require("./word/WordListView")
-require("./word/WordView")
-require("./word/ParamView")
-require("./word/WordSpacerView")

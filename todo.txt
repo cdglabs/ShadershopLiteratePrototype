@@ -1,3 +1,8 @@
+Make table headers
+  move plot "params" up there
+Make additional plots
+
+
 
 
 up and down arrows
