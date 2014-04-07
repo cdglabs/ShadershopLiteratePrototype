@@ -695,7 +695,7 @@
     };
 
     CustomFn.prototype._findExpr = function(refExpr) {
-      var search;
+      var search, _ref;
       search = (function(_this) {
         return function(array) {
           var expr, found, index, _i, _len;
@@ -719,7 +719,10 @@
           return found;
         };
       })(this);
-      return search(this.rootExprs);
+      return (_ref = search(this.rootExprs)) != null ? _ref : {
+        array: null,
+        index: null
+      };
     };
 
     CustomFn.prototype.insertApplicationAfter = function(application, refExpr) {
@@ -739,6 +742,9 @@
     CustomFn.prototype.removeApplication = function(refApplication) {
       var array, index, previousExpr, _ref;
       _ref = this._findExpr(refApplication), array = _ref.array, index = _ref.index;
+      if (array == null) {
+        return;
+      }
       previousExpr = refApplication.paramExprs[0];
       return array[index] = previousExpr;
     };
@@ -1207,6 +1213,27 @@
 
   require("./editor/DraggingView");
 
+  require("./VariableView");
+
+}).call(this);
+}, "view/VariableView": function(exports, require, module) {(function() {
+  R.create("VariableView", {
+    propTypes: {
+      variable: C.Variable
+    },
+    render: function() {
+      return R.div({
+        className: "Variable"
+      }, R.div({
+        className: "VariableLabel",
+        contentEditable: true
+      }, this.variable.label), R.div({
+        className: "VariableValue",
+        contentEditable: true
+      }, this.variable.valueString));
+    }
+  });
+
 }).call(this);
 }, "view/editor/DraggingView": function(exports, require, module) {(function() {
   R.create("DraggingView", {
@@ -1312,26 +1339,122 @@
 
   R.create("ExprNodeView", {
     propTypes: {
-      expr: C.Expr
+      expr: C.Expr,
+      isDraggingCopy: Boolean
+    },
+    getDefaultProps: function() {
+      return {
+        isDraggingCopy: false
+      };
     },
     handleCreateExprButtonClick: function() {
       var customFn;
       customFn = this.lookup("customFn");
       return customFn.createApplicationAfter(this.expr);
     },
+    isReorderable: function() {
+      return this.expr instanceof C.Application;
+    },
+    isPlaceholder: function() {
+      var _ref;
+      return !this.isDraggingCopy && ((_ref = UI.dragging) != null ? _ref.application : void 0) === this.expr;
+    },
+    cursor: function() {
+      if (this.isReorderable()) {
+        return config.cursor.grab;
+      } else {
+        return "";
+      }
+    },
+    handleMouseDown: function(e) {
+      var customFn, el, expr, myHeight, myWidth, offset, rect;
+      if (e.target.closest(".CreateExprButton, .ApplicationAutoComplete, .Variable")) {
+        return;
+      }
+      UI.preventDefault(e);
+      if (this.isReorderable()) {
+        el = this.getDOMNode();
+        rect = el.getBoundingClientRect();
+        myWidth = rect.width;
+        myHeight = rect.height;
+        offset = {
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top
+        };
+        UI.dragging = {
+          cursor: "-webkit-grabbing"
+        };
+        expr = this.expr;
+        customFn = this.lookup("customFn");
+        return util.onceDragConsummated(e, function() {
+          return UI.dragging = {
+            cursor: "-webkit-grabbing",
+            offset: offset,
+            placeholderHeight: myHeight,
+            application: expr,
+            render: function() {
+              return R.div({
+                style: {
+                  "min-width": myWidth,
+                  height: myHeight,
+                  overflow: "hidden",
+                  "background-color": "#fff"
+                }
+              }, R.ExprNodeView({
+                expr: expr,
+                isDraggingCopy: true
+              }));
+            },
+            onMove: function(e) {
+              var exprNodeEl, exprNodeEls, exprView, insertAfterEl, refCustomFn, refExpr, _i, _len, _ref, _ref1;
+              if (customFn != null) {
+                customFn.removeApplication(expr);
+                customFn = null;
+              }
+              insertAfterEl = null;
+              exprNodeEls = document.querySelectorAll(".CustomFn .ExprNode");
+              for (_i = 0, _len = exprNodeEls.length; _i < _len; _i++) {
+                exprNodeEl = exprNodeEls[_i];
+                rect = exprNodeEl.getBoundingClientRect();
+                if ((rect.bottom + myHeight * 1.5 > (_ref = e.clientY) && _ref > rect.top + myHeight) && (rect.left < (_ref1 = e.clientX) && _ref1 < rect.right)) {
+                  insertAfterEl = exprNodeEl;
+                }
+              }
+              if (insertAfterEl) {
+                exprView = insertAfterEl.dataFor;
+                refExpr = exprView.lookup("expr");
+                refCustomFn = exprView.lookup("customFn");
+                customFn = refCustomFn;
+                return customFn.insertApplicationAfter(expr, refExpr);
+              }
+            }
+          };
+        });
+      }
+    },
     render: function() {
-      return R.div({
-        className: "ExprNode"
-      }, R.ExprThumbnailView({
-        expr: this.expr
-      }), R.ExprInternalsView({
-        expr: this.expr
-      }), this.expr.isProvisional ? R.ApplicationAutoCompleteView({
-        application: this.expr
-      }) : R.button({
-        className: "CreateExprButton",
-        onClick: this.handleCreateExprButtonClick
-      }));
+      if (this.isPlaceholder()) {
+        return R.div({
+          className: "ExprNodePlaceholder"
+        });
+      } else {
+        return R.div({
+          className: "ExprNode",
+          onMouseDown: this.handleMouseDown,
+          style: {
+            cursor: this.cursor()
+          }
+        }, R.ExprThumbnailView({
+          expr: this.expr
+        }), R.ExprInternalsView({
+          expr: this.expr
+        }), this.expr.isProvisional ? R.ApplicationAutoCompleteView({
+          application: this.expr
+        }) : R.button({
+          className: "CreateExprButton",
+          onClick: this.handleCreateExprButtonClick
+        }));
+      }
     }
   });
 
@@ -1395,23 +1518,6 @@
       return R.div({
         className: "ExprThumbnail"
       });
-    }
-  });
-
-  R.create("VariableView", {
-    propTypes: {
-      variable: C.Variable
-    },
-    render: function() {
-      return R.div({
-        className: "Variable"
-      }, R.div({
-        className: "VariableLabel",
-        contentEditable: true
-      }, this.variable.label), R.div({
-        className: "VariableValue",
-        contentEditable: true
-      }, this.variable.valueString));
     }
   });
 

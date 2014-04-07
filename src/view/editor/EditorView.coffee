@@ -1,7 +1,6 @@
 R.create "EditorView",
-  propTypes: {
+  propTypes:
     editor: C.Editor
-  }
 
   cursor: ->
     UI.dragging?.cursor ? ""
@@ -18,9 +17,8 @@ R.create "EditorView",
 
 
 R.create "CustomFnView",
-  propTypes: {
+  propTypes:
     customFn: C.CustomFn
-  }
 
   render: ->
     R.div {className: "CustomFn"},
@@ -35,9 +33,9 @@ R.create "CustomFnView",
 
 
 R.create "ExprTreeView",
-  propTypes: {
+  propTypes:
     expr: C.Expr
-  }
+
   render: ->
     R.div {className: "ExprTree"},
       if @expr instanceof C.Application
@@ -51,29 +49,102 @@ R.create "ExprTreeView",
 
 
 R.create "ExprNodeView",
-  propTypes: {
+  propTypes:
     expr: C.Expr
-  }
+    isDraggingCopy: Boolean
+
+  getDefaultProps: ->
+    isDraggingCopy: false
+
   handleCreateExprButtonClick: ->
     customFn = @lookup("customFn")
     customFn.createApplicationAfter(@expr)
-  render: ->
-    R.div {className: "ExprNode"},
-      R.ExprThumbnailView {expr: @expr}
-      R.ExprInternalsView {expr: @expr}
-      if @expr.isProvisional
-        R.ApplicationAutoCompleteView {application: @expr}
-      else
-        R.button {
-          className: "CreateExprButton"
-          onClick: @handleCreateExprButtonClick
+
+  isReorderable: ->
+    @expr instanceof C.Application
+
+  isPlaceholder: ->
+    !@isDraggingCopy and UI.dragging?.application == @expr
+
+  cursor: ->
+    if @isReorderable() then config.cursor.grab else ""
+
+  handleMouseDown: (e) ->
+    return if e.target.closest(".CreateExprButton, .ApplicationAutoComplete, .Variable")
+
+    UI.preventDefault(e)
+
+    if @isReorderable()
+      el = @getDOMNode()
+      rect = el.getBoundingClientRect()
+      myWidth = rect.width
+      myHeight = rect.height
+      offset = {
+        x: e.clientX - rect.left
+        y: e.clientY - rect.top
+      }
+
+      UI.dragging = {
+        cursor: "-webkit-grabbing"
+      }
+
+      # The View object is fragile so we need to close over properties here.
+      expr = @expr
+      customFn = @lookup("customFn") # the CustomFn which has expr
+
+      util.onceDragConsummated e, ->
+        UI.dragging = {
+          cursor: "-webkit-grabbing"
+          offset: offset
+          placeholderHeight: myHeight
+          application: expr
+          render: ->
+            R.div {style: {"min-width": myWidth, height: myHeight, overflow: "hidden", "background-color": "#fff"}},
+              R.ExprNodeView {expr, isDraggingCopy: true}
+          onMove: (e) ->
+            if customFn?
+              customFn.removeApplication(expr)
+              customFn = null
+              # TODO: Maybe we'll want to preserve sub-Applications somewhere.
+
+            insertAfterEl = null
+
+            exprNodeEls = document.querySelectorAll(".CustomFn .ExprNode")
+            for exprNodeEl in exprNodeEls
+              rect = exprNodeEl.getBoundingClientRect()
+              if rect.bottom + myHeight * 1.5 > e.clientY > rect.top + myHeight and rect.left < e.clientX < rect.right
+                insertAfterEl = exprNodeEl
+
+            if insertAfterEl
+              exprView = insertAfterEl.dataFor
+              refExpr = exprView.lookup("expr")
+              refCustomFn = exprView.lookup("customFn")
+
+              customFn = refCustomFn
+              customFn.insertApplicationAfter(expr, refExpr)
+              # TODO: Maybe we'll need to clean up references to variables here.
         }
+
+  render: ->
+    if @isPlaceholder()
+      R.div {className: "ExprNodePlaceholder"}
+    else
+      R.div {className: "ExprNode", onMouseDown: @handleMouseDown, style: {cursor: @cursor()}},
+        R.ExprThumbnailView {expr: @expr}
+        R.ExprInternalsView {expr: @expr}
+        if @expr.isProvisional
+          R.ApplicationAutoCompleteView {application: @expr}
+        else
+          R.button {
+            className: "CreateExprButton"
+            onClick: @handleCreateExprButtonClick
+          }
 
 
 R.create "ExprInternalsView",
-  propTypes: {
+  propTypes:
     expr: C.Expr
-  }
+
   render: ->
     if @expr instanceof C.Application
       if @expr.isProvisional
@@ -91,9 +162,9 @@ R.create "ExprInternalsView",
 
 
 R.create "ParamExprView",
-  propTypes: {
+  propTypes:
     expr: C.Expr
-  }
+
   render: ->
     if @expr instanceof C.Application
       R.ExprThumbnailView {expr: @expr}
@@ -102,23 +173,14 @@ R.create "ParamExprView",
 
 
 R.create "ExprThumbnailView",
-  propTypes: {
+  propTypes:
     expr: C.Expr
-  }
+
   render: ->
     R.div {className: "ExprThumbnail"}
 
 
-R.create "VariableView",
-  propTypes: {
-    variable: C.Variable
-  }
-  render: ->
-    R.div {className: "Variable"},
-      R.div {className: "VariableLabel", contentEditable: true},
-        @variable.label
-      R.div {className: "VariableValue", contentEditable: true},
-        @variable.valueString
+
 
 
 

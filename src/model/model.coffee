@@ -70,7 +70,7 @@ class C.CustomFn extends C.Fn
         if expr instanceof C.Application
           found ?= search(expr.paramExprs)
       return found
-    return search(@rootExprs)
+    return search(@rootExprs) ? {array: null, index: null}
 
   insertApplicationAfter: (application, refExpr) ->
     {array, index} = @_findExpr(refExpr)
@@ -84,6 +84,7 @@ class C.CustomFn extends C.Fn
 
   removeApplication: (refApplication) ->
     {array, index} = @_findExpr(refApplication)
+    return unless array?
     previousExpr = refApplication.paramExprs[0]
     array[index] = previousExpr
     # TODO should look at refApplication.paramExprs[1...] and add them to

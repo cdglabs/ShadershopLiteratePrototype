@@ -1,37 +1,14 @@
-Make table headers
-  move plot "params" up there
-Make additional plots
+Variable
+  Scrubbing
+  ContentEditable stuff
+
+Plot
+  Compiler
+
+CustomFn
+  Add new custom fn
+  Change label
+
+Add new exprRoot
 
 
-
-
-up and down arrows
-enter from anywhere
-fix autofocus
-Parens
-
-
-graph
-
-
-label line outputs
-do a cleanup pass on stylus
-
-
-handle invalid (not yet reached or deleted) line references
-
-
-cleanup
-  Move enter functionality somewhere else?
-  Can PlaceholderView and WordSpacerView be unified?
-  How can enter functionality be added to ParamValueView?
-  rename C. to M., R. to V.?
-  - shouldn't become subtract if it was followed by an op (e.g. that * -2)
-  wordIndex on WordView is awkward wrt modularity
-    could make WordSlotView {word, wordIndex} as WordView {word} parent
-
-
-
-Store history
-  Undo
-  Tagging snapshots
