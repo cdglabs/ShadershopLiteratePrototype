@@ -68,9 +68,13 @@ canvas
   margin-right 12px
 
 
+.RootExprTree
+  inline(top)
+  margin-right 6px
+
 .ExprTree
   white-space nowrap
-  inline(top)
+  inline(bottom)
 
 .ExprNode
   position relative
@@ -80,8 +84,6 @@ canvas
   width 210px
   &:hover
     background-color #eff
-  .ExprTree
-    inline(bottom)
 
 .ExprNodePlaceholder
   width 216px
@@ -129,7 +131,7 @@ canvas
 .FnLabel
   inline(middle)
   margin-left 6px
-  min-width 11px
+  min-width 11px // so +, -, *, and / line up
 
 .CustomFnHeader
   padding-bottom 12px
@@ -166,25 +168,14 @@ canvas
 
 
 
-CreateExprButtonSize = 14px
+PlusButtonSize = 14px
 
-.ExprNode:hover .CreateExprButton
-  opacity 1.0
-
-.CreateExprButton
-  position absolute
-  z-index 10
-  left 50%
-  margin-left -0.5 * CreateExprButtonSize
-  bottom -0.5 * CreateExprButtonSize
-  width CreateExprButtonSize
-  height CreateExprButtonSize
+.CreateExprButton, .CreateRootExprButton
+  width PlusButtonSize
+  height PlusButtonSize
   padding 0
-  line-height CreateExprButtonSize
+  line-height PlusButtonSize
   font-size 9px
-
-  opacity 0
-
   color #777
   font-family verdana
   font-weight bold
@@ -194,7 +185,6 @@ CreateExprButtonSize = 14px
   box-shadow 0 2px 1px rgba(0,0,0,0.16), 0 0 1px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.55)
   border-radius 20px
   border 0px
-
   &:before
     content "+"
   &:hover
@@ -202,4 +192,23 @@ CreateExprButtonSize = 14px
   &:active
     background-image linear-gradient(to bottom, #cacaca, #d5d5d5)
     box-shadow 0 1px 1px rgba(255,255,255,0.35), inset 0 0 1px rgba(0,0,0,0.5), inset 0 1px 4px rgba(0,0,0,0.4)
+
+
+.CreateExprButton
+  position absolute
+  z-index 10
+  left 50%
+  margin-left -0.5 * PlusButtonSize
+  bottom -0.5 * PlusButtonSize
+
+.CreateExprButton
+  opacity 0
+.ExprNode:hover .CreateExprButton
+  opacity 1
+
+
+.CreateRootExprButton
+  opacity 0
+.CustomFnDefinition:hover .CreateRootExprButton
+  opacity 1
 

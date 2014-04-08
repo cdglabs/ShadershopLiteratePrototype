@@ -1398,6 +1398,9 @@
     propTypes: {
       customFn: C.CustomFn
     },
+    handleCreateRootExprButtonClick: function() {
+      return this.customFn.createRootExpr();
+    },
     render: function() {
       return R.div({
         className: "CustomFn"
@@ -1413,7 +1416,7 @@
         };
       })(this))), R.div({
         className: "CustomFnDefinition"
-      }), R.div({
+      }, R.div({
         className: "MainPlot"
       }, R.GridView({
         customFn: this.customFn
@@ -1421,11 +1424,27 @@
         expr: this.customFn.rootExprs[0]
       })), this.customFn.rootExprs.map((function(_this) {
         return function(rootExpr) {
-          return R.ExprTreeView({
-            expr: rootExpr
+          return R.RootExprTreeView({
+            rootExpr: rootExpr
           });
         };
-      })(this)));
+      })(this)), R.button({
+        className: "CreateRootExprButton",
+        onClick: this.handleCreateRootExprButtonClick
+      })));
+    }
+  });
+
+  R.create("RootExprTreeView", {
+    propTypes: {
+      rootExpr: C.Expr
+    },
+    render: function() {
+      return R.div({
+        className: "RootExprTree"
+      }, R.ExprTreeView({
+        expr: this.rootExpr
+      }));
     }
   });
 

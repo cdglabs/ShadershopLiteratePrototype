@@ -2,16 +2,22 @@ Variable
   Scrubbing
   ContentEditable stuff
   Transclude
+  hovered variable
 
 CustomFn
   Add new custom fn
   Change label
 
-Add new exprRoot
+RootExpr
+  "pull out" transclude from bottom left
+  reorder by moving top variable?
+  need a way to remove them too
 
 
-
-Pan and zoom plot
+Plot
+  Pan and zoom
+  Spread variable
+  Show number values on top of plot
 
 
 
