@@ -52,7 +52,10 @@ R.create "VariableValueView",
         dx =   e.clientX - originalX
         dy = -(e.clientY - originalY)
 
-        d  = dy
+        if @variable.domain == "domain"
+          d = dx
+        else
+          d = dy
 
         value = originalValue + d * precision
         if precision < 1
@@ -70,7 +73,10 @@ R.create "VariableValueView",
     if @isMounted()
       if @refs.textField.isFocused()
         return config.cursor.text
-    return config.cursor.verticalScrub
+    if @variable.domain == "domain"
+      return config.cursor.horizontalScrub
+    else
+      return config.cursor.verticalScrub
 
   render: ->
     R.span {

@@ -7,6 +7,8 @@ class C.Expr
 
 class C.Variable extends C.Expr
   constructor: (@valueString="0", @label="") ->
+    @domain = "range" # "domain" or "range"
+    @domainCoord = 0
   getValue: ->
     parseFloat(@valueString)
 
@@ -49,6 +51,7 @@ class C.CustomFn extends C.Fn
   constructor: ->
     @label = ""
     variable = new C.Variable("0", "x")
+    variable.domain = "domain"
     @paramVariables = [variable]
     @rootExprs = [variable]
     # For plotting

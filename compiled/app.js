@@ -679,6 +679,8 @@
     function Variable(valueString, label) {
       this.valueString = valueString != null ? valueString : "0";
       this.label = label != null ? label : "";
+      this.domain = "range";
+      this.domainCoord = 0;
     }
 
     Variable.prototype.getValue = function() {
@@ -755,6 +757,7 @@
       var variable;
       this.label = "";
       variable = new C.Variable("0", "x");
+      variable.domain = "domain";
       this.paramVariables = [variable];
       this.rootExprs = [variable];
       this.bounds = {
@@ -2044,7 +2047,11 @@
             var d, digitPrecision, dx, dy, value;
             dx = e.clientX - originalX;
             dy = -(e.clientY - originalY);
-            d = dy;
+            if (_this.variable.domain === "domain") {
+              d = dx;
+            } else {
+              d = dy;
+            }
             value = originalValue + d * precision;
             if (precision < 1) {
               digitPrecision = -Math.round(Math.log(precision) / Math.log(10));
@@ -2070,7 +2077,11 @@
           return config.cursor.text;
         }
       }
-      return config.cursor.verticalScrub;
+      if (this.variable.domain === "domain") {
+        return config.cursor.horizontalScrub;
+      } else {
+        return config.cursor.verticalScrub;
+      }
     },
     render: function() {
       return R.span({
