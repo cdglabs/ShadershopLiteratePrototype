@@ -20,8 +20,8 @@ R.create "CustomFnView",
           R.VariableView {variable: paramVariable}
       R.div {className: "CustomFnDefinition"},
         R.MainPlotView {customFn: @customFn}
-        @customFn.rootExprs.map (rootExpr) =>
-          R.RootExprTreeView {rootExpr: rootExpr}
+        @customFn.rootExprs.map (rootExpr, rootIndex) =>
+          R.RootExprTreeView {rootExpr, rootIndex}
         R.button {className: "CreateRootExprButton", onClick: @handleCreateRootExprButtonClick}
 
 

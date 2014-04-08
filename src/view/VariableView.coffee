@@ -17,8 +17,48 @@ R.create "VariableLabelView",
   handleInput: (newValue) ->
     @variable.label = newValue
 
+  handleMouseDown: (e) ->
+    return if @refs.textField.isFocused()
+    UI.preventDefault(e)
+
+    @startTransclude(e)
+
+    util.onceDragConsummated e, null, =>
+      @refs.textField.selectAll()
+
+  startTransclude: (e) ->
+    UI.dragging = {
+      cursor: config.cursor.grabbing
+    }
+
+    util.onceDragConsummated e, =>
+      UI.dragging = {
+        cursor: config.cursor.grabbing
+        offset: {x: -4, y: -10}
+        render: =>
+          R.VariableView {variable: @variable}
+        onMove: (e) =>
+          dropView = UI.getViewUnderMouse()
+          dropView = dropView?.lookupViewWithKey("handleTransclusionDrop")
+          UI.activeTransclusionDropView = dropView
+        onUp: (e) =>
+          if UI.activeTransclusionDropView
+            UI.activeTransclusionDropView.handleTransclusionDrop(@variable)
+          UI.activeTransclusionDropView = null
+
+      }
+
+  cursor: ->
+    if @isMounted()
+      if @refs.textField?.isFocused()
+        return config.cursor.text
+    return config.cursor.grab
+
   render: ->
-    R.span {},
+    R.span {
+      style: {cursor: @cursor()}
+      onMouseDown: @handleMouseDown
+    },
       R.TextFieldView {
         ref: "textField"
         className: "VariableLabel"
@@ -40,6 +80,12 @@ R.create "VariableValueView",
     return if @refs.textField.isFocused()
     UI.preventDefault(e)
 
+    @startScrub(e)
+
+    util.onceDragConsummated e, null, =>
+      @refs.textField.selectAll()
+
+  startScrub: (e) ->
     originalX = e.clientX
     originalY = e.clientY
     originalValue = @variable.getValue()
@@ -65,9 +111,6 @@ R.create "VariableValueView",
           @variable.valueString = value.toFixed(0)
       onUp: =>
     }
-
-    util.onceDragConsummated e, null, =>
-      @refs.textField.selectAll()
 
   cursor: ->
     if @isMounted()

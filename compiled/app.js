@@ -1413,9 +1413,10 @@
       }, R.MainPlotView({
         customFn: this.customFn
       }), this.customFn.rootExprs.map((function(_this) {
-        return function(rootExpr) {
+        return function(rootExpr, rootIndex) {
           return R.RootExprTreeView({
-            rootExpr: rootExpr
+            rootExpr: rootExpr,
+            rootIndex: rootIndex
           });
         };
       })(this)), R.button({
@@ -1613,7 +1614,8 @@
 }, "view/RootExprTreeView": function(exports, require, module) {(function() {
   R.create("RootExprTreeView", {
     propTypes: {
-      rootExpr: C.Expr
+      rootExpr: C.Expr,
+      rootIndex: Number
     },
     render: function() {
       return R.div({
@@ -1792,7 +1794,9 @@
             return function(paramExpr, paramIndex) {
               if (paramIndex > 0) {
                 return R.ParamExprView({
-                  expr: paramExpr
+                  expr: paramExpr,
+                  parentApplication: _this.expr,
+                  paramIndex: paramIndex
                 });
               }
             };
@@ -1801,7 +1805,7 @@
       } else if (this.expr instanceof C.Variable) {
         return R.div({
           className: "ExprInternals"
-        }, R.VariableView({
+        }, R.VariableLeafView({
           variable: this.expr
         }));
       }
@@ -1810,18 +1814,57 @@
 
   R.create("ParamExprView", {
     propTypes: {
-      expr: C.Expr
+      expr: C.Expr,
+      parentApplication: C.Application,
+      paramIndex: Number
+    },
+    handleTransclusionDrop: function(droppedExpr) {
+      return this.parentApplication.paramExprs[this.paramIndex] = droppedExpr;
     },
     render: function() {
-      if (this.expr instanceof C.Application) {
-        return R.ExprThumbnailView({
-          expr: this.expr
-        });
-      } else if (this.expr instanceof C.Variable) {
-        return R.VariableView({
-          variable: this.expr
-        });
+      var className;
+      className = R.cx({
+        "ActiveTransclusionDrop": this === UI.activeTransclusionDropView
+      });
+      return R.span({
+        className: className
+      }, this.expr instanceof C.Application ? R.ExprThumbnailView({
+        expr: this.expr
+      }) : this.expr instanceof C.Variable ? R.VariableView({
+        variable: this.expr
+      }) : void 0);
+    }
+  });
+
+  R.create("VariableLeafView", {
+    propTypes: {
+      variable: C.Variable
+    },
+    handleTransclusionDrop: function(droppedExpr) {
+      var array, grandparentExprTreeView, index, parentExprTreeView, rootExprTreeView;
+      parentExprTreeView = this.lookupView("ExprTreeView");
+      grandparentExprTreeView = parentExprTreeView.ownerView().lookupView("ExprTreeView");
+      if (grandparentExprTreeView) {
+        array = grandparentExprTreeView.expr.paramExprs;
+        index = 0;
+      } else {
+        rootExprTreeView = parentExprTreeView.lookupView("RootExprTreeView");
+        array = this.lookup("customFn").rootExprs;
+        index = rootExprTreeView.rootIndex;
       }
+      console.log(parentExprTreeView, grandparentExprTreeView, array, index);
+      return array[index] = droppedExpr;
+    },
+    render: function() {
+      var className;
+      className = R.cx({
+        "ActiveTransclusionDrop": this === UI.activeTransclusionDropView
+      });
+      return R.span({
+        className: className
+      }, R.VariableView({
+        variable: this.variable
+      }));
     }
   });
 
@@ -2013,8 +2056,67 @@
     handleInput: function(newValue) {
       return this.variable.label = newValue;
     },
+    handleMouseDown: function(e) {
+      if (this.refs.textField.isFocused()) {
+        return;
+      }
+      UI.preventDefault(e);
+      this.startTransclude(e);
+      return util.onceDragConsummated(e, null, (function(_this) {
+        return function() {
+          return _this.refs.textField.selectAll();
+        };
+      })(this));
+    },
+    startTransclude: function(e) {
+      UI.dragging = {
+        cursor: config.cursor.grabbing
+      };
+      return util.onceDragConsummated(e, (function(_this) {
+        return function() {
+          return UI.dragging = {
+            cursor: config.cursor.grabbing,
+            offset: {
+              x: -4,
+              y: -10
+            },
+            render: function() {
+              return R.VariableView({
+                variable: _this.variable
+              });
+            },
+            onMove: function(e) {
+              var dropView;
+              dropView = UI.getViewUnderMouse();
+              dropView = dropView != null ? dropView.lookupViewWithKey("handleTransclusionDrop") : void 0;
+              return UI.activeTransclusionDropView = dropView;
+            },
+            onUp: function(e) {
+              if (UI.activeTransclusionDropView) {
+                UI.activeTransclusionDropView.handleTransclusionDrop(_this.variable);
+              }
+              return UI.activeTransclusionDropView = null;
+            }
+          };
+        };
+      })(this));
+    },
+    cursor: function() {
+      var _ref;
+      if (this.isMounted()) {
+        if ((_ref = this.refs.textField) != null ? _ref.isFocused() : void 0) {
+          return config.cursor.text;
+        }
+      }
+      return config.cursor.grab;
+    },
     render: function() {
-      return R.span({}, R.TextFieldView({
+      return R.span({
+        style: {
+          cursor: this.cursor()
+        },
+        onMouseDown: this.handleMouseDown
+      }, R.TextFieldView({
         ref: "textField",
         className: "VariableLabel",
         value: this.variable.label,
@@ -2031,16 +2133,24 @@
       return this.variable.valueString = newValue;
     },
     handleMouseDown: function(e) {
-      var originalValue, originalX, originalY, precision;
       if (this.refs.textField.isFocused()) {
         return;
       }
       UI.preventDefault(e);
+      this.startScrub(e);
+      return util.onceDragConsummated(e, null, (function(_this) {
+        return function() {
+          return _this.refs.textField.selectAll();
+        };
+      })(this));
+    },
+    startScrub: function(e) {
+      var originalValue, originalX, originalY, precision;
       originalX = e.clientX;
       originalY = e.clientY;
       originalValue = this.variable.getValue();
       precision = 0.1;
-      UI.dragging = {
+      return UI.dragging = {
         cursor: this.cursor(),
         onMove: (function(_this) {
           return function(e) {
@@ -2065,11 +2175,6 @@
           return function() {};
         })(this)
       };
-      return util.onceDragConsummated(e, null, (function(_this) {
-        return function() {
-          return _this.refs.textField.selectAll();
-        };
-      })(this));
     },
     cursor: function() {
       if (this.isMounted()) {
@@ -2285,706 +2390,6 @@
         drawFn: this.drawFn,
         ref: "canvas"
       });
-    }
-  });
-
-}).call(this);
-}, "view/program/LineView": function(exports, require, module) {(function() {
-  R.create("LineView", {
-    propTypes: {
-      line: C.Line,
-      lineIndex: Number
-    },
-    plots: function() {
-      return this.lookup("program").plots;
-    },
-    shouldRenderPlot: function(plot) {
-      var deepDependencies;
-      deepDependencies = this.lookup("program").getDeepDependencies(this.line);
-      return _.contains(deepDependencies, plot.x) || this.line === plot.x;
-    },
-    render: function() {
-      var className;
-      className = R.cx({
-        line: true,
-        isIndependent: !this.line.hasReferenceToThat()
-      });
-      return R.div({
-        className: className
-      }, R.div({
-        className: "lineCell"
-      }, R.WordListView({
-        wordList: this.line.wordList
-      })), R.div({
-        className: "lineCell"
-      }, R.LineOutputView({
-        line: this.line
-      })), this.plots().map((function(_this) {
-        return function(plot, index) {
-          return R.div({
-            className: "lineCell",
-            key: index
-          }, _this.shouldRenderPlot(plot) ? R.div({
-            className: "plotThumbnail"
-          }, R.PlotView({
-            plot: plot,
-            line: _this.line
-          })) : void 0);
-        };
-      })(this)));
-    }
-  });
-
-}).call(this);
-}, "view/program/ProgramView": function(exports, require, module) {(function() {
-  R.create("ProgramView", {
-    propTypes: {
-      program: C.Program
-    },
-    insertLineBefore: function(index) {
-      var line;
-      line = new C.Line();
-      return this.program.lines.splice(index, 0, line);
-    },
-    removeLineAt: function(index) {
-      return this.program.lines.splice(index, 1);
-    },
-    lastLineForPlot: function(plot) {
-      var deepDependencies, lastLine, line, _i, _len, _ref;
-      lastLine = null;
-      _ref = this.program.lines;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        line = _ref[_i];
-        deepDependencies = this.program.getDeepDependencies(line);
-        if (_.contains(deepDependencies, plot.x)) {
-          lastLine = line;
-        }
-      }
-      return lastLine;
-    },
-    render: function() {
-      return R.div({
-        className: "program"
-      }, R.div({
-        className: "mainPlot"
-      }, R.PlotView({
-        plot: this.program.plots[0],
-        line: this.lastLineForPlot(this.program.plots[0])
-      })), R.div({
-        className: "programTable"
-      }, R.ProgramTableHeadersView({
-        program: this.program
-      }), this.program.lines.map((function(_this) {
-        return function(line, lineIndex) {
-          return R.LineView({
-            line: line,
-            lineIndex: lineIndex,
-            key: lineIndex
-          });
-        };
-      })(this))));
-    }
-  });
-
-  R.create("ProgramTableHeadersView", {
-    propTypes: {
-      program: C.Program
-    },
-    addPlot: function() {
-      return this.program.plots.push(new C.CartesianPlot());
-    },
-    render: function() {
-      return R.div({
-        className: "programHeader"
-      }, R.div({
-        className: "lineCell"
-      }, "Program"), R.div({
-        className: "lineCell"
-      }, "Result"), this.program.plots.map((function(_this) {
-        return function(plot, index) {
-          return R.PlotHeaderView({
-            plot: plot,
-            key: index
-          });
-        };
-      })(this)), R.div({
-        className: "lineCell"
-      }, R.button({
-        onClick: this.addPlot
-      }, "+")));
-    }
-  });
-
-  R.create("PlotHeaderView", {
-    propTypes: {
-      plot: C.Plot
-    },
-    render: function() {
-      return R.div({
-        className: "lineCell"
-      }, R.div({}, "Cartesian"), R.XParamView({
-        plot: this.plot
-      }));
-    }
-  });
-
-}).call(this);
-}, "view/word/LineOutputView": function(exports, require, module) {(function() {
-  var Compiler, evaluate;
-
-  Compiler = require("../../compile/Compiler");
-
-  evaluate = require("../../compile/evaluate");
-
-  R.create("LineOutputView", {
-    propTypes: {
-      line: C.Line
-    },
-    mixins: [R.StartTranscludeMixin],
-    evaluate: function() {
-      var compiled, compiler, id, program, value;
-      program = this.lookup("program");
-      id = C.id(this.line);
-      compiler = new Compiler();
-      compiled = compiler.compile(program);
-      compiled += "\n" + id + ";";
-      value = evaluate(compiled);
-      return util.formatFloat(value);
-    },
-    handleMouseDown: function(e) {
-      UI.preventDefault(e);
-      return this.startTransclude(e, this.line, this.render.bind(this));
-    },
-    cursor: function() {
-      return config.cursor.grab;
-    },
-    handleMouseEnter: function() {
-      return UI.setHoveredWord(this.line);
-    },
-    handleMouseLeave: function() {
-      return UI.setHoveredWord(null);
-    },
-    render: function() {
-      var className;
-      className = R.cx({
-        word: true,
-        lineOutput: true,
-        highlighted: UI.getHighlightedWord() === this.line
-      });
-      return R.div({
-        className: className,
-        style: {
-          cursor: this.cursor()
-        },
-        onMouseDown: this.handleMouseDown,
-        onMouseEnter: this.handleMouseEnter,
-        onMouseLeave: this.handleMouseLeave
-      }, this.evaluate());
-    }
-  });
-
-}).call(this);
-}, "view/word/ParamView": function(exports, require, module) {(function() {
-  R.create("ParamView", {
-    propTypes: {
-      param: C.Param
-    },
-    handleMouseEnter: function() {
-      return UI.setHoveredWord(this.param);
-    },
-    handleMouseLeave: function() {
-      return UI.setHoveredWord(null);
-    },
-    render: function() {
-      var className;
-      className = R.cx({
-        word: true,
-        param: true,
-        highlighted: UI.getHighlightedWord() === this.param
-      });
-      return R.div({
-        className: className,
-        onMouseEnter: this.handleMouseEnter,
-        onMouseLeave: this.handleMouseLeave
-      }, R.ParamLabelView({
-        param: this.param
-      }), R.ParamValueView({
-        param: this.param
-      }));
-    }
-  });
-
-  R.create("ParamLabelView", {
-    propTypes: {
-      param: C.Param
-    },
-    mixins: [R.StartTranscludeMixin],
-    handleInput: function(newValue) {
-      this.param.label = newValue;
-      if (this.param.label.slice(-1) === ":") {
-        this.param.label = this.param.label.slice(0, -1);
-        return this.focusValue();
-      }
-    },
-    focusValue: function() {
-      var paramView;
-      paramView = this.lookupView("ParamView");
-      return UI.setAutoFocus({
-        descendantOf: [paramView, "ParamValueView"],
-        location: "start"
-      });
-    },
-    handleMouseDown: function(e) {
-      var paramView, _ref;
-      if ((_ref = this.refs.textField) != null ? _ref.isFocused() : void 0) {
-        return;
-      }
-      UI.preventDefault(e);
-      paramView = this.lookupView("ParamView");
-      this.startTransclude(e, this.param, paramView.render.bind(paramView));
-      return util.onceDragConsummated(e, null, (function(_this) {
-        return function() {
-          var _ref1;
-          return (_ref1 = _this.refs.textField) != null ? _ref1.selectAll() : void 0;
-        };
-      })(this));
-    },
-    cursor: function() {
-      var _ref;
-      if (this.isMounted()) {
-        if ((_ref = this.refs.textField) != null ? _ref.isFocused() : void 0) {
-          return config.cursor.text;
-        }
-      }
-      return config.cursor.grab;
-    },
-    render: function() {
-      return R.span({
-        style: {
-          cursor: this.cursor()
-        },
-        onMouseDown: this.handleMouseDown
-      }, R.TextFieldView({
-        className: "paramLabel",
-        value: this.param.label,
-        onInput: this.handleInput,
-        ref: "textField"
-      }));
-    }
-  });
-
-  R.create("ParamValueView", {
-    propTypes: {
-      param: C.Param
-    },
-    labelPart: function() {
-      var matches;
-      matches = this.param.valueString.match(/^[^0-9.-]+/);
-      return matches != null ? matches[0] : void 0;
-    },
-    placeholderPart: function() {
-      var matches;
-      if (this.param.valueString === "-") {
-        return null;
-      }
-      matches = this.param.valueString.match(/[^0-9.]+$/);
-      return matches != null ? matches[0] : void 0;
-    },
-    handleInput: function(newValue) {
-      var labelPart, placeholderPart, wordIndex, wordListView;
-      this.param.valueString = newValue;
-      if (labelPart = this.labelPart()) {
-        this.param.valueString = this.param.valueString.slice(labelPart.length);
-        this.param.label = this.param.label + labelPart;
-        return this.focusLabel();
-      } else if (placeholderPart = this.placeholderPart()) {
-        this.param.valueString = this.param.valueString.slice(0, -placeholderPart.length);
-        wordListView = this.lookupView("WordListView");
-        wordIndex = this.lookup("wordIndex");
-        return wordListView.insertPlaceholderBefore(wordIndex + 1, placeholderPart);
-      }
-    },
-    focusLabel: function() {
-      var paramView;
-      paramView = this.lookupView("ParamView");
-      return UI.setAutoFocus({
-        descendantOf: [paramView, "ParamLabelView"]
-      });
-    },
-    handleBlur: function() {
-      return this.param.fixPrecision();
-    },
-    handleMouseDown: function(e) {
-      var originalValue, originalX, originalY;
-      if (this.refs.textField.isFocused()) {
-        return;
-      }
-      UI.preventDefault(e);
-      originalX = e.clientX;
-      originalY = e.clientY;
-      originalValue = this.param.value();
-      UI.setActiveWord(this.param);
-      UI.dragging = {
-        cursor: this.cursor(),
-        onMove: (function(_this) {
-          return function(e) {
-            var d, digitPrecision, dx, dy, value;
-            dx = e.clientX - originalX;
-            dy = -(e.clientY - originalY);
-            d = dy;
-            value = originalValue + d * _this.param.precision;
-            if (_this.param.precision < 1) {
-              digitPrecision = -Math.round(Math.log(_this.param.precision) / Math.log(10));
-              return _this.param.valueString = value.toFixed(digitPrecision);
-            } else {
-              return _this.param.valueString = value.toFixed(0);
-            }
-          };
-        })(this),
-        onUp: (function(_this) {
-          return function() {
-            return UI.setActiveWord(null);
-          };
-        })(this)
-      };
-      return util.onceDragConsummated(e, null, (function(_this) {
-        return function() {
-          return _this.refs.textField.selectAll();
-        };
-      })(this));
-    },
-    cursor: function() {
-      if (this.isMounted()) {
-        if (this.refs.textField.isFocused()) {
-          return config.cursor.text;
-        }
-      }
-      return config.cursor.verticalScrub;
-    },
-    render: function() {
-      return R.span({
-        style: {
-          cursor: this.cursor()
-        },
-        onMouseDown: this.handleMouseDown
-      }, R.TextFieldView({
-        className: "paramValue",
-        value: this.param.valueString,
-        onInput: this.handleInput,
-        onBlur: this.handleBlur,
-        ref: "textField"
-      }));
-    }
-  });
-
-}).call(this);
-}, "view/word/WordListView": function(exports, require, module) {(function() {
-  R.create("WordListView", {
-    propTypes: {
-      wordList: C.WordList
-    },
-    insertWordBefore: function(index, word) {
-      this.wordList.splice(index, 0, word);
-      return this.setAutoFocusBefore(index + 1);
-    },
-    insertPlaceholderBefore: function(index, string) {
-      var placeholder, that, word;
-      placeholder = new C.Placeholder(string);
-      word = placeholder.convert();
-      this.wordList.splice(index, 0, word);
-      if (index === 0 && word instanceof C.Op) {
-        that = new C.That();
-        this.wordList.splice(0, 0, that);
-        index += 1;
-      }
-      return this.setAppropriateAutoFocus(index);
-    },
-    replaceWordAt: function(index, word) {
-      this.wordList.splice(index, 1, word);
-      return this.setAppropriateAutoFocus(index);
-    },
-    removeWordAt: function(index) {
-      this.wordList.splice(index, 1);
-      return this.setAutoFocusBefore(index);
-    },
-    setAppropriateAutoFocus: function(wordIndex) {
-      var word;
-      word = this.wordList.words[wordIndex];
-      if (word instanceof C.Param) {
-        return UI.setAutoFocus({
-          descendantOf: [this, "ParamValueView"],
-          props: {
-            wordIndex: wordIndex
-          }
-        });
-      } else if (word instanceof C.Placeholder) {
-        return UI.setAutoFocus({
-          descendantOf: [this],
-          props: {
-            wordIndex: wordIndex
-          }
-        });
-      } else {
-        return this.setAutoFocusBefore(wordIndex + 1);
-      }
-    },
-    setAutoFocusBefore: function(wordIndex) {
-      return UI.setAutoFocus({
-        descendantOf: this,
-        props: {
-          wordSpacerIndex: wordIndex
-        }
-      });
-    },
-    render: function() {
-      var index, result, word, words, _i, _len;
-      words = this.wordList.words;
-      result = [];
-      for (index = _i = 0, _len = words.length; _i < _len; index = ++_i) {
-        word = words[index];
-        result.push(R.WordSpacerView({
-          wordSpacerIndex: index,
-          key: "spacer" + index
-        }));
-        result.push(R.WordView({
-          word: word,
-          wordIndex: index,
-          key: "word" + index
-        }));
-      }
-      result.push(R.WordSpacerView({
-        wordSpacerIndex: index,
-        key: "spacer" + index
-      }));
-      result = _.filter(result, function(instance) {
-        var nextWord, previousWord;
-        if ((index = instance.props.wordSpacerIndex) != null) {
-          previousWord = words[index - 1];
-          nextWord = words[index];
-          if (previousWord instanceof C.Placeholder || nextWord instanceof C.Placeholder) {
-            return false;
-          }
-        }
-        return true;
-      });
-      _.first(result).props.isFirstWord = true;
-      _.last(result).props.isLastWord = true;
-      return R.div({
-        className: "wordList"
-      }, result);
-    }
-  });
-
-}).call(this);
-}, "view/word/WordSpacerView": function(exports, require, module) {(function() {
-  R.create("WordSpacerView", {
-    propTypes: {
-      wordSpacerIndex: Number,
-      isFirstWord: Boolean,
-      isLastWord: Boolean
-    },
-    getDefaultProps: function() {
-      return {
-        isFirstWord: false,
-        isLastWord: false
-      };
-    },
-    handleInput: function(newValue) {
-      var wordListView;
-      wordListView = this.lookupView("WordListView");
-      return wordListView.insertPlaceholderBefore(this.wordSpacerIndex, newValue);
-    },
-    handleBackSpace: function() {
-      var line, lineIndex, previousLine, programView, wordListView;
-      if (this.isFirstWord) {
-        programView = this.lookupView("ProgramView");
-        lineIndex = this.lookup("lineIndex");
-        line = programView.program.lines[lineIndex];
-        previousLine = programView.program.lines[lineIndex - 1];
-        if (previousLine != null ? previousLine.wordList.isEmpty() : void 0) {
-          programView.removeLineAt(lineIndex - 1);
-          return UI.setAutoFocus({
-            descendantOf: programView,
-            props: {
-              lineIndex: lineIndex - 1,
-              isFirstWord: true
-            }
-          });
-        } else if (line.wordList.isEmpty() && lineIndex > 0) {
-          programView.removeLineAt(lineIndex);
-          return UI.setAutoFocus({
-            descendantOf: programView,
-            props: {
-              lineIndex: lineIndex - 1,
-              isLastWord: true
-            }
-          });
-        }
-      } else {
-        wordListView = this.lookupView("WordListView");
-        return wordListView.removeWordAt(this.wordSpacerIndex - 1);
-      }
-    },
-    handleEnter: function() {
-      var lineIndex, programView, wordListView;
-      wordListView = this.lookupView("WordListView");
-      programView = this.lookupView("ProgramView");
-      lineIndex = this.lookup("lineIndex");
-      if (this.isFirstWord) {
-        programView.insertLineBefore(lineIndex);
-        return UI.setAutoFocus({
-          descendantOf: programView,
-          props: {
-            lineIndex: lineIndex + 1
-          }
-        });
-      } else if (this.isLastWord) {
-        programView.insertLineBefore(lineIndex + 1);
-        return UI.setAutoFocus({
-          descendantOf: programView,
-          props: {
-            lineIndex: lineIndex + 1
-          }
-        });
-      }
-    },
-    handleTransclusionDrop: function(word) {
-      var wordListView;
-      wordListView = this.lookupView("WordListView");
-      return wordListView.insertWordBefore(this.wordSpacerIndex, word);
-    },
-    render: function() {
-      var className;
-      className = R.cx({
-        wordSpacer: true,
-        activeTransclusionDrop: this === UI.activeTransclusionDropView
-      });
-      return R.TextFieldView({
-        className: className,
-        onInput: this.handleInput,
-        onBackSpace: this.handleBackSpace,
-        onEnter: this.handleEnter
-      });
-    }
-  });
-
-}).call(this);
-}, "view/word/WordView": function(exports, require, module) {(function() {
-  R.create("WordView", {
-    propTypes: {
-      word: C.Word,
-      wordIndex: Number
-    },
-    getDefaultProps: function() {
-      return {
-        wordIndex: -1
-      };
-    },
-    render: function() {
-      if (this.word instanceof C.Placeholder) {
-        return R.PlaceholderView({
-          placeholder: this.word
-        });
-      } else if (this.word instanceof C.Param) {
-        return R.ParamView({
-          param: this.word
-        });
-      } else if (this.word instanceof C.Op) {
-        return R.OpView({
-          op: this.word
-        });
-      } else if (this.word instanceof C.That) {
-        return R.ThatView({});
-      } else if (this.word instanceof C.Application) {
-        return R.ApplicationView({
-          application: this.word
-        });
-      } else if (this.word instanceof C.Line) {
-        return R.LineOutputView({
-          line: this.word
-        });
-      }
-    }
-  });
-
-  R.create("PlaceholderView", {
-    propTypes: {
-      placeholder: C.Placeholder
-    },
-    handleInput: function(newValue) {
-      var word, wordIndex, wordListView;
-      this.placeholder.string = newValue;
-      wordListView = this.lookupView("WordListView");
-      wordIndex = this.lookup("wordIndex");
-      if (newValue === "") {
-        wordListView.removeWordAt(wordIndex);
-        return;
-      }
-      word = this.placeholder.convert();
-      if (word !== this.placeholder) {
-        return wordListView.replaceWordAt(wordIndex, word);
-      }
-    },
-    render: function() {
-      return R.TextFieldView({
-        className: "word placeholder",
-        value: this.placeholder.string,
-        onInput: this.handleInput
-      });
-    }
-  });
-
-  R.create("OpView", {
-    propTypes: {
-      op: C.Op
-    },
-    render: function() {
-      return R.div({
-        className: "word op"
-      }, this.op.opString);
-    }
-  });
-
-  R.create("ThatView", {
-    render: function() {
-      return R.div({
-        className: "word that"
-      }, "That");
-    }
-  });
-
-  R.create("ApplicationView", {
-    propTypes: {
-      application: C.Application
-    },
-    renderParameters: function() {
-      var i, result, wordList, _i, _len, _ref;
-      result = [];
-      _ref = this.application.params;
-      for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
-        wordList = _ref[i];
-        result.push(R.WordListView({
-          wordList: wordList,
-          key: "param" + i
-        }));
-        result.push(R.div({
-          className: "word comma",
-          key: "comma" + i
-        }, ","));
-      }
-      result.pop();
-      return result;
-    },
-    render: function() {
-      return R.div({
-        className: "application"
-      }, R.div({
-        className: "word builtInFn"
-      }, this.application.fn.fnName), R.div({
-        className: "word paren"
-      }, "("), this.renderParameters(), R.div({
-        className: "word paren"
-      }, ")"));
     }
   });
 

@@ -28,3 +28,7 @@ Evaluation
 Cleanup
   Get rid of lookup calls and do explicit passing
   Will need to cleanup variable domain/range stuff when generalizing to more than R1 -> R1
+
+
+Optimization
+  Make plots cache appropriately

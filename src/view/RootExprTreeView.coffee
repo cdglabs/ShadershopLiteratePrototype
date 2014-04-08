@@ -1,6 +1,7 @@
 R.create "RootExprTreeView",
   propTypes:
     rootExpr: C.Expr
+    rootIndex: Number
 
   render: ->
     R.div {className: "RootExprTree"},
@@ -132,21 +133,63 @@ R.create "ExprInternalsView",
             @expr.fn.getLabel()
           @expr.paramExprs.map (paramExpr, paramIndex) =>
             if paramIndex > 0
-              R.ParamExprView {expr: paramExpr}
+              R.ParamExprView {
+                expr: paramExpr
+                parentApplication: @expr
+                paramIndex: paramIndex
+              }
     else if @expr instanceof C.Variable
       R.div {className: "ExprInternals"},
-        R.VariableView {variable: @expr}
+        R.VariableLeafView {variable: @expr}
 
 
 R.create "ParamExprView",
   propTypes:
     expr: C.Expr
+    parentApplication: C.Application
+    paramIndex: Number
+
+  handleTransclusionDrop: (droppedExpr) ->
+    @parentApplication.paramExprs[@paramIndex] = droppedExpr
 
   render: ->
-    if @expr instanceof C.Application
-      R.ExprThumbnailView {expr: @expr}
-    else if @expr instanceof C.Variable
-      R.VariableView {variable: @expr}
+    className = R.cx {
+      "ActiveTransclusionDrop": this == UI.activeTransclusionDropView
+    }
+    R.span {className: className},
+      if @expr instanceof C.Application
+        R.ExprThumbnailView {expr: @expr}
+      else if @expr instanceof C.Variable
+        R.VariableView {variable: @expr}
+
+
+R.create "VariableLeafView",
+  propTypes:
+    variable: C.Variable
+
+  handleTransclusionDrop: (droppedExpr) ->
+    parentExprTreeView = @lookupView("ExprTreeView")
+    grandparentExprTreeView = parentExprTreeView.ownerView().lookupView("ExprTreeView")
+    if grandparentExprTreeView
+      array = grandparentExprTreeView.expr.paramExprs
+      index = 0
+    else
+      rootExprTreeView = parentExprTreeView.lookupView("RootExprTreeView")
+      array = @lookup("customFn").rootExprs
+      index = rootExprTreeView.rootIndex
+    console.log parentExprTreeView, grandparentExprTreeView, array, index
+    array[index] = droppedExpr
+
+  render: ->
+    className = R.cx {
+      "ActiveTransclusionDrop": this == UI.activeTransclusionDropView
+    }
+    R.span {className: className},
+      R.VariableView {variable: @variable}
+
+
+
+
 
 
 R.create "ExprThumbnailView",
