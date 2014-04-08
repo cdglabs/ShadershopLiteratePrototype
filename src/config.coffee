@@ -2,7 +2,7 @@ window.config = config = {
 
   storageName: "spaceshader4"
 
-  resolution: 1
+  resolution: 0.5
 
   # In pixels:
   minGridSpacing: 70

@@ -1,5 +1,6 @@
 Compiler = require("../../compile/Compiler")
 evaluate = require("../../compile/evaluate")
+evaluateDiscontinuity = require("../../compile/evaluateDiscontinuity")
 
 R.create "PlotView",
   propTypes:
@@ -27,6 +28,8 @@ R.create "PlotView",
     compiled = @compile()
     return unless compiled
     fn = evaluate(compiled)
+    testDiscontinuityHelper = evaluateDiscontinuity(compiled)
+    testDiscontinuity = (range) -> testDiscontinuityHelper(range) == "found"
 
     util.canvas.clear(ctx)
 
@@ -37,9 +40,11 @@ R.create "PlotView",
       yMin: yMin
       yMax: yMax
       fn: fn
+      testDiscontinuity: testDiscontinuity
 
     ctx.strokeStyle = "#000"
     ctx.lineWidth = 1.5
+    ctx.lineCap = "round"
     ctx.stroke()
 
 

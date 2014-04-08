@@ -78,18 +78,19 @@ R.create "ExprNodeView",
               # HACK: This is a really loopy way to pass in customFn
               R.ExprNodeView {expr, customFn, isDraggingCopy: true}
           onMove: (e) ->
-            if customFn?
-              customFn.removeApplication(expr)
-              customFn = null
-              # TODO: Maybe we'll want to preserve sub-Applications somewhere.
-
             insertAfterEl = null
 
             exprNodeEls = document.querySelectorAll(".CustomFn .ExprNode")
             for exprNodeEl in exprNodeEls
               rect = exprNodeEl.getBoundingClientRect()
-              if rect.bottom + myHeight * 1.5 > e.clientY > rect.top + myHeight and rect.left < e.clientX < rect.right
+              if rect.bottom + myHeight * 1.5 > e.clientY > rect.top + myHeight * 0.5 and rect.left < e.clientX < rect.right
                 insertAfterEl = exprNodeEl
+
+            if customFn?
+              customFn.removeApplication(expr)
+              customFn = null
+              # TODO: Maybe we'll want to preserve sub-Applications somewhere.
+
 
             if insertAfterEl
               exprView = insertAfterEl.dataFor

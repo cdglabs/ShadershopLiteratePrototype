@@ -278,12 +278,127 @@
   };
 
 }).call(this);
+}, "compile/evaluateDiscontinuity": function(exports, require, module) {(function() {
+  var abs, add, ceil, convertFn, cos, div, evaluateDiscontinuity, floor, fract, identity, max, min, mul, pow, sin, sqrt, sub,
+    __slice = [].slice;
+
+  module.exports = evaluateDiscontinuity = function(jsString) {
+    try {
+      return eval(jsString);
+    } catch (_error) {
+      return console.warn("Unable to evaluate:", jsString);
+    }
+  };
+
+  identity = function(a) {
+    return a;
+  };
+
+  add = function(a, b) {
+    return a + b;
+  };
+
+  sub = function(a, b) {
+    return a - b;
+  };
+
+  mul = function(a, b) {
+    return a * b;
+  };
+
+  div = function(a, b) {
+    return a / b;
+  };
+
+  abs = Math.abs;
+
+  fract = function(a) {
+    return a - Math.floor(a);
+  };
+
+  floor = Math.floor;
+
+  ceil = Math.ceil;
+
+  min = Math.min;
+
+  max = Math.max;
+
+  sin = Math.sin;
+
+  cos = Math.cos;
+
+  sqrt = Math.sqrt;
+
+  pow = function(a, b) {
+    return Math.pow(Math.abs(a), b);
+  };
+
+  convertFn = function(fn, detector) {
+    if (detector == null) {
+      detector = null;
+    }
+    return function() {
+      var args;
+      args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+      if (_.any(args, function(x) {
+        return x === "found";
+      })) {
+        return "found";
+      }
+      if (detector != null) {
+        if (detector(args[0][0]) !== detector(args[0][1])) {
+          return "found";
+        }
+      }
+      return args[0].map(function(a, index) {
+        var fnArgs;
+        fnArgs = args.map(function(arg) {
+          var _ref;
+          return (_ref = arg[index]) != null ? _ref : arg;
+        });
+        return fn.apply(null, fnArgs);
+      });
+    };
+  };
+
+  identity = convertFn(identity);
+
+  add = convertFn(add);
+
+  sub = convertFn(sub);
+
+  mul = convertFn(mul);
+
+  div = convertFn(div);
+
+  abs = convertFn(abs);
+
+  fract = convertFn(fract, Math.floor);
+
+  floor = convertFn(floor, Math.floor);
+
+  ceil = convertFn(ceil, Math.ceil);
+
+  min = convertFn(min);
+
+  max = convertFn(max);
+
+  sin = convertFn(sin);
+
+  cos = convertFn(cos);
+
+  sqrt = convertFn(sqrt);
+
+  pow = convertFn(pow);
+
+}).call(this);
 }, "config": function(exports, require, module) {(function() {
   var config;
 
   window.config = config = {
     storageName: "spaceshader4",
-    resolution: 1,
+    resolution: 0.5,
     minGridSpacing: 70,
     hitTolerance: 15,
     snapTolerance: 5,
@@ -693,6 +808,9 @@
 
     CustomFn.prototype.insertApplicationAfter = function(application, refExpr) {
       var array, index, _ref;
+      if (application === refExpr) {
+        return;
+      }
       _ref = this._findExpr(refExpr), array = _ref.array, index = _ref.index;
       application.paramExprs[0] = refExpr;
       return array[index] = application;
@@ -765,38 +883,89 @@
   };
 
   drawCartesian = function(ctx, opts) {
-    var cx, cxMax, cxMin, cy, cyMax, cyMin, dCy, fn, i, lastCx, lastCy, lastSample, x, xMax, xMin, y, yMax, yMin, _i, _ref;
+    var cx, cxMax, cxMin, cy, cyMax, cyMin, dCy1, dCy2, end, fn, i, line, lineStart, lines, numSamples, piece, pieceStart, pieces, previousX, pushLine, pushPiece, sample, samples, start, testDiscontinuity, x, xMax, xMin, y, yMax, yMin, _i, _j, _k, _l, _len, _len1, _len2, _m, _ref, _ref1, _ref2, _ref3, _results;
     xMin = opts.xMin;
     xMax = opts.xMax;
     yMin = opts.yMin;
     yMax = opts.yMax;
     fn = opts.fn;
-    _ref = canvasBounds(ctx), cxMin = _ref.cxMin, cxMax = _ref.cxMax, cyMin = _ref.cyMin, cyMax = _ref.cyMax;
+    testDiscontinuity = (_ref = opts.testDiscontinuity) != null ? _ref : function() {
+      return false;
+    };
+    _ref1 = canvasBounds(ctx), cxMin = _ref1.cxMin, cxMax = _ref1.cxMax, cyMin = _ref1.cyMin, cyMax = _ref1.cyMax;
     ctx.beginPath();
-    lastSample = cxMax / config.resolution;
-    lastCx = null;
-    lastCy = null;
-    dCy = null;
-    for (i = _i = 0; 0 <= lastSample ? _i <= lastSample : _i >= lastSample; i = 0 <= lastSample ? ++_i : --_i) {
+    numSamples = cxMax / config.resolution;
+    samples = [];
+    for (i = _i = 0; 0 <= numSamples ? _i <= numSamples : _i >= numSamples; i = 0 <= numSamples ? ++_i : --_i) {
       cx = i * config.resolution;
       x = lerp(cx, cxMin, cxMax, xMin, xMax);
       y = fn(x);
       cy = lerp(y, yMin, yMax, cyMin, cyMax);
-      if (lastCy == null) {
-        ctx.moveTo(cx, cy);
+      samples.push({
+        x: x,
+        y: y,
+        cx: cx,
+        cy: cy
+      });
+    }
+    pieces = [];
+    pieceStart = 0;
+    pushPiece = function(pieceEnd) {
+      pieces.push({
+        start: pieceStart,
+        end: pieceEnd
+      });
+      return pieceStart = pieceEnd;
+    };
+    for (i = _j = 0, _len = samples.length; _j < _len; i = ++_j) {
+      sample = samples[i];
+      if (i === 0) {
+        continue;
       }
-      if (dCy != null) {
-        if (Math.abs((cy - lastCy) - dCy) > .000001) {
-          ctx.lineTo(lastCx, lastCy);
+      x = samples[i].x;
+      previousX = samples[i - 1].x;
+      if (testDiscontinuity([previousX, x])) {
+        pushPiece(i - 1);
+        pieceStart = i;
+      }
+    }
+    pushPiece(samples.length - 1);
+    lines = [];
+    lineStart = 0;
+    pushLine = function(lineEnd) {
+      lines.push({
+        start: lineStart,
+        end: lineEnd
+      });
+      return lineStart = lineEnd;
+    };
+    for (_k = 0, _len1 = pieces.length; _k < _len1; _k++) {
+      piece = pieces[_k];
+      lineStart = piece.start;
+      for (i = _l = _ref2 = piece.start + 1, _ref3 = piece.end; _ref2 <= _ref3 ? _l <= _ref3 : _l >= _ref3; i = _ref2 <= _ref3 ? ++_l : --_l) {
+        if (i === piece.end) {
+          pushLine(i);
+          continue;
+        }
+        if (i - 1 === lineStart) {
+          continue;
+        }
+        dCy1 = samples[i].cy - samples[i - 1].cy;
+        dCy2 = samples[i - 1].cy - samples[i - 2].cy;
+        if (Math.abs(dCy1 - dCy2) > .000001) {
+          pushLine(i - 1);
         }
       }
-      if (lastCy != null) {
-        dCy = cy - lastCy;
-      }
-      lastCx = cx;
-      lastCy = cy;
     }
-    return ctx.lineTo(cx, cy);
+    _results = [];
+    for (_m = 0, _len2 = lines.length; _m < _len2; _m++) {
+      line = lines[_m];
+      start = samples[line.start];
+      end = samples[line.end];
+      ctx.moveTo(start.cx, start.cy);
+      _results.push(ctx.lineTo(end.cx, end.cy));
+    }
+    return _results;
   };
 
   drawVertical = function(ctx, opts) {
@@ -1488,18 +1657,18 @@
             },
             onMove: function(e) {
               var exprNodeEl, exprNodeEls, exprView, insertAfterEl, refCustomFn, refExpr, _i, _len, _ref, _ref1;
-              if (customFn != null) {
-                customFn.removeApplication(expr);
-                customFn = null;
-              }
               insertAfterEl = null;
               exprNodeEls = document.querySelectorAll(".CustomFn .ExprNode");
               for (_i = 0, _len = exprNodeEls.length; _i < _len; _i++) {
                 exprNodeEl = exprNodeEls[_i];
                 rect = exprNodeEl.getBoundingClientRect();
-                if ((rect.bottom + myHeight * 1.5 > (_ref = e.clientY) && _ref > rect.top + myHeight) && (rect.left < (_ref1 = e.clientX) && _ref1 < rect.right)) {
+                if ((rect.bottom + myHeight * 1.5 > (_ref = e.clientY) && _ref > rect.top + myHeight * 0.5) && (rect.left < (_ref1 = e.clientX) && _ref1 < rect.right)) {
                   insertAfterEl = exprNodeEl;
                 }
+              }
+              if (customFn != null) {
+                customFn.removeApplication(expr);
+                customFn = null;
               }
               if (insertAfterEl) {
                 exprView = insertAfterEl.dataFor;
@@ -1787,11 +1956,13 @@
 
 }).call(this);
 }, "view/plot/PlotView": function(exports, require, module) {(function() {
-  var Compiler, evaluate;
+  var Compiler, evaluate, evaluateDiscontinuity;
 
   Compiler = require("../../compile/Compiler");
 
   evaluate = require("../../compile/evaluate");
+
+  evaluateDiscontinuity = require("../../compile/evaluateDiscontinuity");
 
   R.create("PlotView", {
     propTypes: {
@@ -1815,13 +1986,17 @@
       return customFn.bounds;
     },
     drawFn: function(canvas) {
-      var compiled, ctx, fn, xMax, xMin, yMax, yMin, _ref;
+      var compiled, ctx, fn, testDiscontinuity, testDiscontinuityHelper, xMax, xMin, yMax, yMin, _ref;
       ctx = canvas.getContext("2d");
       compiled = this.compile();
       if (!compiled) {
         return;
       }
       fn = evaluate(compiled);
+      testDiscontinuityHelper = evaluateDiscontinuity(compiled);
+      testDiscontinuity = function(range) {
+        return testDiscontinuityHelper(range) === "found";
+      };
       util.canvas.clear(ctx);
       _ref = this.getBounds(), xMin = _ref.xMin, xMax = _ref.xMax, yMin = _ref.yMin, yMax = _ref.yMax;
       util.canvas.drawCartesian(ctx, {
@@ -1829,10 +2004,12 @@
         xMax: xMax,
         yMin: yMin,
         yMax: yMax,
-        fn: fn
+        fn: fn,
+        testDiscontinuity: testDiscontinuity
       });
       ctx.strokeStyle = "#000";
       ctx.lineWidth = 1.5;
+      ctx.lineCap = "round";
       return ctx.stroke();
     },
     componentDidUpdate: function() {

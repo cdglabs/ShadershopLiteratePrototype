@@ -27,34 +27,75 @@ drawCartesian = (ctx, opts) ->
   yMin = opts.yMin
   yMax = opts.yMax
   fn = opts.fn
+  testDiscontinuity = opts.testDiscontinuity ? () -> false
 
   {cxMin, cxMax, cyMin, cyMax} = canvasBounds(ctx)
 
   ctx.beginPath()
 
-  lastSample = cxMax / config.resolution
 
-  lastCx = null
-  lastCy = null
-  dCy = null
-  for i in [0..lastSample]
+  numSamples = cxMax / config.resolution
+
+  samples = []
+  for i in [0..numSamples]
     cx = i * config.resolution
     x = lerp(cx, cxMin, cxMax, xMin, xMax)
     y = fn(x)
     cy = lerp(y, yMin, yMax, cyMin, cyMax)
+    samples.push {x, y, cx, cy}
 
-    if !lastCy?
-      ctx.moveTo(cx, cy)
 
-    if dCy?
-      if Math.abs((cy - lastCy) - dCy) > .000001
-        ctx.lineTo(lastCx, lastCy)
 
-    dCy = cy - lastCy if lastCy?
-    lastCx = cx
-    lastCy = cy
+  pieces = []
+  pieceStart = 0
+  pushPiece = (pieceEnd) ->
+    pieces.push {start: pieceStart, end: pieceEnd}
+    pieceStart = pieceEnd
 
-  ctx.lineTo(cx, cy)
+  for sample, i in samples
+    if i == 0
+      continue
+
+    x = samples[i].x
+    previousX = samples[i-1].x
+
+    if testDiscontinuity([previousX, x])
+      pushPiece(i-1)
+      pieceStart = i
+
+  pushPiece(samples.length-1)
+
+
+
+  lines = []
+  lineStart = 0
+  pushLine = (lineEnd) ->
+    lines.push {start: lineStart, end: lineEnd}
+    lineStart = lineEnd
+
+  for piece in pieces
+    lineStart = piece.start
+    for i in [piece.start+1 .. piece.end]
+      if i == piece.end
+        pushLine(i)
+        continue
+
+      if i - 1 == lineStart
+        continue
+
+      dCy1 = samples[i  ].cy - samples[i-1].cy
+      dCy2 = samples[i-1].cy - samples[i-2].cy
+
+      if Math.abs(dCy1 - dCy2) > .000001
+        pushLine(i - 1)
+
+
+
+  for line in lines
+    start = samples[line.start]
+    end = samples[line.end]
+    ctx.moveTo(start.cx, start.cy)
+    ctx.lineTo(end.cx, end.cy)
 
 
 drawVertical = (ctx, opts) ->
