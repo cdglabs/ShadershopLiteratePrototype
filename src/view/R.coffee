@@ -107,6 +107,7 @@ require("./CustomFnView")
 require("./RootExprTreeView")
 
 require("./VariableView")
+require("./TextFieldView")
 
 require("./plot/PlotView")
 require("./plot/CanvasView")

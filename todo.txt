@@ -1,6 +1,4 @@
 Variable
-  Scrubbing
-  ContentEditable stuff
   Transclude
   hovered variable
 
@@ -22,6 +20,10 @@ Plot
   Direct manipulate variables
   Snap pan/zoom
 
+
+
+Evaluation
+  Fix issue with sqrt not drawing correctly in undefined areas
 
 
 Cleanup

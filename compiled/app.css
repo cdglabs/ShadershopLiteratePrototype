@@ -19,6 +19,7 @@ canvas {
 }
 #editor {
   margin: 24px;
+  white-space: nowrap;
 }
 .draggingObject {
   position: absolute;
@@ -50,7 +51,6 @@ canvas {
   margin-right: 6px;
 }
 .ExprTree {
-  white-space: nowrap;
   display: inline-block;
   vertical-align: bottom;
 }

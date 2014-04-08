@@ -962,8 +962,13 @@
       line = lines[_m];
       start = samples[line.start];
       end = samples[line.end];
-      ctx.moveTo(start.cx, start.cy);
-      _results.push(ctx.lineTo(end.cx, end.cy));
+      if (start.cx === end.cx) {
+        ctx.moveTo(start.cx, start.cy);
+        _results.push(ctx.lineTo(end.cx + 0.1, end.cy));
+      } else {
+        ctx.moveTo(start.cx, start.cy);
+        _results.push(ctx.lineTo(end.cx, end.cy));
+      }
     }
     return _results;
   };
@@ -1448,10 +1453,16 @@
       UI.preventDefault(e);
       return this.startPan(e);
     },
+    cursor: function() {
+      return config.cursor.grab;
+    },
     render: function() {
       return R.div({
         className: "MainPlot",
-        onMouseDown: this.handleMouseDown
+        onMouseDown: this.handleMouseDown,
+        style: {
+          cursor: this.cursor()
+        }
       }, R.GridView({
         customFn: this.customFn
       }), R.PlotView({
@@ -1581,6 +1592,8 @@
   require("./RootExprTreeView");
 
   require("./VariableView");
+
+  require("./TextFieldView");
 
   require("./plot/PlotView");
 
@@ -1859,6 +1872,116 @@
   });
 
 }).call(this);
+}, "view/TextFieldView": function(exports, require, module) {(function() {
+  var findAdjacentHost;
+
+  R.create("TextFieldView", {
+    propTypes: {
+      value: String,
+      className: String,
+      onInput: Function,
+      onBackSpace: Function,
+      onFocus: Function,
+      onBlur: Function
+    },
+    getDefaultProps: function() {
+      return {
+        value: "",
+        className: "",
+        onInput: function(newValue) {},
+        onBackSpace: function() {},
+        onEnter: function() {},
+        onFocus: function() {},
+        onBlur: function() {}
+      };
+    },
+    refresh: function() {
+      var el;
+      el = this.getDOMNode();
+      if (el.textContent !== this.value) {
+        el.textContent = this.value;
+      }
+      return UI.attemptAutoFocus(this);
+    },
+    componentDidMount: function() {
+      return this.refresh();
+    },
+    componentDidUpdate: function() {
+      return this.refresh();
+    },
+    handleInput: function() {
+      var el, newValue;
+      el = this.getDOMNode();
+      newValue = el.textContent;
+      return this.onInput(newValue);
+    },
+    handleKeyDown: function(e) {
+      var host, nextHost, previousHost;
+      host = util.selection.getHost();
+      if (e.keyCode === 37) {
+        if (util.selection.isAtStart()) {
+          previousHost = findAdjacentHost(host, -1);
+          if (previousHost) {
+            e.preventDefault();
+            return util.selection.setAtEnd(previousHost);
+          }
+        }
+      } else if (e.keyCode === 39) {
+        if (util.selection.isAtEnd()) {
+          nextHost = findAdjacentHost(host, 1);
+          if (nextHost) {
+            e.preventDefault();
+            return util.selection.setAtStart(nextHost);
+          }
+        }
+      } else if (e.keyCode === 8) {
+        if (util.selection.isAtStart()) {
+          e.preventDefault();
+          return this.onBackSpace();
+        }
+      } else if (e.keyCode === 13) {
+        e.preventDefault();
+        return this.onEnter();
+      }
+    },
+    handleFocus: function() {
+      return this.onFocus();
+    },
+    handleBlur: function() {
+      return this.onBlur();
+    },
+    selectAll: function() {
+      var el;
+      el = this.getDOMNode();
+      return util.selection.setAll(el);
+    },
+    isFocused: function() {
+      var el, host;
+      el = this.getDOMNode();
+      host = util.selection.getHost();
+      return el === host;
+    },
+    render: function() {
+      return R.div({
+        className: this.className,
+        contentEditable: true,
+        onInput: this.handleInput,
+        onKeyDown: this.handleKeyDown,
+        onFocus: this.handleFocus,
+        onBlur: this.handleBlur
+      });
+    }
+  });
+
+  findAdjacentHost = function(el, direction) {
+    var hosts, index;
+    hosts = document.querySelectorAll("[contenteditable]");
+    hosts = _.toArray(hosts);
+    index = hosts.indexOf(el);
+    return hosts[index + direction];
+  };
+
+}).call(this);
 }, "view/VariableView": function(exports, require, module) {(function() {
   R.create("VariableView", {
     propTypes: {
@@ -1867,13 +1990,95 @@
     render: function() {
       return R.div({
         className: "Variable"
-      }, R.div({
+      }, R.VariableLabelView({
+        variable: this.variable
+      }), R.VariableValueView({
+        variable: this.variable
+      }));
+    }
+  });
+
+  R.create("VariableLabelView", {
+    propTypes: {
+      variable: C.Variable
+    },
+    handleInput: function(newValue) {
+      return this.variable.label = newValue;
+    },
+    render: function() {
+      return R.span({}, R.TextFieldView({
+        ref: "textField",
         className: "VariableLabel",
-        contentEditable: true
-      }, this.variable.label), R.div({
+        value: this.variable.label,
+        onInput: this.handleInput
+      }));
+    }
+  });
+
+  R.create("VariableValueView", {
+    propTypes: {
+      variable: C.Variable
+    },
+    handleInput: function(newValue) {
+      return this.variable.valueString = newValue;
+    },
+    handleMouseDown: function(e) {
+      var originalValue, originalX, originalY, precision;
+      if (this.refs.textField.isFocused()) {
+        return;
+      }
+      UI.preventDefault(e);
+      originalX = e.clientX;
+      originalY = e.clientY;
+      originalValue = this.variable.getValue();
+      precision = 0.1;
+      UI.dragging = {
+        cursor: this.cursor(),
+        onMove: (function(_this) {
+          return function(e) {
+            var d, digitPrecision, dx, dy, value;
+            dx = e.clientX - originalX;
+            dy = -(e.clientY - originalY);
+            d = dy;
+            value = originalValue + d * precision;
+            if (precision < 1) {
+              digitPrecision = -Math.round(Math.log(precision) / Math.log(10));
+              return _this.variable.valueString = value.toFixed(digitPrecision);
+            } else {
+              return _this.variable.valueString = value.toFixed(0);
+            }
+          };
+        })(this),
+        onUp: (function(_this) {
+          return function() {};
+        })(this)
+      };
+      return util.onceDragConsummated(e, null, (function(_this) {
+        return function() {
+          return _this.refs.textField.selectAll();
+        };
+      })(this));
+    },
+    cursor: function() {
+      if (this.isMounted()) {
+        if (this.refs.textField.isFocused()) {
+          return config.cursor.text;
+        }
+      }
+      return config.cursor.verticalScrub;
+    },
+    render: function() {
+      return R.span({
+        style: {
+          cursor: this.cursor()
+        },
+        onMouseDown: this.handleMouseDown
+      }, R.TextFieldView({
+        ref: "textField",
         className: "VariableValue",
-        contentEditable: true
-      }, this.variable.valueString));
+        value: this.variable.valueString,
+        onInput: this.handleInput
+      }));
     }
   });
 
@@ -2455,116 +2660,6 @@
       }));
     }
   });
-
-}).call(this);
-}, "view/word/TextFieldView": function(exports, require, module) {(function() {
-  var findAdjacentHost;
-
-  R.create("TextFieldView", {
-    propTypes: {
-      value: String,
-      className: String,
-      onInput: Function,
-      onBackSpace: Function,
-      onFocus: Function,
-      onBlur: Function
-    },
-    getDefaultProps: function() {
-      return {
-        value: "",
-        className: "",
-        onInput: function(newValue) {},
-        onBackSpace: function() {},
-        onEnter: function() {},
-        onFocus: function() {},
-        onBlur: function() {}
-      };
-    },
-    refresh: function() {
-      var el;
-      el = this.getDOMNode();
-      if (el.textContent !== this.value) {
-        el.textContent = this.value;
-      }
-      return UI.attemptAutoFocus(this);
-    },
-    componentDidMount: function() {
-      return this.refresh();
-    },
-    componentDidUpdate: function() {
-      return this.refresh();
-    },
-    handleInput: function() {
-      var el, newValue;
-      el = this.getDOMNode();
-      newValue = el.textContent;
-      return this.onInput(newValue);
-    },
-    handleKeyDown: function(e) {
-      var host, nextHost, previousHost;
-      host = util.selection.getHost();
-      if (e.keyCode === 37) {
-        if (util.selection.isAtStart()) {
-          previousHost = findAdjacentHost(host, -1);
-          if (previousHost) {
-            e.preventDefault();
-            return util.selection.setAtEnd(previousHost);
-          }
-        }
-      } else if (e.keyCode === 39) {
-        if (util.selection.isAtEnd()) {
-          nextHost = findAdjacentHost(host, 1);
-          if (nextHost) {
-            e.preventDefault();
-            return util.selection.setAtStart(nextHost);
-          }
-        }
-      } else if (e.keyCode === 8) {
-        if (util.selection.isAtStart()) {
-          e.preventDefault();
-          return this.onBackSpace();
-        }
-      } else if (e.keyCode === 13) {
-        e.preventDefault();
-        return this.onEnter();
-      }
-    },
-    handleFocus: function() {
-      return this.onFocus();
-    },
-    handleBlur: function() {
-      return this.onBlur();
-    },
-    selectAll: function() {
-      var el;
-      el = this.getDOMNode();
-      return util.selection.setAll(el);
-    },
-    isFocused: function() {
-      var el, host;
-      el = this.getDOMNode();
-      host = util.selection.getHost();
-      return el === host;
-    },
-    render: function() {
-      return R.div({
-        className: this.className,
-        contentEditable: true,
-        onInput: this.handleInput,
-        onKeyDown: this.handleKeyDown,
-        onFocus: this.handleFocus,
-        onBlur: this.handleBlur
-      });
-    }
-  });
-
-  findAdjacentHost = function(el, direction) {
-    var hosts, index;
-    hosts = document.querySelectorAll("[contenteditable]");
-    hosts = _.toArray(hosts);
-    index = hosts.indexOf(el);
-    return hosts[index + direction];
-  };
 
 }).call(this);
 }, "view/word/WordListView": function(exports, require, module) {(function() {

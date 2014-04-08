@@ -53,7 +53,10 @@ R.create "MainPlotView",
     UI.preventDefault(e)
     @startPan(e)
 
+  cursor: ->
+    config.cursor.grab
+
   render: ->
-    R.div {className: "MainPlot", onMouseDown: @handleMouseDown},
+    R.div {className: "MainPlot", onMouseDown: @handleMouseDown, style: {cursor: @cursor()}},
       R.GridView {customFn: @customFn}
       R.PlotView {expr: @customFn.rootExprs[0]}

@@ -94,8 +94,12 @@ drawCartesian = (ctx, opts) ->
   for line in lines
     start = samples[line.start]
     end = samples[line.end]
-    ctx.moveTo(start.cx, start.cy)
-    ctx.lineTo(end.cx, end.cy)
+    if start.cx == end.cx
+      ctx.moveTo(start.cx, start.cy)
+      ctx.lineTo(end.cx+0.1, end.cy)
+    else
+      ctx.moveTo(start.cx, start.cy)
+      ctx.lineTo(end.cx, end.cy)
 
 
 drawVertical = (ctx, opts) ->
