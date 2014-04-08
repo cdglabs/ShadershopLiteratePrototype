@@ -346,12 +346,12 @@
       })) {
         return "found";
       }
-      if (detector != null) {
+      if ((detector != null) && (args[0][0] != null)) {
         if (detector(args[0][0]) !== detector(args[0][1])) {
           return "found";
         }
       }
-      return args[0].map(function(a, index) {
+      return [0, 1].map(function(index) {
         var fnArgs;
         fnArgs = args.map(function(arg) {
           var _ref;
@@ -1397,13 +1397,9 @@
         };
       })(this))), R.div({
         className: "CustomFnDefinition"
-      }, R.div({
-        className: "MainPlot"
-      }, R.GridView({
+      }, R.MainPlotView({
         customFn: this.customFn
-      }), R.PlotView({
-        expr: this.customFn.rootExprs[0]
-      })), this.customFn.rootExprs.map((function(_this) {
+      }), this.customFn.rootExprs.map((function(_this) {
         return function(rootExpr) {
           return R.RootExprTreeView({
             rootExpr: rootExpr
@@ -1413,6 +1409,54 @@
         className: "CreateRootExprButton",
         onClick: this.handleCreateRootExprButtonClick
       })));
+    }
+  });
+
+  R.create("MainPlotView", {
+    propTypes: {
+      customFn: C.CustomFn
+    },
+    startPan: function(e) {
+      var originalBounds, originalX, originalY, rect, xScale, yScale;
+      originalX = e.clientX;
+      originalY = e.clientY;
+      originalBounds = {
+        xMin: this.customFn.bounds.xMin,
+        xMax: this.customFn.bounds.xMax,
+        yMin: this.customFn.bounds.yMin,
+        yMax: this.customFn.bounds.yMax
+      };
+      rect = this.getDOMNode().getBoundingClientRect();
+      xScale = (originalBounds.xMax - originalBounds.xMin) / rect.width;
+      yScale = (originalBounds.yMax - originalBounds.yMin) / rect.height;
+      return UI.dragging = {
+        cursor: config.cursor.grabbing,
+        onMove: (function(_this) {
+          return function(e) {
+            var dx, dy;
+            dx = e.clientX - originalX;
+            dy = e.clientY - originalY;
+            _this.customFn.bounds.xMin = originalBounds.xMin - dx * xScale;
+            _this.customFn.bounds.xMax = originalBounds.xMax - dx * xScale;
+            _this.customFn.bounds.yMin = originalBounds.yMin + dy * yScale;
+            return _this.customFn.bounds.yMax = originalBounds.yMax + dy * yScale;
+          };
+        })(this)
+      };
+    },
+    handleMouseDown: function(e) {
+      UI.preventDefault(e);
+      return this.startPan(e);
+    },
+    render: function() {
+      return R.div({
+        className: "MainPlot",
+        onMouseDown: this.handleMouseDown
+      }, R.GridView({
+        customFn: this.customFn
+      }), R.PlotView({
+        expr: this.customFn.rootExprs[0]
+      }));
     }
   });
 

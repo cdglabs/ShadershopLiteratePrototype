@@ -37,11 +37,11 @@ convertFn = (fn, detector=null) ->
     if _.any(args, (x) -> x == "found")
       return "found"
 
-    if detector?
+    if detector? and args[0][0]?
       if detector(args[0][0]) != detector(args[0][1])
         return "found"
 
-    return args[0].map (a, index) ->
+    return [0, 1].map (index) ->
       fnArgs = args.map (arg) -> arg[index] ? arg
       return fn(fnArgs...)
 
