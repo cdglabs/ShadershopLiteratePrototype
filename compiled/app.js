@@ -809,23 +809,6 @@
       };
     };
 
-    CustomFn.prototype.insertApplicationAfter = function(application, refExpr) {
-      var array, index, _ref;
-      if (application === refExpr) {
-        return;
-      }
-      _ref = this._findExpr(refExpr), array = _ref.array, index = _ref.index;
-      application.paramExprs[0] = refExpr;
-      return array[index] = application;
-    };
-
-    CustomFn.prototype.createApplicationAfter = function(refExpr) {
-      var application;
-      application = new C.Application();
-      application.isProvisional = true;
-      return this.insertApplicationAfter(application, refExpr);
-    };
-
     CustomFn.prototype.removeApplication = function(refApplication) {
       var array, index, previousExpr, _ref;
       _ref = this._findExpr(refApplication), array = _ref.array, index = _ref.index;
@@ -1577,6 +1560,8 @@
         propType = React.PropTypes.bool;
       } else if (propType === Function) {
         propType = React.PropTypes.func;
+      } else if (propType === Array) {
+        propType = React.PropTypes.array;
       } else {
         propType = React.PropTypes.instanceOf(propType);
       }
@@ -1621,14 +1606,18 @@
       return R.div({
         className: "RootExprTree"
       }, R.ExprTreeView({
-        expr: this.rootExpr
+        expr: this.rootExpr,
+        parentArray: this.lookup("customFn").rootExprs,
+        parentArrayIndex: this.rootIndex
       }));
     }
   });
 
   R.create("ExprTreeView", {
     propTypes: {
-      expr: C.Expr
+      expr: C.Expr,
+      parentArray: Array,
+      parentArrayIndex: Number
     },
     render: function() {
       return R.div({
@@ -1637,13 +1626,11 @@
         className: "ExprTreeChildren"
       }, this.expr.paramExprs.map((function(_this) {
         return function(paramExpr, paramIndex) {
-          if (paramIndex === 0) {
+          if (paramIndex === 0 || paramExpr instanceof C.Application) {
             return R.ExprTreeView({
-              expr: paramExpr
-            });
-          } else if (paramExpr instanceof C.Application) {
-            return R.ExprTreeView({
-              expr: paramExpr
+              expr: paramExpr,
+              parentArray: _this.expr.paramExprs,
+              parentArrayIndex: paramIndex
             });
           }
         };
@@ -1663,10 +1650,18 @@
         isDraggingCopy: false
       };
     },
+    insertApplicationAfter: function(application) {
+      if (application === this.expr) {
+        return;
+      }
+      application.paramExprs[0] = this.expr;
+      return this.lookup("parentArray")[this.lookup("parentArrayIndex")] = application;
+    },
     handleCreateExprButtonClick: function() {
-      var customFn;
-      customFn = this.lookup("customFn");
-      return customFn.createApplicationAfter(this.expr);
+      var application;
+      application = new C.Application();
+      application.isProvisional = true;
+      return this.insertApplicationAfter(application);
     },
     isReorderable: function() {
       return this.expr instanceof C.Application;
@@ -1723,7 +1718,7 @@
               }));
             },
             onMove: function(e) {
-              var exprNodeEl, exprNodeEls, exprView, insertAfterEl, refCustomFn, refExpr, _i, _len, _ref, _ref1;
+              var exprNodeEl, exprNodeEls, exprView, insertAfterEl, insertAfterExpr, _i, _len, _ref, _ref1;
               insertAfterEl = null;
               exprNodeEls = document.querySelectorAll(".CustomFn .ExprNode");
               for (_i = 0, _len = exprNodeEls.length; _i < _len; _i++) {
@@ -1733,16 +1728,25 @@
                   insertAfterEl = exprNodeEl;
                 }
               }
-              if (customFn != null) {
-                customFn.removeApplication(expr);
-                customFn = null;
-              }
               if (insertAfterEl) {
                 exprView = insertAfterEl.dataFor;
-                refExpr = exprView.lookup("expr");
-                refCustomFn = exprView.lookup("customFn");
-                customFn = refCustomFn;
-                return customFn.insertApplicationAfter(expr, refExpr);
+                exprView = exprView.lookupView("ExprNodeView");
+                insertAfterExpr = exprView.expr;
+                if (exprView.lookup("parentArray") === expr.paramExprs) {
+
+                } else {
+                  if (customFn != null) {
+                    customFn.removeApplication(expr);
+                    customFn = null;
+                  }
+                  exprView.insertApplicationAfter(expr);
+                  return customFn = exprView.lookup("customFn");
+                }
+              } else {
+                if (customFn != null) {
+                  customFn.removeApplication(expr);
+                  return customFn = null;
+                }
               }
             }
           };
@@ -1795,8 +1799,8 @@
               if (paramIndex > 0) {
                 return R.ParamExprView({
                   expr: paramExpr,
-                  parentApplication: _this.expr,
-                  paramIndex: paramIndex
+                  parentArray: _this.expr.paramExprs,
+                  parentArrayIndex: paramIndex
                 });
               }
             };
@@ -1805,8 +1809,10 @@
       } else if (this.expr instanceof C.Variable) {
         return R.div({
           className: "ExprInternals"
-        }, R.VariableLeafView({
-          variable: this.expr
+        }, R.ParamExprView({
+          expr: this.expr,
+          parentArray: this.lookup("parentArray"),
+          parentArrayIndex: this.lookup("parentArrayIndex")
         }));
       }
     }
@@ -1815,11 +1821,11 @@
   R.create("ParamExprView", {
     propTypes: {
       expr: C.Expr,
-      parentApplication: C.Application,
-      paramIndex: Number
+      parentArray: Array,
+      parentArrayIndex: Number
     },
     handleTransclusionDrop: function(droppedExpr) {
-      return this.parentApplication.paramExprs[this.paramIndex] = droppedExpr;
+      return this.parentArray[this.parentArrayIndex] = droppedExpr;
     },
     render: function() {
       var className;
@@ -1833,38 +1839,6 @@
       }) : this.expr instanceof C.Variable ? R.VariableView({
         variable: this.expr
       }) : void 0);
-    }
-  });
-
-  R.create("VariableLeafView", {
-    propTypes: {
-      variable: C.Variable
-    },
-    handleTransclusionDrop: function(droppedExpr) {
-      var array, grandparentExprTreeView, index, parentExprTreeView, rootExprTreeView;
-      parentExprTreeView = this.lookupView("ExprTreeView");
-      grandparentExprTreeView = parentExprTreeView.ownerView().lookupView("ExprTreeView");
-      if (grandparentExprTreeView) {
-        array = grandparentExprTreeView.expr.paramExprs;
-        index = 0;
-      } else {
-        rootExprTreeView = parentExprTreeView.lookupView("RootExprTreeView");
-        array = this.lookup("customFn").rootExprs;
-        index = rootExprTreeView.rootIndex;
-      }
-      console.log(parentExprTreeView, grandparentExprTreeView, array, index);
-      return array[index] = droppedExpr;
-    },
-    render: function() {
-      var className;
-      className = R.cx({
-        "ActiveTransclusionDrop": this === UI.activeTransclusionDropView
-      });
-      return R.span({
-        className: className
-      }, R.VariableView({
-        variable: this.variable
-      }));
     }
   });
 

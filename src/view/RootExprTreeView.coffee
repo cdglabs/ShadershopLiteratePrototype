@@ -5,22 +5,30 @@ R.create "RootExprTreeView",
 
   render: ->
     R.div {className: "RootExprTree"},
-      R.ExprTreeView {expr: @rootExpr}
+      R.ExprTreeView {
+        expr: @rootExpr
+        parentArray: @lookup("customFn").rootExprs
+        parentArrayIndex: @rootIndex
+      }
 
 
 R.create "ExprTreeView",
   propTypes:
     expr: C.Expr
+    parentArray: Array
+    parentArrayIndex: Number
 
   render: ->
     R.div {className: "ExprTree"},
       if @expr instanceof C.Application
         R.div {className: "ExprTreeChildren"},
           @expr.paramExprs.map (paramExpr, paramIndex) =>
-            if paramIndex == 0
-              R.ExprTreeView {expr: paramExpr}
-            else if paramExpr instanceof C.Application
-              R.ExprTreeView {expr: paramExpr}
+            if paramIndex == 0 or paramExpr instanceof C.Application
+              R.ExprTreeView {
+                expr: paramExpr
+                parentArray: @expr.paramExprs
+                parentArrayIndex: paramIndex
+              }
       R.ExprNodeView {expr: @expr}
 
 
@@ -32,9 +40,15 @@ R.create "ExprNodeView",
   getDefaultProps: ->
     isDraggingCopy: false
 
+  insertApplicationAfter: (application) ->
+    return if application == @expr
+    application.paramExprs[0] = @expr
+    @lookup("parentArray")[@lookup("parentArrayIndex")] = application
+
   handleCreateExprButtonClick: ->
-    customFn = @lookup("customFn")
-    customFn.createApplicationAfter(@expr)
+    application = new C.Application()
+    application.isProvisional = true
+    @insertApplicationAfter(application)
 
   isReorderable: ->
     @expr instanceof C.Application
@@ -87,20 +101,23 @@ R.create "ExprNodeView",
               if rect.bottom + myHeight * 1.5 > e.clientY > rect.top + myHeight * 0.5 and rect.left < e.clientX < rect.right
                 insertAfterEl = exprNodeEl
 
-            if customFn?
-              customFn.removeApplication(expr)
-              customFn = null
-              # TODO: Maybe we'll want to preserve sub-Applications somewhere.
-
-
             if insertAfterEl
               exprView = insertAfterEl.dataFor
-              refExpr = exprView.lookup("expr")
-              refCustomFn = exprView.lookup("customFn")
+              exprView = exprView.lookupView("ExprNodeView")
+              insertAfterExpr = exprView.expr
 
-              customFn = refCustomFn
-              customFn.insertApplicationAfter(expr, refExpr)
-              # TODO: Maybe we'll need to clean up references to variables here.
+              if exprView.lookup("parentArray") == expr.paramExprs
+                return # done
+              else
+                if customFn?
+                  customFn.removeApplication(expr)
+                  customFn = null
+                exprView.insertApplicationAfter(expr)
+                customFn = exprView.lookup("customFn")
+            else
+              if customFn?
+                customFn.removeApplication(expr)
+                customFn = null
         }
 
   render: ->
@@ -135,22 +152,26 @@ R.create "ExprInternalsView",
             if paramIndex > 0
               R.ParamExprView {
                 expr: paramExpr
-                parentApplication: @expr
-                paramIndex: paramIndex
+                parentArray: @expr.paramExprs
+                parentArrayIndex: paramIndex
               }
     else if @expr instanceof C.Variable
       R.div {className: "ExprInternals"},
-        R.VariableLeafView {variable: @expr}
+        R.ParamExprView {
+          expr: @expr
+          parentArray: @lookup("parentArray")
+          parentArrayIndex: @lookup("parentArrayIndex")
+        }
 
 
 R.create "ParamExprView",
   propTypes:
     expr: C.Expr
-    parentApplication: C.Application
-    paramIndex: Number
+    parentArray: Array
+    parentArrayIndex: Number
 
   handleTransclusionDrop: (droppedExpr) ->
-    @parentApplication.paramExprs[@paramIndex] = droppedExpr
+    @parentArray[@parentArrayIndex] = droppedExpr
 
   render: ->
     className = R.cx {
@@ -161,32 +182,6 @@ R.create "ParamExprView",
         R.ExprThumbnailView {expr: @expr}
       else if @expr instanceof C.Variable
         R.VariableView {variable: @expr}
-
-
-R.create "VariableLeafView",
-  propTypes:
-    variable: C.Variable
-
-  handleTransclusionDrop: (droppedExpr) ->
-    parentExprTreeView = @lookupView("ExprTreeView")
-    grandparentExprTreeView = parentExprTreeView.ownerView().lookupView("ExprTreeView")
-    if grandparentExprTreeView
-      array = grandparentExprTreeView.expr.paramExprs
-      index = 0
-    else
-      rootExprTreeView = parentExprTreeView.lookupView("RootExprTreeView")
-      array = @lookup("customFn").rootExprs
-      index = rootExprTreeView.rootIndex
-    console.log parentExprTreeView, grandparentExprTreeView, array, index
-    array[index] = droppedExpr
-
-  render: ->
-    className = R.cx {
-      "ActiveTransclusionDrop": this == UI.activeTransclusionDropView
-    }
-    R.span {className: className},
-      R.VariableView {variable: @variable}
-
 
 
 

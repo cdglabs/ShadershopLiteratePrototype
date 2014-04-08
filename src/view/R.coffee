@@ -80,6 +80,8 @@ R.create = (name, opts) ->
       propType = React.PropTypes.bool
     else if propType == Function
       propType = React.PropTypes.func
+    else if propType == Array
+      propType = React.PropTypes.array
     else
       propType = React.PropTypes.instanceOf(propType)
 

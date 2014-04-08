@@ -77,17 +77,6 @@ class C.CustomFn extends C.Fn
       return found
     return search(@rootExprs) ? {array: null, index: null}
 
-  insertApplicationAfter: (application, refExpr) ->
-    return if application == refExpr
-    {array, index} = @_findExpr(refExpr)
-    application.paramExprs[0] = refExpr
-    array[index] = application
-
-  createApplicationAfter: (refExpr) ->
-    application = new C.Application()
-    application.isProvisional = true
-    @insertApplicationAfter(application, refExpr)
-
   removeApplication: (refApplication) ->
     {array, index} = @_findExpr(refApplication)
     return unless array?
