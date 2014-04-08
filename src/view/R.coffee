@@ -103,6 +103,9 @@ R.create = (name, opts) ->
 require("./editor/EditorView")
 require("./editor/DraggingView")
 
+require("./CustomFnView")
+require("./RootExprTreeView")
+
 require("./VariableView")
 
 require("./plot/PlotView")

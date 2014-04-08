@@ -1205,6 +1205,49 @@
   require("./canvas");
 
 }).call(this);
+}, "view/CustomFnView": function(exports, require, module) {(function() {
+  R.create("CustomFnView", {
+    propTypes: {
+      customFn: C.CustomFn
+    },
+    handleCreateRootExprButtonClick: function() {
+      return this.customFn.createRootExpr();
+    },
+    render: function() {
+      return R.div({
+        className: "CustomFn"
+      }, R.div({
+        className: "CustomFnHeader"
+      }, R.div({
+        className: "FnLabel"
+      }, this.customFn.getLabel()), this.customFn.paramVariables.map((function(_this) {
+        return function(paramVariable) {
+          return R.VariableView({
+            variable: paramVariable
+          });
+        };
+      })(this))), R.div({
+        className: "CustomFnDefinition"
+      }, R.div({
+        className: "MainPlot"
+      }, R.GridView({
+        customFn: this.customFn
+      }), R.PlotView({
+        expr: this.customFn.rootExprs[0]
+      })), this.customFn.rootExprs.map((function(_this) {
+        return function(rootExpr) {
+          return R.RootExprTreeView({
+            rootExpr: rootExpr
+          });
+        };
+      })(this)), R.button({
+        className: "CreateRootExprButton",
+        onClick: this.handleCreateRootExprButtonClick
+      })));
+    }
+  });
+
+}).call(this);
 }, "view/R": function(exports, require, module) {(function() {
   var R, key, value, _ref,
     __hasProp = {}.hasOwnProperty;
@@ -1320,6 +1363,10 @@
 
   require("./editor/DraggingView");
 
+  require("./CustomFnView");
+
+  require("./RootExprTreeView");
+
   require("./VariableView");
 
   require("./plot/PlotView");
@@ -1329,112 +1376,7 @@
   require("./plot/GridView");
 
 }).call(this);
-}, "view/VariableView": function(exports, require, module) {(function() {
-  R.create("VariableView", {
-    propTypes: {
-      variable: C.Variable
-    },
-    render: function() {
-      return R.div({
-        className: "Variable"
-      }, R.div({
-        className: "VariableLabel",
-        contentEditable: true
-      }, this.variable.label), R.div({
-        className: "VariableValue",
-        contentEditable: true
-      }, this.variable.valueString));
-    }
-  });
-
-}).call(this);
-}, "view/editor/DraggingView": function(exports, require, module) {(function() {
-  R.create("DraggingView", {
-    render: function() {
-      var _ref;
-      return R.div({}, ((_ref = UI.dragging) != null ? _ref.render : void 0) ? R.div({
-        className: "draggingObject",
-        style: {
-          left: UI.mousePosition.x - UI.dragging.offset.x,
-          top: UI.mousePosition.y - UI.dragging.offset.y
-        }
-      }, UI.dragging.render()) : void 0, UI.dragging ? R.div({
-        className: "draggingOverlay"
-      }) : void 0);
-    }
-  });
-
-}).call(this);
-}, "view/editor/EditorView": function(exports, require, module) {(function() {
-  R.create("EditorView", {
-    propTypes: {
-      editor: C.Editor
-    },
-    cursor: function() {
-      var _ref, _ref1;
-      return (_ref = (_ref1 = UI.dragging) != null ? _ref1.cursor : void 0) != null ? _ref : "";
-    },
-    render: function() {
-      return R.div({
-        className: "editor",
-        style: {
-          cursor: this.cursor()
-        }
-      }, R.div({
-        className: "customFns"
-      }, this.editor.customFns.map((function(_this) {
-        return function(customFn) {
-          return R.CustomFnView({
-            customFn: customFn
-          });
-        };
-      })(this))), R.div({
-        className: "dragging"
-      }, R.DraggingView({})));
-    }
-  });
-
-  R.create("CustomFnView", {
-    propTypes: {
-      customFn: C.CustomFn
-    },
-    handleCreateRootExprButtonClick: function() {
-      return this.customFn.createRootExpr();
-    },
-    render: function() {
-      return R.div({
-        className: "CustomFn"
-      }, R.div({
-        className: "CustomFnHeader"
-      }, R.div({
-        className: "FnLabel"
-      }, this.customFn.getLabel()), this.customFn.paramVariables.map((function(_this) {
-        return function(paramVariable) {
-          return R.VariableView({
-            variable: paramVariable
-          });
-        };
-      })(this))), R.div({
-        className: "CustomFnDefinition"
-      }, R.div({
-        className: "MainPlot"
-      }, R.GridView({
-        customFn: this.customFn
-      }), R.PlotView({
-        expr: this.customFn.rootExprs[0]
-      })), this.customFn.rootExprs.map((function(_this) {
-        return function(rootExpr) {
-          return R.RootExprTreeView({
-            rootExpr: rootExpr
-          });
-        };
-      })(this)), R.button({
-        className: "CreateRootExprButton",
-        onClick: this.handleCreateRootExprButtonClick
-      })));
-    }
-  });
-
+}, "view/RootExprTreeView": function(exports, require, module) {(function() {
   R.create("RootExprTreeView", {
     propTypes: {
       rootExpr: C.Expr
@@ -1700,6 +1642,72 @@
       }, R.ExprNodeView({
         expr: this.possibleApplication
       }));
+    }
+  });
+
+}).call(this);
+}, "view/VariableView": function(exports, require, module) {(function() {
+  R.create("VariableView", {
+    propTypes: {
+      variable: C.Variable
+    },
+    render: function() {
+      return R.div({
+        className: "Variable"
+      }, R.div({
+        className: "VariableLabel",
+        contentEditable: true
+      }, this.variable.label), R.div({
+        className: "VariableValue",
+        contentEditable: true
+      }, this.variable.valueString));
+    }
+  });
+
+}).call(this);
+}, "view/editor/DraggingView": function(exports, require, module) {(function() {
+  R.create("DraggingView", {
+    render: function() {
+      var _ref;
+      return R.div({}, ((_ref = UI.dragging) != null ? _ref.render : void 0) ? R.div({
+        className: "draggingObject",
+        style: {
+          left: UI.mousePosition.x - UI.dragging.offset.x,
+          top: UI.mousePosition.y - UI.dragging.offset.y
+        }
+      }, UI.dragging.render()) : void 0, UI.dragging ? R.div({
+        className: "draggingOverlay"
+      }) : void 0);
+    }
+  });
+
+}).call(this);
+}, "view/editor/EditorView": function(exports, require, module) {(function() {
+  R.create("EditorView", {
+    propTypes: {
+      editor: C.Editor
+    },
+    cursor: function() {
+      var _ref, _ref1;
+      return (_ref = (_ref1 = UI.dragging) != null ? _ref1.cursor : void 0) != null ? _ref : "";
+    },
+    render: function() {
+      return R.div({
+        className: "editor",
+        style: {
+          cursor: this.cursor()
+        }
+      }, R.div({
+        className: "customFns"
+      }, this.editor.customFns.map((function(_this) {
+        return function(customFn) {
+          return R.CustomFnView({
+            customFn: customFn
+          });
+        };
+      })(this))), R.div({
+        className: "dragging"
+      }, R.DraggingView({})));
     }
   });
 
