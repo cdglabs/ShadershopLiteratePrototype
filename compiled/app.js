@@ -1387,14 +1387,19 @@
     handleCreateRootExprButtonClick: function() {
       return this.customFn.createRootExpr();
     },
+    handleFnLabelInput: function(newValue) {
+      return this.customFn.label = newValue;
+    },
     render: function() {
       return R.div({
         className: "CustomFn"
       }, R.div({
         className: "CustomFnHeader"
-      }, R.div({
-        className: "FnLabel"
-      }, this.customFn.getLabel()), this.customFn.paramVariables.map((function(_this) {
+      }, R.TextFieldView({
+        className: "FnLabel",
+        value: this.customFn.getLabel(),
+        onInput: this.handleFnLabelInput
+      }), this.customFn.paramVariables.map((function(_this) {
         return function(paramVariable) {
           return R.VariableView({
             variable: paramVariable

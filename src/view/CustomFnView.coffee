@@ -5,11 +5,17 @@ R.create "CustomFnView",
   handleCreateRootExprButtonClick: ->
     @customFn.createRootExpr()
 
+  handleFnLabelInput: (newValue) ->
+    @customFn.label = newValue
+
   render: ->
     R.div {className: "CustomFn"},
       R.div {className: "CustomFnHeader"},
-        R.div {className: "FnLabel"},
-          @customFn.getLabel()
+        R.TextFieldView {
+          className: "FnLabel",
+          value: @customFn.getLabel()
+          onInput: @handleFnLabelInput
+        }
         @customFn.paramVariables.map (paramVariable) =>
           R.VariableView {variable: paramVariable}
       R.div {className: "CustomFnDefinition"},
@@ -17,6 +23,7 @@ R.create "CustomFnView",
         @customFn.rootExprs.map (rootExpr) =>
           R.RootExprTreeView {rootExpr: rootExpr}
         R.button {className: "CreateRootExprButton", onClick: @handleCreateRootExprButtonClick}
+
 
 # =============================================================================
 

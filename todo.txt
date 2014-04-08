@@ -4,7 +4,6 @@ Variable
 
 CustomFn
   Add new custom fn
-  Change label
 
 RootExpr
   "pull out" transclude from bottom left
