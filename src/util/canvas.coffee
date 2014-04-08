@@ -11,6 +11,8 @@ canvasBounds = (ctx) ->
     cxMax: canvas.width
     cyMin: canvas.height
     cyMax: 0
+    width: canvas.width
+    height: canvas.height
   }
 
 
@@ -68,6 +70,132 @@ drawVertical = (ctx, opts) ->
   ctx.lineTo(cx, cyMax)
 
 
+# =============================================================================
+# Grid
+# =============================================================================
+
+ticks = (spacing, min, max) ->
+  first = Math.ceil(min / spacing)
+  last = Math.floor(max / spacing)
+  (x * spacing for x in [first..last])
+
+drawLine = (ctx, [x1, y1], [x2, y2]) ->
+  ctx.beginPath()
+  ctx.moveTo(x1, y1)
+  ctx.lineTo(x2, y2)
+  ctx.stroke()
+
+drawGrid = (ctx, opts) ->
+  xMin = opts.xMin
+  xMax = opts.xMax
+  yMin = opts.yMin
+  yMax = opts.yMax
+
+  {cxMin, cxMax, cyMin, cyMax, width, height} = canvasBounds(ctx)
+
+  xSize  = xMax - xMin
+  ySize  = yMax - yMin
+
+  xMinSpacing = (xSize / width ) * config.minGridSpacing
+  yMinSpacing = (ySize / height) * config.minGridSpacing
+  minSpacing = Math.max(xMinSpacing, yMinSpacing)
+
+  ###
+  need to determine:
+    largeSpacing = {1, 2, or 5} * 10^n
+    smallSpacing = divide largeSpacing by 4 (if 1 or 2) or 5 (if 5)
+  largeSpacing must be greater than minSpacing
+  ###
+  div = 4
+  largeSpacing = z = Math.pow(10, Math.ceil(Math.log(minSpacing) / Math.log(10)))
+  if z / 5 > minSpacing
+    largeSpacing = z / 5
+  else if z / 2 > minSpacing
+    largeSpacing = z / 2
+    div = 5
+  smallSpacing = largeSpacing / div
 
 
-util.canvas = {lerp, clear, drawCartesian, drawVertical}
+  toLocal = ([cx, cy]) ->
+    [
+      lerp(cx, cxMin, cxMax, xMin, xMax)
+      lerp(cy, cyMin, cyMax, yMin, yMax)
+    ]
+  fromLocal = ([x, y]) ->
+    [
+      lerp(x, xMin, xMax, cxMin, cxMax)
+      lerp(y, yMin, yMax, cyMin, cyMax)
+    ]
+
+  labelDistance = 5
+  color = config.gridColor
+  minorOpacity = 0.3
+  majorOpacity = 0.4
+  axesOpacity = 1.0
+  labelOpacity = 1.0
+  textHeight = 12
+
+  minorColor = "rgba(#{color}, #{minorOpacity})"
+  majorColor = "rgba(#{color}, #{majorOpacity})"
+  axesColor = "rgba(#{color}, #{axesOpacity})"
+  labelColor = "rgba(#{color}, #{labelOpacity})"
+
+  ctx.save()
+  ctx.lineWidth = 0.5
+
+
+  # draw minor grid lines
+  ctx.strokeStyle = minorColor
+  for x in ticks(smallSpacing, xMin, xMax)
+    drawLine(ctx, fromLocal([x, yMin]), fromLocal([x, yMax]))
+  for y in ticks(smallSpacing, yMin, yMax)
+    drawLine(ctx, fromLocal([xMin, y]), fromLocal([xMax, y]))
+
+  # draw major grid lines
+  ctx.strokeStyle = majorColor
+  for x in ticks(largeSpacing, xMin, xMax)
+    drawLine(ctx, fromLocal([x, yMin]), fromLocal([x, yMax]))
+  for y in ticks(largeSpacing, yMin, yMax)
+    drawLine(ctx, fromLocal([xMin, y]), fromLocal([xMax, y]))
+
+  # draw axes
+  ctx.strokeStyle = axesColor
+  drawLine(ctx, fromLocal([0, yMin]), fromLocal([0, yMax]))
+  drawLine(ctx, fromLocal([xMin, 0]), fromLocal([xMax, 0]))
+
+  # draw labels
+  ctx.font = "#{textHeight}px verdana"
+  ctx.fillStyle = labelColor
+  ctx.textAlign = "center"
+  ctx.textBaseline = "top"
+  for x in ticks(largeSpacing, xMin, xMax)
+    if x != 0
+      text = parseFloat(x.toPrecision(12)).toString()
+      [cx, cy] = fromLocal([x, 0])
+      cy += labelDistance
+      if cy < labelDistance
+        cy = labelDistance
+      if cy + textHeight + labelDistance > height
+        cy = height - labelDistance - textHeight
+      ctx.fillText(text, cx, cy)
+  ctx.textAlign = "left"
+  ctx.textBaseline = "middle"
+  for y in ticks(largeSpacing, yMin, yMax)
+    if y != 0
+      text = parseFloat(y.toPrecision(12)).toString()
+      [cx, cy] = fromLocal([0, y])
+      cx += labelDistance
+      if cx < labelDistance
+        cx = labelDistance
+      if cx + ctx.measureText(text).width + labelDistance > width
+        cx = width - labelDistance - ctx.measureText(text).width
+      ctx.fillText(text, cx, cy)
+
+  ctx.restore()
+
+
+
+
+
+
+util.canvas = {lerp, clear, drawCartesian, drawVertical, drawGrid}

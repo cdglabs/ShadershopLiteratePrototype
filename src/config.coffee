@@ -4,6 +4,12 @@ window.config = config = {
 
   resolution: 1
 
+  # In pixels:
+  minGridSpacing: 70
+  hitTolerance: 15
+  snapTolerance: 5
+
+  gridColor: "210,200,170"
 
   cursor: {
     text: "text"

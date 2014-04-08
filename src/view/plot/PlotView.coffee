@@ -17,6 +17,10 @@ R.create "PlotView",
 
     compiled = "(function (x) { return #{compiled} ; })"
 
+  getBounds: ->
+    customFn = @lookup("customFn")
+    return customFn.bounds
+
   drawFn: (canvas) ->
     ctx = canvas.getContext("2d")
 
@@ -26,11 +30,12 @@ R.create "PlotView",
 
     util.canvas.clear(ctx)
 
+    {xMin, xMax, yMin, yMax} = @getBounds()
     util.canvas.drawCartesian ctx,
-      xMin: -5
-      xMax: 5
-      yMin: -5
-      yMax: 5
+      xMin: xMin
+      xMax: xMax
+      yMin: yMin
+      yMax: yMax
       fn: fn
 
     ctx.strokeStyle = "#000"
@@ -42,5 +47,4 @@ R.create "PlotView",
     @refs.canvas.draw()
 
   render: ->
-    R.div {},
-      R.CanvasView {drawFn: @drawFn, ref: "canvas"}
+    R.CanvasView {drawFn: @drawFn, ref: "canvas"}

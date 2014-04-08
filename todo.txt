@@ -11,7 +11,6 @@ Add new exprRoot
 
 
 
-Add grid to main plot
 Pan and zoom plot
 
 

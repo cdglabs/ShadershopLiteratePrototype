@@ -107,4 +107,4 @@ require("./VariableView")
 
 require("./plot/PlotView")
 require("./plot/CanvasView")
-
+require("./plot/GridView")

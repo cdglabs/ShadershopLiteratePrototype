@@ -284,6 +284,10 @@
   window.config = config = {
     storageName: "spaceshader4",
     resolution: 1,
+    minGridSpacing: 70,
+    hitTolerance: 15,
+    snapTolerance: 5,
+    gridColor: "210,200,170",
     cursor: {
       text: "text",
       grab: "-webkit-grab",
@@ -638,6 +642,12 @@
       variable = new C.Variable("0", "x");
       this.paramVariables = [variable];
       this.rootExprs = [variable];
+      this.bounds = {
+        xMin: -6,
+        xMax: 6,
+        yMin: -6,
+        yMax: 6
+      };
     }
 
     CustomFn.prototype.getLabel = function() {
@@ -727,7 +737,7 @@
 
 }).call(this);
 }, "util/canvas": function(exports, require, module) {(function() {
-  var canvasBounds, clear, drawCartesian, drawVertical, lerp;
+  var canvasBounds, clear, drawCartesian, drawGrid, drawLine, drawVertical, lerp, ticks;
 
   lerp = function(x, dMin, dMax, rMin, rMax) {
     var ratio;
@@ -742,7 +752,9 @@
       cxMin: 0,
       cxMax: canvas.width,
       cyMin: canvas.height,
-      cyMax: 0
+      cyMax: 0,
+      width: canvas.width,
+      height: canvas.height
     };
   };
 
@@ -799,11 +811,150 @@
     return ctx.lineTo(cx, cyMax);
   };
 
+  ticks = function(spacing, min, max) {
+    var first, last, x, _i, _results;
+    first = Math.ceil(min / spacing);
+    last = Math.floor(max / spacing);
+    _results = [];
+    for (x = _i = first; first <= last ? _i <= last : _i >= last; x = first <= last ? ++_i : --_i) {
+      _results.push(x * spacing);
+    }
+    return _results;
+  };
+
+  drawLine = function(ctx, _arg, _arg1) {
+    var x1, x2, y1, y2;
+    x1 = _arg[0], y1 = _arg[1];
+    x2 = _arg1[0], y2 = _arg1[1];
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    return ctx.stroke();
+  };
+
+  drawGrid = function(ctx, opts) {
+    var axesColor, axesOpacity, color, cx, cxMax, cxMin, cy, cyMax, cyMin, div, fromLocal, height, labelColor, labelDistance, labelOpacity, largeSpacing, majorColor, majorOpacity, minSpacing, minorColor, minorOpacity, smallSpacing, text, textHeight, toLocal, width, x, xMax, xMin, xMinSpacing, xSize, y, yMax, yMin, yMinSpacing, ySize, z, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _len5, _m, _n, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8;
+    xMin = opts.xMin;
+    xMax = opts.xMax;
+    yMin = opts.yMin;
+    yMax = opts.yMax;
+    _ref = canvasBounds(ctx), cxMin = _ref.cxMin, cxMax = _ref.cxMax, cyMin = _ref.cyMin, cyMax = _ref.cyMax, width = _ref.width, height = _ref.height;
+    xSize = xMax - xMin;
+    ySize = yMax - yMin;
+    xMinSpacing = (xSize / width) * config.minGridSpacing;
+    yMinSpacing = (ySize / height) * config.minGridSpacing;
+    minSpacing = Math.max(xMinSpacing, yMinSpacing);
+
+    /*
+    need to determine:
+      largeSpacing = {1, 2, or 5} * 10^n
+      smallSpacing = divide largeSpacing by 4 (if 1 or 2) or 5 (if 5)
+    largeSpacing must be greater than minSpacing
+     */
+    div = 4;
+    largeSpacing = z = Math.pow(10, Math.ceil(Math.log(minSpacing) / Math.log(10)));
+    if (z / 5 > minSpacing) {
+      largeSpacing = z / 5;
+    } else if (z / 2 > minSpacing) {
+      largeSpacing = z / 2;
+      div = 5;
+    }
+    smallSpacing = largeSpacing / div;
+    toLocal = function(_arg) {
+      var cx, cy;
+      cx = _arg[0], cy = _arg[1];
+      return [lerp(cx, cxMin, cxMax, xMin, xMax), lerp(cy, cyMin, cyMax, yMin, yMax)];
+    };
+    fromLocal = function(_arg) {
+      var x, y;
+      x = _arg[0], y = _arg[1];
+      return [lerp(x, xMin, xMax, cxMin, cxMax), lerp(y, yMin, yMax, cyMin, cyMax)];
+    };
+    labelDistance = 5;
+    color = config.gridColor;
+    minorOpacity = 0.3;
+    majorOpacity = 0.4;
+    axesOpacity = 1.0;
+    labelOpacity = 1.0;
+    textHeight = 12;
+    minorColor = "rgba(" + color + ", " + minorOpacity + ")";
+    majorColor = "rgba(" + color + ", " + majorOpacity + ")";
+    axesColor = "rgba(" + color + ", " + axesOpacity + ")";
+    labelColor = "rgba(" + color + ", " + labelOpacity + ")";
+    ctx.save();
+    ctx.lineWidth = 0.5;
+    ctx.strokeStyle = minorColor;
+    _ref1 = ticks(smallSpacing, xMin, xMax);
+    for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+      x = _ref1[_i];
+      drawLine(ctx, fromLocal([x, yMin]), fromLocal([x, yMax]));
+    }
+    _ref2 = ticks(smallSpacing, yMin, yMax);
+    for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
+      y = _ref2[_j];
+      drawLine(ctx, fromLocal([xMin, y]), fromLocal([xMax, y]));
+    }
+    ctx.strokeStyle = majorColor;
+    _ref3 = ticks(largeSpacing, xMin, xMax);
+    for (_k = 0, _len2 = _ref3.length; _k < _len2; _k++) {
+      x = _ref3[_k];
+      drawLine(ctx, fromLocal([x, yMin]), fromLocal([x, yMax]));
+    }
+    _ref4 = ticks(largeSpacing, yMin, yMax);
+    for (_l = 0, _len3 = _ref4.length; _l < _len3; _l++) {
+      y = _ref4[_l];
+      drawLine(ctx, fromLocal([xMin, y]), fromLocal([xMax, y]));
+    }
+    ctx.strokeStyle = axesColor;
+    drawLine(ctx, fromLocal([0, yMin]), fromLocal([0, yMax]));
+    drawLine(ctx, fromLocal([xMin, 0]), fromLocal([xMax, 0]));
+    ctx.font = "" + textHeight + "px verdana";
+    ctx.fillStyle = labelColor;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    _ref5 = ticks(largeSpacing, xMin, xMax);
+    for (_m = 0, _len4 = _ref5.length; _m < _len4; _m++) {
+      x = _ref5[_m];
+      if (x !== 0) {
+        text = parseFloat(x.toPrecision(12)).toString();
+        _ref6 = fromLocal([x, 0]), cx = _ref6[0], cy = _ref6[1];
+        cy += labelDistance;
+        if (cy < labelDistance) {
+          cy = labelDistance;
+        }
+        if (cy + textHeight + labelDistance > height) {
+          cy = height - labelDistance - textHeight;
+        }
+        ctx.fillText(text, cx, cy);
+      }
+    }
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    _ref7 = ticks(largeSpacing, yMin, yMax);
+    for (_n = 0, _len5 = _ref7.length; _n < _len5; _n++) {
+      y = _ref7[_n];
+      if (y !== 0) {
+        text = parseFloat(y.toPrecision(12)).toString();
+        _ref8 = fromLocal([0, y]), cx = _ref8[0], cy = _ref8[1];
+        cx += labelDistance;
+        if (cx < labelDistance) {
+          cx = labelDistance;
+        }
+        if (cx + ctx.measureText(text).width + labelDistance > width) {
+          cx = width - labelDistance - ctx.measureText(text).width;
+        }
+        ctx.fillText(text, cx, cy);
+      }
+    }
+    return ctx.restore();
+  };
+
   util.canvas = {
     lerp: lerp,
     clear: clear,
     drawCartesian: drawCartesian,
-    drawVertical: drawVertical
+    drawVertical: drawVertical,
+    drawGrid: drawGrid
   };
 
 }).call(this);
@@ -1175,6 +1326,8 @@
 
   require("./plot/CanvasView");
 
+  require("./plot/GridView");
+
 }).call(this);
 }, "view/VariableView": function(exports, require, module) {(function() {
   R.create("VariableView", {
@@ -1262,7 +1415,9 @@
         className: "CustomFnDefinition"
       }), R.div({
         className: "MainPlot"
-      }, R.PlotView({
+      }, R.GridView({
+        customFn: this.customFn
+      }), R.PlotView({
         expr: this.customFn.rootExprs[0]
       })), this.customFn.rootExprs.map((function(_this) {
         return function(rootExpr) {
@@ -1570,6 +1725,40 @@
   });
 
 }).call(this);
+}, "view/plot/GridView": function(exports, require, module) {(function() {
+  R.create("GridView", {
+    propTypes: {
+      customFn: C.CustomFn
+    },
+    getBounds: function() {
+      var customFn;
+      customFn = this.lookup("customFn");
+      return customFn.bounds;
+    },
+    drawFn: function(canvas) {
+      var ctx, xMax, xMin, yMax, yMin, _ref;
+      ctx = canvas.getContext("2d");
+      _ref = this.getBounds(), xMin = _ref.xMin, xMax = _ref.xMax, yMin = _ref.yMin, yMax = _ref.yMax;
+      util.canvas.clear(ctx);
+      return util.canvas.drawGrid(ctx, {
+        xMin: xMin,
+        xMax: xMax,
+        yMin: yMin,
+        yMax: yMax
+      });
+    },
+    componentDidUpdate: function() {
+      return this.refs.canvas.draw();
+    },
+    render: function() {
+      return R.CanvasView({
+        drawFn: this.drawFn,
+        ref: "canvas"
+      });
+    }
+  });
+
+}).call(this);
 }, "view/plot/PlotView": function(exports, require, module) {(function() {
   var Compiler, evaluate;
 
@@ -1593,8 +1782,13 @@
       compiled = compiler.compile(this.expr);
       return compiled = "(function (x) { return " + compiled + " ; })";
     },
+    getBounds: function() {
+      var customFn;
+      customFn = this.lookup("customFn");
+      return customFn.bounds;
+    },
     drawFn: function(canvas) {
-      var compiled, ctx, fn;
+      var compiled, ctx, fn, xMax, xMin, yMax, yMin, _ref;
       ctx = canvas.getContext("2d");
       compiled = this.compile();
       if (!compiled) {
@@ -1602,11 +1796,12 @@
       }
       fn = evaluate(compiled);
       util.canvas.clear(ctx);
+      _ref = this.getBounds(), xMin = _ref.xMin, xMax = _ref.xMax, yMin = _ref.yMin, yMax = _ref.yMax;
       util.canvas.drawCartesian(ctx, {
-        xMin: -5,
-        xMax: 5,
-        yMin: -5,
-        yMax: 5,
+        xMin: xMin,
+        xMax: xMax,
+        yMin: yMin,
+        yMax: yMax,
         fn: fn
       });
       ctx.strokeStyle = "#000";
@@ -1617,10 +1812,10 @@
       return this.refs.canvas.draw();
     },
     render: function() {
-      return R.div({}, R.CanvasView({
+      return R.CanvasView({
         drawFn: this.drawFn,
         ref: "canvas"
-      }));
+      });
     }
   });
 

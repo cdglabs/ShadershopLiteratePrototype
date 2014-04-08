@@ -29,6 +29,7 @@ R.create "CustomFnView",
           R.VariableView {variable: paramVariable}
       R.div {className: "CustomFnDefinition"}
         R.div {className: "MainPlot"},
+          R.GridView {customFn: @customFn}
           R.PlotView {expr: @customFn.rootExprs[0]}
         @customFn.rootExprs.map (rootExpr) =>
           R.ExprTreeView {expr: rootExpr}

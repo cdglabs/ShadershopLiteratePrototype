@@ -51,6 +51,8 @@ class C.CustomFn extends C.Fn
     variable = new C.Variable("0", "x")
     @paramVariables = [variable]
     @rootExprs = [variable]
+    # For plotting
+    @bounds = {xMin: -6, xMax: 6, yMin: -6, yMax: 6}
 
   getLabel: -> @label
 
