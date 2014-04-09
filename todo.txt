@@ -1,6 +1,8 @@
 Variable
-  Transclude
   hovered variable
+  right click menu
+    unsync
+    change domain
 
 CustomFn
   Add new custom fn
@@ -20,9 +22,18 @@ Plot
   Snap pan/zoom
 
 
+Autocomplete with search lookup
+
+
+Use custom fn
+  Put them in autocomplete
+  Compile/evaluate correctly
+
+
 
 Evaluation
   Fix issue with sqrt not drawing correctly in undefined areas
+  Divide by zero check for discontinuities
 
 
 Cleanup
