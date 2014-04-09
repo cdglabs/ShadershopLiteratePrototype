@@ -10,21 +10,52 @@ R.create "CustomFnView",
 
   render: ->
     R.div {className: "CustomFn"},
-      R.div {className: "CustomFnHeader"},
-        R.TextFieldView {
-          className: "FnLabel",
-          value: @customFn.getLabel()
-          onInput: @handleFnLabelInput
-        }
-        @customFn.paramVariables.map (paramVariable) =>
-          R.div {className: "Param"},
-            R.VariableView {variable: paramVariable}
+      R.CustomFnHeaderView {customFn: @customFn}
       R.div {className: "CustomFnDefinition"},
         R.MainPlotView {customFn: @customFn}
         @customFn.rootExprs.map (rootExpr, rootIndex) =>
           R.RootExprTreeView {rootExpr, rootIndex}
         R.button {className: "CreateRootExprButton", onClick: @handleCreateRootExprButtonClick}
 
+
+# =============================================================================
+
+R.create "CustomFnHeaderView",
+  propTypes:
+    customFn: C.CustomFn
+
+  render: ->
+    R.div {className: "CustomFnHeader"},
+      R.TextFieldView {
+        className: "FnLabel",
+        value: @customFn.getLabel()
+        onInput: @handleFnLabelInput
+      }
+      @customFn.paramVariables.map (paramVariable) =>
+        R.div {className: "Param"},
+          R.VariableView {variable: paramVariable}
+      R.CustomFnParamPlaceholderView {customFn: @customFn}
+
+
+# =============================================================================
+
+# TODO: this is temporary until I implement something nicer
+R.create "CustomFnParamPlaceholderView",
+  propTypes:
+    customFn: C.CustomFn
+
+  handleTransclusionDrop: (expr) ->
+    return unless expr instanceof C.Variable
+    paramVariables = @customFn.paramVariables
+    return if _.contains(paramVariables, expr)
+    paramVariables.push(expr)
+
+  render: ->
+    className = R.cx {
+      ActiveTransclusionDrop: this == UI.activeTransclusionDropView
+    }
+    R.span {className: className},
+      R.div {className: "ParamPlaceholder"}
 
 # =============================================================================
 
@@ -78,6 +109,10 @@ R.create "MainPlotView",
     bounds.yMax = (bounds.yMax - centerY) * scale + centerY
 
 
+  getDisplayVariables: ->
+    @customFn.paramVariables
+
+
   cursor: ->
     config.cursor.grab
 
@@ -90,3 +125,36 @@ R.create "MainPlotView",
     },
       R.GridView {customFn: @customFn}
       R.PlotView {expr: @customFn.rootExprs[0]}
+      for variable in @getDisplayVariables()
+        R.PlotVariableView {variable}
+
+
+R.create "PlotVariableView",
+  propTypes:
+    variable: C.Variable
+
+  drawFn: (canvas) ->
+    bounds = @lookup("customFn").bounds
+
+    ctx = canvas.getContext("2d")
+    util.canvas.clear(ctx)
+    if @variable.domain == "domain"
+      util.canvas.drawVertical ctx,
+        xMin: bounds.xMin
+        xMax: bounds.xMax
+        x: @variable.getValue()
+    else if @variable.domain == "range"
+      util.canvas.drawHorizontal ctx,
+        yMin: bounds.yMin
+        yMax: bounds.yMax
+        y: @variable.getValue()
+
+    ctx.strokeStyle = "#090"
+    ctx.lineWidth = 1.5
+    ctx.stroke()
+
+  componentDidUpdate: ->
+    @refs.canvas.draw()
+
+  render: ->
+    R.CanvasView {drawFn: @drawFn, ref: "canvas"}

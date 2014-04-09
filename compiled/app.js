@@ -801,7 +801,7 @@
 
 }).call(this);
 }, "util/canvas": function(exports, require, module) {(function() {
-  var canvasBounds, clear, drawCartesian, drawGrid, drawLine, drawVertical, lerp, ticks;
+  var canvasBounds, clear, drawCartesian, drawGrid, drawHorizontal, drawLine, drawVertical, lerp, ticks;
 
   lerp = util.lerp;
 
@@ -925,6 +925,18 @@
     cx = lerp(x, xMin, xMax, cxMin, cxMax);
     ctx.moveTo(cx, cyMin);
     return ctx.lineTo(cx, cyMax);
+  };
+
+  drawHorizontal = function(ctx, opts) {
+    var cxMax, cxMin, cy, cyMax, cyMin, y, yMax, yMin, _ref;
+    yMin = opts.yMin;
+    yMax = opts.yMax;
+    y = opts.y;
+    _ref = canvasBounds(ctx), cxMin = _ref.cxMin, cxMax = _ref.cxMax, cyMin = _ref.cyMin, cyMax = _ref.cyMax;
+    ctx.beginPath();
+    cy = lerp(y, yMin, yMax, cyMin, cyMax);
+    ctx.moveTo(cxMin, cy);
+    return ctx.lineTo(cxMax, cy);
   };
 
   ticks = function(spacing, min, max) {
@@ -1070,6 +1082,7 @@
     clear: clear,
     drawCartesian: drawCartesian,
     drawVertical: drawVertical,
+    drawHorizontal: drawHorizontal,
     drawGrid: drawGrid
   };
 
@@ -1341,21 +1354,9 @@
     render: function() {
       return R.div({
         className: "CustomFn"
-      }, R.div({
-        className: "CustomFnHeader"
-      }, R.TextFieldView({
-        className: "FnLabel",
-        value: this.customFn.getLabel(),
-        onInput: this.handleFnLabelInput
-      }), this.customFn.paramVariables.map((function(_this) {
-        return function(paramVariable) {
-          return R.div({
-            className: "Param"
-          }, R.VariableView({
-            variable: paramVariable
-          }));
-        };
-      })(this))), R.div({
+      }, R.CustomFnHeaderView({
+        customFn: this.customFn
+      }), R.div({
         className: "CustomFnDefinition"
       }, R.MainPlotView({
         customFn: this.customFn
@@ -1370,6 +1371,59 @@
         className: "CreateRootExprButton",
         onClick: this.handleCreateRootExprButtonClick
       })));
+    }
+  });
+
+  R.create("CustomFnHeaderView", {
+    propTypes: {
+      customFn: C.CustomFn
+    },
+    render: function() {
+      return R.div({
+        className: "CustomFnHeader"
+      }, R.TextFieldView({
+        className: "FnLabel",
+        value: this.customFn.getLabel(),
+        onInput: this.handleFnLabelInput
+      }), this.customFn.paramVariables.map((function(_this) {
+        return function(paramVariable) {
+          return R.div({
+            className: "Param"
+          }, R.VariableView({
+            variable: paramVariable
+          }));
+        };
+      })(this)), R.CustomFnParamPlaceholderView({
+        customFn: this.customFn
+      }));
+    }
+  });
+
+  R.create("CustomFnParamPlaceholderView", {
+    propTypes: {
+      customFn: C.CustomFn
+    },
+    handleTransclusionDrop: function(expr) {
+      var paramVariables;
+      if (!(expr instanceof C.Variable)) {
+        return;
+      }
+      paramVariables = this.customFn.paramVariables;
+      if (_.contains(paramVariables, expr)) {
+        return;
+      }
+      return paramVariables.push(expr);
+    },
+    render: function() {
+      var className;
+      className = R.cx({
+        ActiveTransclusionDrop: this === UI.activeTransclusionDropView
+      });
+      return R.span({
+        className: className
+      }, R.div({
+        className: "ParamPlaceholder"
+      }));
     }
   });
 
@@ -1423,10 +1477,14 @@
       bounds.yMin = (bounds.yMin - centerY) * scale + centerY;
       return bounds.yMax = (bounds.yMax - centerY) * scale + centerY;
     },
+    getDisplayVariables: function() {
+      return this.customFn.paramVariables;
+    },
     cursor: function() {
       return config.cursor.grab;
     },
     render: function() {
+      var variable;
       return R.div({
         className: "MainPlot",
         onMouseDown: this.handleMouseDown,
@@ -1438,7 +1496,55 @@
         customFn: this.customFn
       }), R.PlotView({
         expr: this.customFn.rootExprs[0]
-      }));
+      }), (function() {
+        var _i, _len, _ref, _results;
+        _ref = this.getDisplayVariables();
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          variable = _ref[_i];
+          _results.push(R.PlotVariableView({
+            variable: variable
+          }));
+        }
+        return _results;
+      }).call(this));
+    }
+  });
+
+  R.create("PlotVariableView", {
+    propTypes: {
+      variable: C.Variable
+    },
+    drawFn: function(canvas) {
+      var bounds, ctx;
+      bounds = this.lookup("customFn").bounds;
+      ctx = canvas.getContext("2d");
+      util.canvas.clear(ctx);
+      if (this.variable.domain === "domain") {
+        util.canvas.drawVertical(ctx, {
+          xMin: bounds.xMin,
+          xMax: bounds.xMax,
+          x: this.variable.getValue()
+        });
+      } else if (this.variable.domain === "range") {
+        util.canvas.drawHorizontal(ctx, {
+          yMin: bounds.yMin,
+          yMax: bounds.yMax,
+          y: this.variable.getValue()
+        });
+      }
+      ctx.strokeStyle = "#090";
+      ctx.lineWidth = 1.5;
+      return ctx.stroke();
+    },
+    componentDidUpdate: function() {
+      return this.refs.canvas.draw();
+    },
+    render: function() {
+      return R.CanvasView({
+        drawFn: this.drawFn,
+        ref: "canvas"
+      });
     }
   });
 

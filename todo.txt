@@ -1,4 +1,5 @@
 Priorities
+  Display variables on main plot
   Direct manipulate variables
   Use custom fn's
 
@@ -14,6 +15,7 @@ Variable
     change domain
 
 CustomFn
+  Remove and reorder paramVariables
   Add new custom fn
 
 
@@ -47,6 +49,7 @@ Cleanup
   Will need to cleanup variable domain/range stuff when generalizing to more than R1 -> R1
   Still some awkwardness with transclusion trees where a variable will "snap" into its parent ExprNodeView
   Move ExprNodeView reordering logic to ExprTreeView
+  Unify startTransclude on VariableLabel and TranscludeLinkIndicator
 
 
 Optimization

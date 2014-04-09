@@ -113,6 +113,19 @@ drawVertical = (ctx, opts) ->
   ctx.lineTo(cx, cyMax)
 
 
+drawHorizontal = (ctx, opts) ->
+  yMin = opts.yMin
+  yMax = opts.yMax
+  y = opts.y
+
+  {cxMin, cxMax, cyMin, cyMax} = canvasBounds(ctx)
+
+  ctx.beginPath()
+  cy = lerp(y, yMin, yMax, cyMin, cyMax)
+  ctx.moveTo(cxMin, cy)
+  ctx.lineTo(cxMax, cy)
+
+
 # =============================================================================
 # Grid
 # =============================================================================
@@ -241,4 +254,4 @@ drawGrid = (ctx, opts) ->
 
 
 
-util.canvas = {lerp, clear, drawCartesian, drawVertical, drawGrid}
+util.canvas = {lerp, clear, drawCartesian, drawVertical, drawHorizontal, drawGrid}

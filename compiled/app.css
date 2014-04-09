@@ -3,7 +3,6 @@ body {
   font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
   font-size: 13px;
   color: #444;
-  cursor: default;
   margin: 0;
 }
 [contenteditable]:active,
@@ -127,6 +126,16 @@ canvas {
   top: 0px;
   left: 15px;
 }
+.ParamPlaceholder {
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 6px;
+  width: 30px;
+  height: 1em;
+  padding: 2px 4px;
+  border-radius: 4px;
+  border: 1px dashed #ccc;
+}
 .Variable {
   background-color: #fff;
   border-radius: 4px;
@@ -153,7 +162,8 @@ canvas {
   min-width: 11px;
 }
 .ActiveTransclusionDrop .Variable,
-.ActiveTransclusionDrop .ExprThumbnail {
+.ActiveTransclusionDrop .ExprThumbnail,
+.ActiveTransclusionDrop .ParamPlaceholder {
   box-shadow: 0px 0px 16px 0px rgba(0,153,204,0.5);
 }
 .TranscludeLinkIndicator {
@@ -239,7 +249,7 @@ canvas {
   opacity: 1;
 }
 .CreateRootExprButton {
-  margin-left: 6px;
+  margin-left: 12px;
 }
 .CreateRootExprButton {
   opacity: 0;
