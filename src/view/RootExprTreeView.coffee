@@ -41,9 +41,14 @@ R.create "ExprNodeView",
     isDraggingCopy: false
 
   insertApplicationAfter: (application) ->
-    return if application == @expr
-    application.paramExprs[0] = @expr
-    @lookup("parentArray")[@lookup("parentArrayIndex")] = application
+    parentArray = @lookup("parentArray")
+    parentArrayIndex = @lookup("parentArrayIndex")
+
+    unless application == @expr
+      application.paramExprs[0] = @expr
+      parentArray[parentArrayIndex] = application
+
+    return {parentArray, parentArrayIndex}
 
   handleCreateExprButtonClick: ->
     application = new C.Application()
@@ -78,47 +83,60 @@ R.create "ExprNodeView",
         cursor: "-webkit-grabbing"
       }
 
+
+      findInsertAfterEl = (e) ->
+        insertAfterEl = null
+        exprNodeEls = document.querySelectorAll(".CustomFn .ExprNode")
+        for exprNodeEl in exprNodeEls
+          rect = exprNodeEl.getBoundingClientRect()
+          if rect.bottom + myHeight * 1.5 > e.clientY > rect.top + myHeight * 0.5 and rect.left < e.clientX < rect.right
+            insertAfterEl = exprNodeEl
+        return insertAfterEl
+
+
       # The View object is fragile so we need to close over properties here.
-      expr = @expr
-      customFn = @lookup("customFn") # the CustomFn which has expr
+      application = @expr
+
+      # The (current) CustomFn where application lives, used for the ghost
+      customFn = @lookup("customFn")
+
+      # The (current) parentArray and parentArrayIndex of application, used for removal
+      parentArray = @lookup("parentArray")
+      parentArrayIndex = @lookup("parentArrayIndex")
+
+      removeApplication = ->
+        return unless parentArray?
+        parentArray[parentArrayIndex] = application.paramExprs[0]
+
+      onMove = (e) ->
+        insertAfterEl = findInsertAfterEl(e)
+
+        if insertAfterEl
+          insertAfterExprNodeView = insertAfterEl.dataFor.lookupView("ExprNodeView")
+
+          if insertAfterExprNodeView.lookup("parentArray") == application.paramExprs
+            return # Already in the right place
+
+          removeApplication()
+          {parentArray, parentArrayIndex} = insertAfterExprNodeView.insertApplicationAfter(application)
+          customFn = insertAfterExprNodeView.lookup("customFn")
+
+        else
+          removeApplication()
 
       util.onceDragConsummated e, ->
         UI.dragging = {
           cursor: "-webkit-grabbing"
           offset: offset
           placeholderHeight: myHeight
-          application: expr
+          application: application
           render: ->
             R.div {style: {"min-width": myWidth, height: myHeight, overflow: "hidden", "background-color": "#fff"}},
               # HACK: This is a really loopy way to pass in customFn
-              R.ExprNodeView {expr, customFn, isDraggingCopy: true}
-          onMove: (e) ->
-            insertAfterEl = null
-
-            exprNodeEls = document.querySelectorAll(".CustomFn .ExprNode")
-            for exprNodeEl in exprNodeEls
-              rect = exprNodeEl.getBoundingClientRect()
-              if rect.bottom + myHeight * 1.5 > e.clientY > rect.top + myHeight * 0.5 and rect.left < e.clientX < rect.right
-                insertAfterEl = exprNodeEl
-
-            if insertAfterEl
-              exprView = insertAfterEl.dataFor
-              exprView = exprView.lookupView("ExprNodeView")
-              insertAfterExpr = exprView.expr
-
-              if exprView.lookup("parentArray") == expr.paramExprs
-                return # done
-              else
-                if customFn?
-                  customFn.removeApplication(expr)
-                  customFn = null
-                exprView.insertApplicationAfter(expr)
-                customFn = exprView.lookup("customFn")
-            else
-              if customFn?
-                customFn.removeApplication(expr)
-                customFn = null
+              R.ExprNodeView {expr: application, customFn, isDraggingCopy: true}
+          onMove: onMove
         }
+
 
   render: ->
     if @isPlaceholder()

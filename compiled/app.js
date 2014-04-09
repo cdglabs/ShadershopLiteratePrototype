@@ -778,47 +778,6 @@
       return this.rootExprs.push(variable);
     };
 
-    CustomFn.prototype._findExpr = function(refExpr) {
-      var search, _ref;
-      search = (function(_this) {
-        return function(array) {
-          var expr, found, index, _i, _len;
-          found = null;
-          for (index = _i = 0, _len = array.length; _i < _len; index = ++_i) {
-            expr = array[index];
-            if (expr === refExpr) {
-              if (found == null) {
-                found = {
-                  array: array,
-                  index: index
-                };
-              }
-            }
-            if (expr instanceof C.Application) {
-              if (found == null) {
-                found = search(expr.paramExprs);
-              }
-            }
-          }
-          return found;
-        };
-      })(this);
-      return (_ref = search(this.rootExprs)) != null ? _ref : {
-        array: null,
-        index: null
-      };
-    };
-
-    CustomFn.prototype.removeApplication = function(refApplication) {
-      var array, index, previousExpr, _ref;
-      _ref = this._findExpr(refApplication), array = _ref.array, index = _ref.index;
-      if (array == null) {
-        return;
-      }
-      previousExpr = refApplication.paramExprs[0];
-      return array[index] = previousExpr;
-    };
-
     return CustomFn;
 
   })(C.Fn);
@@ -1651,11 +1610,17 @@
       };
     },
     insertApplicationAfter: function(application) {
-      if (application === this.expr) {
-        return;
+      var parentArray, parentArrayIndex;
+      parentArray = this.lookup("parentArray");
+      parentArrayIndex = this.lookup("parentArrayIndex");
+      if (application !== this.expr) {
+        application.paramExprs[0] = this.expr;
+        parentArray[parentArrayIndex] = application;
       }
-      application.paramExprs[0] = this.expr;
-      return this.lookup("parentArray")[this.lookup("parentArrayIndex")] = application;
+      return {
+        parentArray: parentArray,
+        parentArrayIndex: parentArrayIndex
+      };
     },
     handleCreateExprButtonClick: function() {
       var application;
@@ -1678,7 +1643,7 @@
       }
     },
     handleMouseDown: function(e) {
-      var customFn, el, expr, myHeight, myWidth, offset, rect;
+      var application, customFn, el, findInsertAfterEl, myHeight, myWidth, offset, onMove, parentArray, parentArrayIndex, rect, removeApplication;
       if (e.target.closest(".CreateExprButton, .ApplicationAutoComplete, .Variable")) {
         return;
       }
@@ -1695,14 +1660,50 @@
         UI.dragging = {
           cursor: "-webkit-grabbing"
         };
-        expr = this.expr;
+        findInsertAfterEl = function(e) {
+          var exprNodeEl, exprNodeEls, insertAfterEl, _i, _len, _ref, _ref1;
+          insertAfterEl = null;
+          exprNodeEls = document.querySelectorAll(".CustomFn .ExprNode");
+          for (_i = 0, _len = exprNodeEls.length; _i < _len; _i++) {
+            exprNodeEl = exprNodeEls[_i];
+            rect = exprNodeEl.getBoundingClientRect();
+            if ((rect.bottom + myHeight * 1.5 > (_ref = e.clientY) && _ref > rect.top + myHeight * 0.5) && (rect.left < (_ref1 = e.clientX) && _ref1 < rect.right)) {
+              insertAfterEl = exprNodeEl;
+            }
+          }
+          return insertAfterEl;
+        };
+        application = this.expr;
         customFn = this.lookup("customFn");
+        parentArray = this.lookup("parentArray");
+        parentArrayIndex = this.lookup("parentArrayIndex");
+        removeApplication = function() {
+          if (parentArray == null) {
+            return;
+          }
+          return parentArray[parentArrayIndex] = application.paramExprs[0];
+        };
+        onMove = function(e) {
+          var insertAfterEl, insertAfterExprNodeView, _ref;
+          insertAfterEl = findInsertAfterEl(e);
+          if (insertAfterEl) {
+            insertAfterExprNodeView = insertAfterEl.dataFor.lookupView("ExprNodeView");
+            if (insertAfterExprNodeView.lookup("parentArray") === application.paramExprs) {
+              return;
+            }
+            removeApplication();
+            _ref = insertAfterExprNodeView.insertApplicationAfter(application), parentArray = _ref.parentArray, parentArrayIndex = _ref.parentArrayIndex;
+            return customFn = insertAfterExprNodeView.lookup("customFn");
+          } else {
+            return removeApplication();
+          }
+        };
         return util.onceDragConsummated(e, function() {
           return UI.dragging = {
             cursor: "-webkit-grabbing",
             offset: offset,
             placeholderHeight: myHeight,
-            application: expr,
+            application: application,
             render: function() {
               return R.div({
                 style: {
@@ -1712,43 +1713,12 @@
                   "background-color": "#fff"
                 }
               }, R.ExprNodeView({
-                expr: expr,
+                expr: application,
                 customFn: customFn,
                 isDraggingCopy: true
               }));
             },
-            onMove: function(e) {
-              var exprNodeEl, exprNodeEls, exprView, insertAfterEl, insertAfterExpr, _i, _len, _ref, _ref1;
-              insertAfterEl = null;
-              exprNodeEls = document.querySelectorAll(".CustomFn .ExprNode");
-              for (_i = 0, _len = exprNodeEls.length; _i < _len; _i++) {
-                exprNodeEl = exprNodeEls[_i];
-                rect = exprNodeEl.getBoundingClientRect();
-                if ((rect.bottom + myHeight * 1.5 > (_ref = e.clientY) && _ref > rect.top + myHeight * 0.5) && (rect.left < (_ref1 = e.clientX) && _ref1 < rect.right)) {
-                  insertAfterEl = exprNodeEl;
-                }
-              }
-              if (insertAfterEl) {
-                exprView = insertAfterEl.dataFor;
-                exprView = exprView.lookupView("ExprNodeView");
-                insertAfterExpr = exprView.expr;
-                if (exprView.lookup("parentArray") === expr.paramExprs) {
-
-                } else {
-                  if (customFn != null) {
-                    customFn.removeApplication(expr);
-                    customFn = null;
-                  }
-                  exprView.insertApplicationAfter(expr);
-                  return customFn = exprView.lookup("customFn");
-                }
-              } else {
-                if (customFn != null) {
-                  customFn.removeApplication(expr);
-                  return customFn = null;
-                }
-              }
-            }
+            onMove: onMove
           };
         });
       }

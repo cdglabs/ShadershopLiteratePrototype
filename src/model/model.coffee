@@ -63,30 +63,6 @@ class C.CustomFn extends C.Fn
     variable = new C.Variable()
     @rootExprs.push(variable)
 
-  _findExpr: (refExpr) ->
-    # returns {array, index} such that
-    #   array[index] == refExpr
-    #   array is either @rootExprs or an Application.paramExprs
-    search = (array) =>
-      found = null
-      for expr, index in array
-        if expr == refExpr
-          found ?= {array, index}
-        if expr instanceof C.Application
-          found ?= search(expr.paramExprs)
-      return found
-    return search(@rootExprs) ? {array: null, index: null}
-
-  removeApplication: (refApplication) ->
-    {array, index} = @_findExpr(refApplication)
-    return unless array?
-    previousExpr = refApplication.paramExprs[0]
-    array[index] = previousExpr
-    # TODO should look at refApplication.paramExprs[1...] and add them to
-    # @rootExprs if they're Applications (maybe that's a separate method)
-
-
-
 
 class C.Editor
   constructor: ->

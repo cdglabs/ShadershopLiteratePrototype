@@ -26,7 +26,8 @@ Evaluation
 
 
 Cleanup
-  Get rid of lookup calls and do explicit passing
+  Get rid of lookup calls and do explicit passing?
+  Reordering applications could use more cleanup
   Will need to cleanup variable domain/range stuff when generalizing to more than R1 -> R1
 
 
