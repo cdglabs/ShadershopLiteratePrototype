@@ -10,6 +10,52 @@ R.create "RootExprTreeView",
         parentArray: @lookup("customFn").rootExprs
         parentArrayIndex: @rootIndex
       }
+      if @rootIndex > 0
+        R.div {className: "RootExprTreeExtras"},
+          R.RootExprTreeTranscluderView {rootExpr: @rootExpr}
+          R.div {className: "ExtraButton"}, "remove"
+          R.div {className: "ExtraButton"}, "make primary"
+
+
+
+R.create "RootExprTreeTranscluderView",
+  propTypes:
+    rootExpr: C.Expr
+
+  remove: ->
+    rootIndex = @lookup("rootIndex") # TODO move up
+    customFn = @lookup("customFn")
+    customFn.rootExprs.splice(rootIndex, 1)
+
+  startTransclude: (e) ->
+    UI.dragging = {
+      cursor: config.cursor.grabbing
+    }
+    util.onceDragConsummated e, =>
+      UI.dragging = {
+        cursor: config.cursor.grabbing
+        offset: {x: -4, y: -10}
+        render: =>
+          R.ExprThumbnailView {expr: @rootExpr, customFn: @lookup("customFn")}
+        onMove: (e) =>
+          dropView = UI.getViewUnderMouse()
+          dropView = dropView?.lookupViewWithKey("handleTransclusionDrop")
+          UI.activeTransclusionDropView = dropView
+        onUp: (e) =>
+          if UI.activeTransclusionDropView
+            UI.activeTransclusionDropView.handleTransclusionDrop(@rootExpr)
+            @remove()
+          UI.activeTransclusionDropView = null
+      }
+
+  handleMouseDown: (e) ->
+    UI.preventDefault(e)
+    @startTransclude(e)
+
+  render: ->
+    R.div {className: "RootExprTreeTranscluder", onMouseDown: @handleMouseDown}
+
+
 
 
 R.create "ExprTreeView",

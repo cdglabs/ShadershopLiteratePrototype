@@ -71,6 +71,32 @@ canvas
 .RootExprTree
   inline(top)
   margin-right 6px
+  .RootExprTreeExtras
+    position relative
+    padding-bottom 24px
+    .RootExprTreeTranscluder
+      position absolute
+      background-color #999
+      margin-top -7px
+      margin-left -7px
+      left 20px
+      width 14px
+      height 14px
+      border-radius 7px
+    .ExtraButton
+      cursor pointer
+      text-align right
+      margin-right 6px
+      margin-bottom 6px
+      font-size 10px
+
+.RootExprTreeExtras
+  opacity 0
+.RootExprTree:hover .RootExprTreeExtras
+  opacity 1
+
+
+
 
 .ExprTree
   inline(bottom)

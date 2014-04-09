@@ -50,6 +50,33 @@ canvas {
   vertical-align: top;
   margin-right: 6px;
 }
+.RootExprTree .RootExprTreeExtras {
+  position: relative;
+  padding-bottom: 24px;
+}
+.RootExprTree .RootExprTreeExtras .RootExprTreeTranscluder {
+  position: absolute;
+  background-color: #999;
+  margin-top: -7px;
+  margin-left: -7px;
+  left: 20px;
+  width: 14px;
+  height: 14px;
+  border-radius: 7px;
+}
+.RootExprTree .RootExprTreeExtras .ExtraButton {
+  cursor: pointer;
+  text-align: right;
+  margin-right: 6px;
+  margin-bottom: 6px;
+  font-size: 10px;
+}
+.RootExprTreeExtras {
+  opacity: 0;
+}
+.RootExprTree:hover .RootExprTreeExtras {
+  opacity: 1;
+}
 .ExprTree {
   display: inline-block;
   vertical-align: bottom;

@@ -1,3 +1,13 @@
+Priorities
+  Direct manipulate variables
+  Pull out transclude
+  Use custom fn's
+
+
+
+
+
+
 Variable
   hovered variable
   right click menu
@@ -16,6 +26,8 @@ RootExpr
 Plot
   Spread variable
   Maybe show axes/grid on thumbnail plots
+  Hover thumbnail plots
+  Show params on thumbnail plots
   Show number values on top of plot
   Direct manipulate variables
   Snap pan/zoom

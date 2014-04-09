@@ -1586,7 +1586,72 @@
         expr: this.rootExpr,
         parentArray: this.lookup("customFn").rootExprs,
         parentArrayIndex: this.rootIndex
-      }));
+      }), this.rootIndex > 0 ? R.div({
+        className: "RootExprTreeExtras"
+      }, R.RootExprTreeTranscluderView({
+        rootExpr: this.rootExpr
+      }), R.div({
+        className: "ExtraButton"
+      }, "remove"), R.div({
+        className: "ExtraButton"
+      }, "make primary")) : void 0);
+    }
+  });
+
+  R.create("RootExprTreeTranscluderView", {
+    propTypes: {
+      rootExpr: C.Expr
+    },
+    remove: function() {
+      var customFn, rootIndex;
+      rootIndex = this.lookup("rootIndex");
+      customFn = this.lookup("customFn");
+      return customFn.rootExprs.splice(rootIndex, 1);
+    },
+    startTransclude: function(e) {
+      UI.dragging = {
+        cursor: config.cursor.grabbing
+      };
+      return util.onceDragConsummated(e, (function(_this) {
+        return function() {
+          return UI.dragging = {
+            cursor: config.cursor.grabbing,
+            offset: {
+              x: -4,
+              y: -10
+            },
+            render: function() {
+              return R.ExprThumbnailView({
+                expr: _this.rootExpr,
+                customFn: _this.lookup("customFn")
+              });
+            },
+            onMove: function(e) {
+              var dropView;
+              dropView = UI.getViewUnderMouse();
+              dropView = dropView != null ? dropView.lookupViewWithKey("handleTransclusionDrop") : void 0;
+              return UI.activeTransclusionDropView = dropView;
+            },
+            onUp: function(e) {
+              if (UI.activeTransclusionDropView) {
+                UI.activeTransclusionDropView.handleTransclusionDrop(_this.rootExpr);
+                _this.remove();
+              }
+              return UI.activeTransclusionDropView = null;
+            }
+          };
+        };
+      })(this));
+    },
+    handleMouseDown: function(e) {
+      UI.preventDefault(e);
+      return this.startTransclude(e);
+    },
+    render: function() {
+      return R.div({
+        className: "RootExprTreeTranscluder",
+        onMouseDown: this.handleMouseDown
+      });
     }
   });
 
