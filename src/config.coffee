@@ -9,7 +9,7 @@ window.config = config = {
   hitTolerance: 15
   snapTolerance: 5
 
-  gridColor: "210,200,170"
+  gridColor: "204,194,163"
 
   cursor: {
     text: "text"

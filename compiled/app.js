@@ -402,7 +402,7 @@
     minGridSpacing: 70,
     hitTolerance: 15,
     snapTolerance: 5,
-    gridColor: "210,200,170",
+    gridColor: "204,194,163",
     cursor: {
       text: "text",
       grab: "-webkit-grab",
@@ -1600,11 +1600,16 @@
       rootExpr: C.Expr,
       rootIndex: Number
     },
-    remove: function() {
-      var customFn, rootIndex;
-      rootIndex = this.lookup("rootIndex");
+    promote: function() {
+      var customFn;
       customFn = this.lookup("customFn");
-      return customFn.rootExprs.splice(rootIndex, 1);
+      this.remove();
+      return customFn.rootExprs.splice(0, 0, this.rootExpr);
+    },
+    remove: function() {
+      var customFn;
+      customFn = this.lookup("customFn");
+      return customFn.rootExprs.splice(this.rootIndex, 1);
     },
     startTransclude: function(e) {
       UI.dragging = {
@@ -1657,12 +1662,14 @@
       }), R.div({
         className: "ExtrasLine"
       }, R.span({
-        className: "ExtrasButton"
+        className: "ExtrasButton",
+        onClick: this.remove
       }, "remove")), R.div({
         className: "ExtrasLine"
       }, R.span({
-        className: "ExtrasButton"
-      }, "make primary")));
+        className: "ExtrasButton",
+        onClick: this.promote
+      }, "promote")));
     }
   });
 

@@ -16,10 +16,6 @@ Variable
 CustomFn
   Add new custom fn
 
-RootExpr
-  reorder by moving top variable?
-  need a way to remove them too
-
 
 Plot
   Spread variable

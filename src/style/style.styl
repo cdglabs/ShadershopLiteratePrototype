@@ -73,10 +73,10 @@ canvas
 
 .RootExprTree
   inline(top)
-  margin-right 6px
+  &:hover
+    background-color tint(highlightColor, 97%)
   .RootExprTreeExtras
     position relative
-    padding-bottom 24px
     > .TranscludeLinkIndicator
       left 21px
     .ExtrasLine
@@ -107,10 +107,9 @@ canvas
   position relative
   margin-bottom -1px
   padding-right 6px
-  margin-right 6px
   width 210px
   &:hover
-    background-color rgba(highlightColor, 0.1)
+    background-color tint(highlightColor, 90%)
 
 .ExprNodePlaceholder
   width 216px
@@ -259,13 +258,14 @@ PlusButtonSize = 14px
   left 50%
   margin-left -0.5 * PlusButtonSize
   bottom -0.5 * PlusButtonSize
-
 .CreateExprButton
   opacity 0
 .ExprNode:hover .CreateExprButton
   opacity 1
 
 
+.CreateRootExprButton
+  margin-left 6px
 .CreateRootExprButton
   opacity 0
 .CustomFnDefinition:hover .CreateRootExprButton

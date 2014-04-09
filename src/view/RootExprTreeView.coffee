@@ -19,10 +19,14 @@ R.create "RootExprTreeExtrasView",
     rootExpr: C.Expr
     rootIndex: Number
 
-  remove: ->
-    rootIndex = @lookup("rootIndex") # TODO move up
+  promote: ->
     customFn = @lookup("customFn")
-    customFn.rootExprs.splice(rootIndex, 1)
+    @remove()
+    customFn.rootExprs.splice(0, 0, @rootExpr)
+
+  remove: ->
+    customFn = @lookup("customFn")
+    customFn.rootExprs.splice(@rootIndex, 1)
 
   startTransclude: (e) ->
     UI.dragging = {
@@ -57,9 +61,9 @@ R.create "RootExprTreeExtrasView",
         onMouseDown: @handleTranscludeMouseDown
       }
       R.div {className: "ExtrasLine"},
-        R.span {className: "ExtrasButton"}, "remove"
+        R.span {className: "ExtrasButton", onClick: @remove}, "remove"
       R.div {className: "ExtrasLine"},
-        R.span {className: "ExtrasButton"}, "make primary"
+        R.span {className: "ExtrasButton", onClick: @promote}, "promote"
 
 
 

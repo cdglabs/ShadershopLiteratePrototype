@@ -48,11 +48,12 @@ canvas {
 .RootExprTree {
   display: inline-block;
   vertical-align: top;
-  margin-right: 6px;
+}
+.RootExprTree:hover {
+  background-color: #f7fbfd;
 }
 .RootExprTree .RootExprTreeExtras {
   position: relative;
-  padding-bottom: 24px;
 }
 .RootExprTree .RootExprTreeExtras > .TranscludeLinkIndicator {
   left: 21px;
@@ -87,11 +88,10 @@ canvas {
   position: relative;
   margin-bottom: -1px;
   padding-right: 6px;
-  margin-right: 6px;
   width: 210px;
 }
 .ExprNode:hover {
-  background-color: rgba(0,153,204,0.1);
+  background-color: #e5f4f9;
 }
 .ExprNodePlaceholder {
   width: 216px;
@@ -237,6 +237,9 @@ canvas {
 }
 .ExprNode:hover .CreateExprButton {
   opacity: 1;
+}
+.CreateRootExprButton {
+  margin-left: 6px;
 }
 .CreateRootExprButton {
   opacity: 0;
