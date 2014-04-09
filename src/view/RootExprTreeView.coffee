@@ -56,8 +56,10 @@ R.create "RootExprTreeExtrasView",
         style: {cursor: config.cursor.grab}
         onMouseDown: @handleTranscludeMouseDown
       }
-      R.div {className: "ExtraButton"}, "remove"
-      R.div {className: "ExtraButton"}, "make primary"
+      R.div {className: "ExtrasLine"},
+        R.span {className: "ExtrasButton"}, "remove"
+      R.div {className: "ExtrasLine"},
+        R.span {className: "ExtrasButton"}, "make primary"
 
 
 
@@ -69,12 +71,15 @@ R.create "ExprTreeView",
     parentArray: Array
     parentArrayIndex: Number
 
+  isPlaceholder: ->
+    UI.dragging?.application == @expr
+
   render: ->
     R.div {className: "ExprTree"},
       if @expr instanceof C.Application
         R.div {className: "ExprTreeChildren"},
           @expr.paramExprs.map (paramExpr, paramIndex) =>
-            if paramIndex == 0 or paramExpr instanceof C.Application
+            if paramIndex == 0 or (!@isPlaceholder() and paramExpr instanceof C.Application)
               R.ExprTreeView {
                 expr: paramExpr
                 parentArray: @expr.paramExprs

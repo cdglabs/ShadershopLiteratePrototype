@@ -49,6 +49,8 @@ Cleanup
   Get rid of lookup calls and do explicit passing?
   Reordering applications could use more cleanup
   Will need to cleanup variable domain/range stuff when generalizing to more than R1 -> R1
+  Still some awkwardness with transclusion trees where a variable will "snap" into its parent ExprNodeView
+  Move ExprNodeView reordering logic to ExprTreeView
 
 
 Optimization

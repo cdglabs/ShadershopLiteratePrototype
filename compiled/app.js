@@ -1655,10 +1655,14 @@
         },
         onMouseDown: this.handleTranscludeMouseDown
       }), R.div({
-        className: "ExtraButton"
-      }, "remove"), R.div({
-        className: "ExtraButton"
-      }, "make primary"));
+        className: "ExtrasLine"
+      }, R.span({
+        className: "ExtrasButton"
+      }, "remove")), R.div({
+        className: "ExtrasLine"
+      }, R.span({
+        className: "ExtrasButton"
+      }, "make primary")));
     }
   });
 
@@ -1668,6 +1672,10 @@
       parentArray: Array,
       parentArrayIndex: Number
     },
+    isPlaceholder: function() {
+      var _ref;
+      return ((_ref = UI.dragging) != null ? _ref.application : void 0) === this.expr;
+    },
     render: function() {
       return R.div({
         className: "ExprTree"
@@ -1675,7 +1683,7 @@
         className: "ExprTreeChildren"
       }, this.expr.paramExprs.map((function(_this) {
         return function(paramExpr, paramIndex) {
-          if (paramIndex === 0 || paramExpr instanceof C.Application) {
+          if (paramIndex === 0 || (!_this.isPlaceholder() && paramExpr instanceof C.Application)) {
             return R.ExprTreeView({
               expr: paramExpr,
               parentArray: _this.expr.paramExprs,

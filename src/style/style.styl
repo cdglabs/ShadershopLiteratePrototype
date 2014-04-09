@@ -6,6 +6,9 @@ wordPadding = 3px
 wordBorderRadius = 5px
 lineSpacing = 4px
 
+highlightColor = #09c
+
+
 paramColor = #ffe
 lineOutputColor = #eef
 
@@ -76,12 +79,15 @@ canvas
     padding-bottom 24px
     > .TranscludeLinkIndicator
       left 21px
-    .ExtraButton
-      cursor pointer
+    .ExtrasLine
       text-align right
       margin-right 6px
       margin-bottom 6px
       font-size 10px
+      .ExtrasButton
+        cursor pointer
+      .ExtrasButton:hover
+        color highlightColor
 
 .RootExprTreeExtras
   opacity 0
@@ -104,7 +110,7 @@ canvas
   margin-right 6px
   width 210px
   &:hover
-    background-color #eff
+    background-color rgba(highlightColor, 0.1)
 
 .ExprNodePlaceholder
   width 216px
@@ -165,7 +171,7 @@ canvas
 
 .ActiveTransclusionDrop
   .Variable, .ExprThumbnail
-    box-shadow 0px 0px 12px 3px rgba(0,100,150,0.5)
+    box-shadow 0px 0px 16px 0px rgba(highlightColor, 0.5)
 
 
 
