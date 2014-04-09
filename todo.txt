@@ -1,6 +1,5 @@
 Priorities
   Direct manipulate variables
-  Pull out transclude
   Use custom fn's
 
 
@@ -18,7 +17,6 @@ CustomFn
   Add new custom fn
 
 RootExpr
-  "pull out" transclude from bottom left
   reorder by moving top variable?
   need a way to remove them too
 

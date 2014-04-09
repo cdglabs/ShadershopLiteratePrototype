@@ -11,16 +11,13 @@ R.create "RootExprTreeView",
         parentArrayIndex: @rootIndex
       }
       if @rootIndex > 0
-        R.div {className: "RootExprTreeExtras"},
-          R.RootExprTreeTranscluderView {rootExpr: @rootExpr}
-          R.div {className: "ExtraButton"}, "remove"
-          R.div {className: "ExtraButton"}, "make primary"
+        R.RootExprTreeExtrasView {rootExpr: @rootExpr, rootIndex: @rootIndex}
 
 
-
-R.create "RootExprTreeTranscluderView",
+R.create "RootExprTreeExtrasView",
   propTypes:
     rootExpr: C.Expr
+    rootIndex: Number
 
   remove: ->
     rootIndex = @lookup("rootIndex") # TODO move up
@@ -48,19 +45,20 @@ R.create "RootExprTreeTranscluderView",
           UI.activeTransclusionDropView = null
       }
 
-  handleMouseDown: (e) ->
+  handleTranscludeMouseDown: (e) ->
     UI.preventDefault(e)
     @startTransclude(e)
 
-  cursor: ->
-    config.cursor.grab
-
   render: ->
-    R.div {
-      className: "TranscludeLinkIndicator"
-      style: {cursor: @cursor()}
-      onMouseDown: @handleMouseDown
-    }
+    R.div {className: "RootExprTreeExtras"},
+      R.div {
+        className: "TranscludeLinkIndicator"
+        style: {cursor: config.cursor.grab}
+        onMouseDown: @handleTranscludeMouseDown
+      }
+      R.div {className: "ExtraButton"}, "remove"
+      R.div {className: "ExtraButton"}, "make primary"
+
 
 
 

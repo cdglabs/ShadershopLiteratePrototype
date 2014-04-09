@@ -1588,21 +1588,17 @@
         expr: this.rootExpr,
         parentArray: this.lookup("customFn").rootExprs,
         parentArrayIndex: this.rootIndex
-      }), this.rootIndex > 0 ? R.div({
-        className: "RootExprTreeExtras"
-      }, R.RootExprTreeTranscluderView({
-        rootExpr: this.rootExpr
-      }), R.div({
-        className: "ExtraButton"
-      }, "remove"), R.div({
-        className: "ExtraButton"
-      }, "make primary")) : void 0);
+      }), this.rootIndex > 0 ? R.RootExprTreeExtrasView({
+        rootExpr: this.rootExpr,
+        rootIndex: this.rootIndex
+      }) : void 0);
     }
   });
 
-  R.create("RootExprTreeTranscluderView", {
+  R.create("RootExprTreeExtrasView", {
     propTypes: {
-      rootExpr: C.Expr
+      rootExpr: C.Expr,
+      rootIndex: Number
     },
     remove: function() {
       var customFn, rootIndex;
@@ -1645,21 +1641,24 @@
         };
       })(this));
     },
-    handleMouseDown: function(e) {
+    handleTranscludeMouseDown: function(e) {
       UI.preventDefault(e);
       return this.startTransclude(e);
     },
-    cursor: function() {
-      return config.cursor.grab;
-    },
     render: function() {
       return R.div({
+        className: "RootExprTreeExtras"
+      }, R.div({
         className: "TranscludeLinkIndicator",
         style: {
-          cursor: this.cursor()
+          cursor: config.cursor.grab
         },
-        onMouseDown: this.handleMouseDown
-      });
+        onMouseDown: this.handleTranscludeMouseDown
+      }), R.div({
+        className: "ExtraButton"
+      }, "remove"), R.div({
+        className: "ExtraButton"
+      }, "make primary"));
     }
   });
 
