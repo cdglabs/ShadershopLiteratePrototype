@@ -74,15 +74,8 @@ canvas
   .RootExprTreeExtras
     position relative
     padding-bottom 24px
-    .RootExprTreeTranscluder
-      position absolute
-      background-color #999
-      margin-top -7px
-      margin-left -7px
-      left 20px
-      width 14px
-      height 14px
-      border-radius 7px
+    > .TranscludeLinkIndicator
+      left 21px
     .ExtraButton
       cursor pointer
       text-align right
@@ -100,6 +93,9 @@ canvas
 
 .ExprTree
   inline(bottom)
+  position relative
+  > .TranscludeLinkIndicator
+    left 22px
 
 .ExprNode
   position relative
@@ -129,14 +125,21 @@ canvas
 
 .ExprInternals
   inline(middle)
-  .ExprThumbnail
-    margin-left 6px
-    width 28px
-    height 28px
 
-.Variable
+.Param
   inline(middle)
   margin-left 6px
+  position relative
+  .ExprThumbnail
+    width 28px
+    height 28px
+  .TranscludeLinkIndicator
+    top 0px
+    left 15px
+
+
+
+.Variable
   background-color #fff
   border-radius 4px
 
@@ -153,17 +156,30 @@ canvas
   border-radius 0px 4px 4px 0px
   min-width 30px
 
+
+
 .FnLabel
   inline(middle)
   margin-left 6px
   min-width 11px // so +, -, *, and / line up
 
 .ActiveTransclusionDrop
-  .Variable
+  .Variable, .ExprThumbnail
     box-shadow 0px 0px 12px 3px rgba(0,100,150,0.5)
 
 
 
+
+
+
+.TranscludeLinkIndicator
+  position absolute
+  background-color rgba(0,0,0,0.2)
+  margin-top -6px
+  margin-left -6px
+  width 12px
+  height 12px
+  border-radius 6px
 
 
 

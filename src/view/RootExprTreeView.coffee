@@ -52,8 +52,15 @@ R.create "RootExprTreeTranscluderView",
     UI.preventDefault(e)
     @startTransclude(e)
 
+  cursor: ->
+    config.cursor.grab
+
   render: ->
-    R.div {className: "RootExprTreeTranscluder", onMouseDown: @handleMouseDown}
+    R.div {
+      className: "TranscludeLinkIndicator"
+      style: {cursor: @cursor()}
+      onMouseDown: @handleMouseDown
+    }
 
 
 
@@ -76,6 +83,8 @@ R.create "ExprTreeView",
                 parentArrayIndex: paramIndex
               }
       R.ExprNodeView {expr: @expr}
+      if @lookup("customFn").rootExprs != @parentArray and @parentArrayIndex > 0
+        R.div {className: "TranscludeLinkIndicator"}
 
 
 R.create "ExprNodeView",
@@ -239,14 +248,25 @@ R.create "ParamExprView",
 
   render: ->
     className = R.cx {
+      "Param": true
       "ActiveTransclusionDrop": this == UI.activeTransclusionDropView
     }
-    R.span {className: className},
+    R.div {className: className},
       if @expr instanceof C.Application
-        R.ExprThumbnailView {expr: @expr}
+        R.ParamApplicationView {application: @expr}
       else if @expr instanceof C.Variable
         R.VariableView {variable: @expr}
 
+
+
+R.create "ParamApplicationView",
+  propTypes:
+    application: C.Application
+
+  render: ->
+    R.span {},
+      R.ExprThumbnailView {expr: @application}
+      R.div {className: "TranscludeLinkIndicator"}
 
 
 

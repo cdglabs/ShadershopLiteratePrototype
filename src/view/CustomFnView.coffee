@@ -17,7 +17,8 @@ R.create "CustomFnView",
           onInput: @handleFnLabelInput
         }
         @customFn.paramVariables.map (paramVariable) =>
-          R.VariableView {variable: paramVariable}
+          R.div {className: "Param"},
+            R.VariableView {variable: paramVariable}
       R.div {className: "CustomFnDefinition"},
         R.MainPlotView {customFn: @customFn}
         @customFn.rootExprs.map (rootExpr, rootIndex) =>

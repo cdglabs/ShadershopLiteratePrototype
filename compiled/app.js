@@ -1349,9 +1349,11 @@
         onInput: this.handleFnLabelInput
       }), this.customFn.paramVariables.map((function(_this) {
         return function(paramVariable) {
-          return R.VariableView({
+          return R.div({
+            className: "Param"
+          }, R.VariableView({
             variable: paramVariable
-          });
+          }));
         };
       })(this))), R.div({
         className: "CustomFnDefinition"
@@ -1647,9 +1649,15 @@
       UI.preventDefault(e);
       return this.startTransclude(e);
     },
+    cursor: function() {
+      return config.cursor.grab;
+    },
     render: function() {
       return R.div({
-        className: "RootExprTreeTranscluder",
+        className: "TranscludeLinkIndicator",
+        style: {
+          cursor: this.cursor()
+        },
         onMouseDown: this.handleMouseDown
       });
     }
@@ -1678,7 +1686,9 @@
         };
       })(this))) : void 0, R.ExprNodeView({
         expr: this.expr
-      }));
+      }), this.lookup("customFn").rootExprs !== this.parentArray && this.parentArrayIndex > 0 ? R.div({
+        className: "TranscludeLinkIndicator"
+      }) : void 0);
     }
   });
 
@@ -1883,15 +1893,29 @@
     render: function() {
       var className;
       className = R.cx({
+        "Param": true,
         "ActiveTransclusionDrop": this === UI.activeTransclusionDropView
       });
-      return R.span({
+      return R.div({
         className: className
-      }, this.expr instanceof C.Application ? R.ExprThumbnailView({
-        expr: this.expr
+      }, this.expr instanceof C.Application ? R.ParamApplicationView({
+        application: this.expr
       }) : this.expr instanceof C.Variable ? R.VariableView({
         variable: this.expr
       }) : void 0);
+    }
+  });
+
+  R.create("ParamApplicationView", {
+    propTypes: {
+      application: C.Application
+    },
+    render: function() {
+      return R.span({}, R.ExprThumbnailView({
+        expr: this.application
+      }), R.div({
+        className: "TranscludeLinkIndicator"
+      }));
     }
   });
 
