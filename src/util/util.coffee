@@ -48,6 +48,10 @@ Element::getMarginRect = ->
 # Util functions
 # =============================================================================
 
+util.lerp = (x, dMin, dMax, rMin, rMax) ->
+  ratio = (x - dMin) / (dMax - dMin)
+  return ratio * (rMax - rMin) + rMin
+
 util.formatFloat = (value, precision = 4) ->
   s = value.toFixed(precision)
   if s.indexOf(".") != -1

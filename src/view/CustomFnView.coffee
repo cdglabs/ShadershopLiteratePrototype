@@ -60,10 +60,32 @@ R.create "MainPlotView",
     UI.preventDefault(e)
     @startPan(e)
 
+  handleWheel: (e) ->
+    e.preventDefault()
+
+    rect = @getDOMNode().getBoundingClientRect()
+    bounds = @customFn.bounds
+    centerX = util.lerp(e.clientX, rect.left, rect.right, bounds.xMin, bounds.xMax)
+    centerY = util.lerp(e.clientY, rect.bottom, rect.top, bounds.yMin, bounds.yMax)
+
+    scaleFactor = 1.2
+    scale = if e.deltaY > 0 then scaleFactor else 1/scaleFactor
+
+    bounds.xMin = (bounds.xMin - centerX) * scale + centerX
+    bounds.xMax = (bounds.xMax - centerX) * scale + centerX
+    bounds.yMin = (bounds.yMin - centerY) * scale + centerY
+    bounds.yMax = (bounds.yMax - centerY) * scale + centerY
+
+
   cursor: ->
     config.cursor.grab
 
   render: ->
-    R.div {className: "MainPlot", onMouseDown: @handleMouseDown, style: {cursor: @cursor()}},
+    R.div {
+      className: "MainPlot"
+      onMouseDown: @handleMouseDown
+      onWheel: @handleWheel
+      style: {cursor: @cursor()}
+    },
       R.GridView {customFn: @customFn}
       R.PlotView {expr: @customFn.rootExprs[0]}

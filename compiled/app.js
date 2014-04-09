@@ -414,7 +414,7 @@
 
 }).call(this);
 }, "main": function(exports, require, module) {(function() {
-  var editor, eventName, json, refresh, refreshView, saveState, storageName, willRefreshNextFrame, _i, _len, _ref;
+  var editor, eventName, json, refresh, refreshEventNames, refreshView, saveState, storageName, willRefreshNextFrame, _i, _len;
 
   require("./config");
 
@@ -468,9 +468,10 @@
     }), editorEl);
   };
 
-  _ref = ["mousedown", "mousemove", "mouseup", "keydown", "scroll", "change"];
-  for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-    eventName = _ref[_i];
+  refreshEventNames = ["mousedown", "mousemove", "mouseup", "keydown", "scroll", "change", "wheel"];
+
+  for (_i = 0, _len = refreshEventNames.length; _i < _len; _i++) {
+    eventName = refreshEventNames[_i];
     window.addEventListener(eventName, refresh);
   }
 
@@ -802,11 +803,7 @@
 }, "util/canvas": function(exports, require, module) {(function() {
   var canvasBounds, clear, drawCartesian, drawGrid, drawLine, drawVertical, lerp, ticks;
 
-  lerp = function(x, dMin, dMax, rMin, rMax) {
-    var ratio;
-    ratio = (x - dMin) / (dMax - dMin);
-    return ratio * (rMax - rMin) + rMin;
-  };
+  lerp = util.lerp;
 
   canvasBounds = function(ctx) {
     var canvas;
@@ -1269,6 +1266,12 @@
     return result;
   };
 
+  util.lerp = function(x, dMin, dMax, rMin, rMax) {
+    var ratio;
+    ratio = (x - dMin) / (dMax - dMin);
+    return ratio * (rMax - rMin) + rMin;
+  };
+
   util.formatFloat = function(value, precision) {
     var s;
     if (precision == null) {
@@ -1404,6 +1407,20 @@
       UI.preventDefault(e);
       return this.startPan(e);
     },
+    handleWheel: function(e) {
+      var bounds, centerX, centerY, rect, scale, scaleFactor;
+      e.preventDefault();
+      rect = this.getDOMNode().getBoundingClientRect();
+      bounds = this.customFn.bounds;
+      centerX = util.lerp(e.clientX, rect.left, rect.right, bounds.xMin, bounds.xMax);
+      centerY = util.lerp(e.clientY, rect.bottom, rect.top, bounds.yMin, bounds.yMax);
+      scaleFactor = 1.2;
+      scale = e.deltaY > 0 ? scaleFactor : 1 / scaleFactor;
+      bounds.xMin = (bounds.xMin - centerX) * scale + centerX;
+      bounds.xMax = (bounds.xMax - centerX) * scale + centerX;
+      bounds.yMin = (bounds.yMin - centerY) * scale + centerY;
+      return bounds.yMax = (bounds.yMax - centerY) * scale + centerY;
+    },
     cursor: function() {
       return config.cursor.grab;
     },
@@ -1411,6 +1428,7 @@
       return R.div({
         className: "MainPlot",
         onMouseDown: this.handleMouseDown,
+        onWheel: this.handleWheel,
         style: {
           cursor: this.cursor()
         }

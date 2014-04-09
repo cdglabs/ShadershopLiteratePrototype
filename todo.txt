@@ -14,7 +14,6 @@ RootExpr
 
 
 Plot
-  Scroll wheel zoom
   Spread variable
   Maybe show axes/grid on thumbnail plots
   Show number values on top of plot

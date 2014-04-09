@@ -1,7 +1,5 @@
 
-lerp = (x, dMin, dMax, rMin, rMax) ->
-  ratio = (x - dMin) / (dMax - dMin)
-  return ratio * (rMax - rMin) + rMin
+lerp = util.lerp
 
 
 canvasBounds = (ctx) ->

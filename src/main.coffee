@@ -58,8 +58,17 @@ refreshView = ->
 
 
 
+refreshEventNames = [
+  "mousedown"
+  "mousemove"
+  "mouseup"
+  "keydown"
+  "scroll"
+  "change"
+  "wheel"
+]
 
-for eventName in ["mousedown", "mousemove", "mouseup", "keydown", "scroll", "change"]
+for eventName in refreshEventNames
   window.addEventListener(eventName, refresh)
 
 refresh()
