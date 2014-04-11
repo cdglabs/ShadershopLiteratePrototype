@@ -20,7 +20,11 @@ R.create "GridView",
       yMax: yMax
 
   componentDidUpdate: ->
-    @refs.canvas.draw()
+    {xMin, xMax, yMin, yMax} = @getBounds()
+    lastDrawParameters = {xMin, xMax, yMin, yMax}
+    unless _.isEqual(lastDrawParameters, @_lastDrawParameters)
+      @refs.canvas.draw()
+    @_lastDrawParameters = lastDrawParameters
 
   render: ->
     R.CanvasView {drawFn: @drawFn, ref: "canvas"}

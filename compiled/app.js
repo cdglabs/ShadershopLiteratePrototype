@@ -393,6 +393,27 @@
   pow = convertFn(pow);
 
 }).call(this);
+}, "compile/hasDiscontinuityFns": function(exports, require, module) {(function() {
+  var discontinuityFns, hasDiscontinuityFns;
+
+  discontinuityFns = ["floor", "ceil", "fract"];
+
+  module.exports = hasDiscontinuityFns = function(expr) {
+    var fnName;
+    if (expr instanceof C.Variable) {
+      return false;
+    }
+    if (expr instanceof C.Application) {
+      fnName = expr.fn.fnName;
+      if (_.contains(discontinuityFns, fnName)) {
+        return true;
+      } else {
+        return _.any(expr.paramExprs, hasDiscontinuityFns);
+      }
+    }
+  };
+
+}).call(this);
 }, "config": function(exports, require, module) {(function() {
   var config;
 
@@ -2527,6 +2548,9 @@
     propTypes: {
       editor: C.Editor
     },
+    handleCreateCustomFnClick: function() {
+      return this.editor.createCustomFn();
+    },
     cursor: function() {
       var _ref, _ref1;
       return (_ref = (_ref1 = UI.dragging) != null ? _ref1.cursor : void 0) != null ? _ref : "";
@@ -2545,7 +2569,10 @@
             customFn: customFn
           });
         };
-      })(this))), R.div({
+      })(this)), R.button({
+        className: "CreateCustomFn",
+        onClick: this.handleCreateCustomFnClick
+      })), R.div({
         className: "dragging"
       }, R.DraggingView({})));
     }
@@ -2615,7 +2642,18 @@
       });
     },
     componentDidUpdate: function() {
-      return this.refs.canvas.draw();
+      var lastDrawParameters, xMax, xMin, yMax, yMin, _ref;
+      _ref = this.getBounds(), xMin = _ref.xMin, xMax = _ref.xMax, yMin = _ref.yMin, yMax = _ref.yMax;
+      lastDrawParameters = {
+        xMin: xMin,
+        xMax: xMax,
+        yMin: yMin,
+        yMax: yMax
+      };
+      if (!_.isEqual(lastDrawParameters, this._lastDrawParameters)) {
+        this.refs.canvas.draw();
+      }
+      return this._lastDrawParameters = lastDrawParameters;
     },
     render: function() {
       return R.CanvasView({
@@ -2627,13 +2665,15 @@
 
 }).call(this);
 }, "view/plot/PlotView": function(exports, require, module) {(function() {
-  var Compiler, evaluate, evaluateDiscontinuity;
+  var Compiler, evaluate, evaluateDiscontinuity, hasDiscontinuityFns;
 
   Compiler = require("../../compile/Compiler");
 
   evaluate = require("../../compile/evaluate");
 
   evaluateDiscontinuity = require("../../compile/evaluateDiscontinuity");
+
+  hasDiscontinuityFns = require("../../compile/hasDiscontinuityFns");
 
   R.create("PlotView", {
     propTypes: {
@@ -2664,10 +2704,14 @@
         return;
       }
       fn = evaluate(compiled);
-      testDiscontinuityHelper = evaluateDiscontinuity(compiled);
-      testDiscontinuity = function(range) {
-        return testDiscontinuityHelper(range) === "found";
-      };
+      if (hasDiscontinuityFns(this.expr)) {
+        testDiscontinuityHelper = evaluateDiscontinuity(compiled);
+        testDiscontinuity = function(range) {
+          return testDiscontinuityHelper(range) === "found";
+        };
+      } else {
+        testDiscontinuity = null;
+      }
       util.canvas.clear(ctx);
       _ref = this.getBounds(), xMin = _ref.xMin, xMax = _ref.xMax, yMin = _ref.yMin, yMax = _ref.yMax;
       util.canvas.drawCartesian(ctx, {

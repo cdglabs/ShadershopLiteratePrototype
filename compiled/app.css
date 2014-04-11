@@ -36,6 +36,9 @@ canvas {
   right: 0;
   z-index: 200;
 }
+.CustomFn {
+  margin-bottom: 48px;
+}
 .MainPlot {
   position: relative;
   display: inline-block;
@@ -195,7 +198,7 @@ canvas {
   margin: -6px;
   background-color: #fff;
   border-radius: 6px;
-  box-shadow: 0px 2px 18px rgba(0,0,0,0.3);
+  box-shadow: 0px 6px 24px rgba(0,0,0,0.25);
 }
 .ApplicationAutoComplete .Scroller {
   width: 216px;
@@ -207,7 +210,8 @@ canvas {
   cursor: pointer;
 }
 .CreateExprButton,
-.CreateRootExprButton {
+.CreateRootExprButton,
+.CreateCustomFn {
   width: 14px;
   height: 14px;
   padding: 0;
@@ -224,15 +228,18 @@ canvas {
   border: 0px;
 }
 .CreateExprButton:before,
-.CreateRootExprButton:before {
+.CreateRootExprButton:before,
+.CreateCustomFn:before {
   content: "+";
 }
 .CreateExprButton:hover,
-.CreateRootExprButton:hover {
+.CreateRootExprButton:hover,
+.CreateCustomFn:hover {
   background-image: linear-gradient(to bottom, #f3f3f3, #d3d3d3);
 }
 .CreateExprButton:active,
-.CreateRootExprButton:active {
+.CreateRootExprButton:active,
+.CreateCustomFn:active {
   background-image: linear-gradient(to bottom, #cacaca, #d5d5d5);
   box-shadow: 0 1px 1px rgba(255,255,255,0.35), inset 0 0 1px rgba(0,0,0,0.5), inset 0 1px 4px rgba(0,0,0,0.4);
 }

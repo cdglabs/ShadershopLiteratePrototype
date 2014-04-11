@@ -1,6 +1,8 @@
 Compiler = require("../../compile/Compiler")
 evaluate = require("../../compile/evaluate")
 evaluateDiscontinuity = require("../../compile/evaluateDiscontinuity")
+hasDiscontinuityFns = require("../../compile/hasDiscontinuityFns")
+
 
 R.create "PlotView",
   propTypes:
@@ -28,8 +30,12 @@ R.create "PlotView",
     compiled = @compile()
     return unless compiled
     fn = evaluate(compiled)
-    testDiscontinuityHelper = evaluateDiscontinuity(compiled)
-    testDiscontinuity = (range) -> testDiscontinuityHelper(range) == "found"
+
+    if hasDiscontinuityFns(@expr)
+      testDiscontinuityHelper = evaluateDiscontinuity(compiled)
+      testDiscontinuity = (range) -> testDiscontinuityHelper(range) == "found"
+    else
+      testDiscontinuity = null
 
     util.canvas.clear(ctx)
 
