@@ -27,8 +27,6 @@ Plot
   Snap variable scrubbing
 
 
-Autocomplete with search lookup
-
 
 Use custom fn
   Put them in autocomplete
@@ -45,10 +43,11 @@ Cleanup
   Get rid of lookup calls and do explicit passing?
   Reordering applications could use more cleanup
   Will need to cleanup variable domain/range stuff when generalizing to more than R1 -> R1
-  Still some awkwardness with transclusion trees where a variable will "snap" into its parent ExprNodeView
-  Move ExprNodeView reordering logic to ExprTreeView
   Unify startTransclude on VariableLabel and TranscludeLinkIndicator
 
 
-Optimization
-  Make plots cache appropriately
+Need to check
+  No removing an application that is transcluded
+  No removing a RootExpr that has a transcluded application
+  No moving an application so that a cycle is created
+

@@ -49,7 +49,13 @@ R.create "PlotView",
 
 
   componentDidUpdate: ->
-    @refs.canvas.draw()
+    # As an optimization, we check that the draw parameters are different before we draw
+    {xMin, xMax, yMin, yMax} = @getBounds()
+    compileString = @compile()
+    drawParameters = {xMin, xMax, yMin, yMax, compileString}
+    unless _.isEqual(drawParameters, @_previousDrawParameters)
+      @refs.canvas.draw()
+    @_previousDrawParameters = drawParameters
 
   render: ->
     R.CanvasView {drawFn: @drawFn, ref: "canvas"}

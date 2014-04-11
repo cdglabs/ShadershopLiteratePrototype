@@ -107,6 +107,7 @@ require("./editor/DraggingView")
 
 require("./CustomFnView")
 require("./RootExprTreeView")
+require("./ProvisionalApplicationInternalsView")
 
 require("./VariableView")
 require("./TextFieldView")

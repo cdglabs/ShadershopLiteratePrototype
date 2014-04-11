@@ -168,6 +168,17 @@ canvas
   margin-left 6px
   min-width 11px // so +, -, *, and / line up
 
+
+.ApplicationLabel
+  inline(middle)
+  margin-left 6px
+  font-style italic
+
+.ApplicationLabel:empty
+  width 60px
+
+
+
 .ActiveTransclusionDrop
   .Variable, .ExprThumbnail, .ParamPlaceholder
     box-shadow 0px 0px 16px 0px rgba(highlightColor, 0.5)
@@ -214,14 +225,14 @@ canvas
   background-color #fff
   border-radius 6px
   box-shadow 0px 2px 18px rgba(0,0,0,0.3)
-  .CreateExprButton
-    display none
   .Scroller
     width 216px
     height 270px
     overflow-x hidden
     overflow-y auto
 
+  .ApplicationAutoCompleteRow
+    cursor pointer
 
 
 

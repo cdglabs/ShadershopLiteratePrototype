@@ -89,7 +89,7 @@ R.create "ExprNodeView",
     if @isReorderable() then config.cursor.grab else ""
 
   handleMouseDown: (e) ->
-    return if e.target.closest(".CreateExprButton, .ApplicationAutoComplete, .Variable, .ExprThumbnail")
+    return if e.target.closest(".CreateExprButton, .ApplicationAutoComplete, .Variable, .ExprThumbnail, .ApplicationLabel[contenteditable], .ApplicationAutoComplete")
 
     UI.preventDefault(e)
 
@@ -169,13 +169,10 @@ R.create "ExprNodeView",
       R.div {className: "ExprNode", onMouseDown: @handleMouseDown, style: {cursor: @cursor()}},
         R.ExprThumbnailView {expr: @expr}
         R.ExprInternalsView {expr: @expr}
-        if @expr.isProvisional
-          R.ApplicationAutoCompleteView {application: @expr}
-        else
-          R.button {
-            className: "CreateExprButton"
-            onClick: @handleCreateExprButtonClick
-          }
+        R.button {
+          className: "CreateExprButton"
+          onClick: @handleCreateExprButtonClick
+        }
 
 
 R.create "ExprInternalsView",
@@ -185,7 +182,7 @@ R.create "ExprInternalsView",
   render: ->
     if @expr instanceof C.Application
       if @expr.isProvisional
-        R.div {className: "ExprInternals"}
+        R.ProvisionalApplicationInternalsView {application: @expr}
       else
         R.div {className: "ExprInternals"},
           R.div {className: "FnLabel"},
@@ -235,7 +232,8 @@ R.create "ParamApplicationView",
   render: ->
     R.span {},
       R.ExprThumbnailView {expr: @application}
-      R.div {className: "TranscludeLinkIndicator"}
+      R.div {className: "ApplicationLabel"},
+        @application.label
 
 
 
@@ -279,34 +277,4 @@ R.create "ExprThumbnailView",
 
 
 
-
-
-
-R.create "ApplicationAutoCompleteView",
-  propTypes:
-    application: C.Application
-
-  render: ->
-    R.div {className: "ApplicationAutoComplete"},
-      R.div {className: "Scroller"},
-        @application.getPossibleApplications().map (possibleApplication) =>
-          R.ApplicationAutoCompleteRowView {
-            application: @application
-            possibleApplication: possibleApplication
-          }
-
-R.create "ApplicationAutoCompleteRowView",
-  propTypes:
-    application: C.Application
-    possibleApplication: C.Application
-
-  handleMouseEnter: ->
-    @application.setStagedApplication(@possibleApplication)
-
-  handleClick: ->
-    @application.commitApplication()
-
-  render: ->
-    R.div {onMouseEnter: @handleMouseEnter, onClick: @handleClick},
-      R.ExprNodeView {expr: @possibleApplication}
 

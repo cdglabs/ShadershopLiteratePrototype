@@ -697,6 +697,7 @@
 
     function Application() {
       this.fn = new C.BuiltInFn("identity");
+      this.label = "";
       this.paramExprs = [];
       this.isProvisional = false;
     }
@@ -719,6 +720,11 @@
     Application.prototype.setStagedApplication = function(application) {
       this.fn = application.fn;
       return this.paramExprs = application.paramExprs;
+    };
+
+    Application.prototype.clearStagedApplication = function() {
+      this.fn = new C.BuiltInFn("identity");
+      return this.paramExprs = this.paramExprs.slice(0, 1);
     };
 
     Application.prototype.commitApplication = function() {
@@ -1641,6 +1647,106 @@
   });
 
 }).call(this);
+}, "view/ProvisionalApplicationInternalsView": function(exports, require, module) {(function() {
+  R.create("ProvisionalApplicationInternalsView", {
+    propTypes: {
+      application: C.Application
+    },
+    handleApplicationLabelInput: function(newValue) {
+      return this.application.label = newValue;
+    },
+    possibleApplications: function() {
+      var possibleApplications;
+      possibleApplications = this.application.getPossibleApplications();
+      return possibleApplications = _.filter(possibleApplications, (function(_this) {
+        return function(possibleApplication) {
+          return possibleApplication.fn.getLabel().indexOf(_this.application.label) !== -1;
+        };
+      })(this));
+    },
+    render: function() {
+      var possibleApplications, _ref, _ref1;
+      return R.div({
+        className: "ExprInternals"
+      }, R.span({
+        style: {
+          cursor: config.cursor.text
+        }
+      }, R.TextFieldView({
+        className: "ApplicationLabel",
+        value: this.application.label,
+        onInput: this.handleApplicationLabelInput,
+        ref: "text"
+      })), ((_ref = this.refs) != null ? (_ref1 = _ref.text) != null ? _ref1.isFocused() : void 0 : void 0) ? (possibleApplications = this.possibleApplications(), possibleApplications.length > 0 ? R.div({
+        className: "ApplicationAutoComplete"
+      }, R.div({
+        className: "Scroller"
+      }, possibleApplications.map((function(_this) {
+        return function(possibleApplication) {
+          return R.ApplicationAutoCompleteRowView({
+            application: _this.application,
+            possibleApplication: possibleApplication
+          });
+        };
+      })(this)))) : void 0) : void 0);
+    }
+  });
+
+  R.create("ApplicationAutoCompleteView", {
+    propTypes: {
+      application: C.Application
+    },
+    render: function() {
+      return R.div({
+        className: "ApplicationAutoComplete"
+      }, R.div({
+        className: "Scroller"
+      }, this.application.getPossibleApplications().map((function(_this) {
+        return function(possibleApplication) {
+          return R.ApplicationAutoCompleteRowView({
+            application: _this.application,
+            possibleApplication: possibleApplication
+          });
+        };
+      })(this))));
+    }
+  });
+
+  R.create("ApplicationAutoCompleteRowView", {
+    propTypes: {
+      application: C.Application,
+      possibleApplication: C.Application
+    },
+    handleMouseEnter: function() {
+      return this.application.setStagedApplication(this.possibleApplication);
+    },
+    handleMouseLeave: function() {
+      return this.application.clearStagedApplication();
+    },
+    handleMouseDown: function(e) {
+      return e.preventDefault();
+    },
+    handleClick: function() {
+      return this.application.commitApplication();
+    },
+    render: function() {
+      return R.div({
+        className: "ApplicationAutoCompleteRow",
+        onMouseEnter: this.handleMouseEnter,
+        onMouseLeave: this.handleMouseLeave,
+        onMouseDown: this.handleMouseDown,
+        onClick: this.handleClick
+      }, R.div({
+        className: "ExprNode"
+      }, R.ExprThumbnailView({
+        expr: this.possibleApplication
+      }), R.ExprInternalsView({
+        expr: this.possibleApplication
+      })));
+    }
+  });
+
+}).call(this);
 }, "view/R": function(exports, require, module) {(function() {
   var R, key, value, _ref,
     __hasProp = {}.hasOwnProperty;
@@ -1761,6 +1867,8 @@
   require("./CustomFnView");
 
   require("./RootExprTreeView");
+
+  require("./ProvisionalApplicationInternalsView");
 
   require("./VariableView");
 
@@ -1888,7 +1996,7 @@
     },
     handleMouseDown: function(e) {
       var application, customFn, el, findInsertAfterEl, myHeight, myWidth, offset, onMove, parentArray, parentArrayIndex, rect, removeApplication;
-      if (e.target.closest(".CreateExprButton, .ApplicationAutoComplete, .Variable, .ExprThumbnail")) {
+      if (e.target.closest(".CreateExprButton, .ApplicationAutoComplete, .Variable, .ExprThumbnail, .ApplicationLabel[contenteditable], .ApplicationAutoComplete")) {
         return;
       }
       UI.preventDefault(e);
@@ -1983,9 +2091,7 @@
           expr: this.expr
         }), R.ExprInternalsView({
           expr: this.expr
-        }), this.expr.isProvisional ? R.ApplicationAutoCompleteView({
-          application: this.expr
-        }) : R.button({
+        }), R.button({
           className: "CreateExprButton",
           onClick: this.handleCreateExprButtonClick
         }));
@@ -2000,8 +2106,8 @@
     render: function() {
       if (this.expr instanceof C.Application) {
         if (this.expr.isProvisional) {
-          return R.div({
-            className: "ExprInternals"
+          return R.ProvisionalApplicationInternalsView({
+            application: this.expr
           });
         } else {
           return R.div({
@@ -2065,8 +2171,8 @@
       return R.span({}, R.ExprThumbnailView({
         expr: this.application
       }), R.div({
-        className: "TranscludeLinkIndicator"
-      }));
+        className: "ApplicationLabel"
+      }, this.application.label));
     }
   });
 
@@ -2118,47 +2224,6 @@
         onMouseDown: this.handleMouseDown
       }, R.PlotView({
         expr: this.expr
-      }));
-    }
-  });
-
-  R.create("ApplicationAutoCompleteView", {
-    propTypes: {
-      application: C.Application
-    },
-    render: function() {
-      return R.div({
-        className: "ApplicationAutoComplete"
-      }, R.div({
-        className: "Scroller"
-      }, this.application.getPossibleApplications().map((function(_this) {
-        return function(possibleApplication) {
-          return R.ApplicationAutoCompleteRowView({
-            application: _this.application,
-            possibleApplication: possibleApplication
-          });
-        };
-      })(this))));
-    }
-  });
-
-  R.create("ApplicationAutoCompleteRowView", {
-    propTypes: {
-      application: C.Application,
-      possibleApplication: C.Application
-    },
-    handleMouseEnter: function() {
-      return this.application.setStagedApplication(this.possibleApplication);
-    },
-    handleClick: function() {
-      return this.application.commitApplication();
-    },
-    render: function() {
-      return R.div({
-        onMouseEnter: this.handleMouseEnter,
-        onClick: this.handleClick
-      }, R.ExprNodeView({
-        expr: this.possibleApplication
       }));
     }
   });
@@ -2619,7 +2684,20 @@
       return ctx.stroke();
     },
     componentDidUpdate: function() {
-      return this.refs.canvas.draw();
+      var compileString, drawParameters, xMax, xMin, yMax, yMin, _ref;
+      _ref = this.getBounds(), xMin = _ref.xMin, xMax = _ref.xMax, yMin = _ref.yMin, yMax = _ref.yMax;
+      compileString = this.compile();
+      drawParameters = {
+        xMin: xMin,
+        xMax: xMax,
+        yMin: yMin,
+        yMax: yMax,
+        compileString: compileString
+      };
+      if (!_.isEqual(drawParameters, this._previousDrawParameters)) {
+        this.refs.canvas.draw();
+      }
+      return this._previousDrawParameters = drawParameters;
     },
     render: function() {
       return R.CanvasView({

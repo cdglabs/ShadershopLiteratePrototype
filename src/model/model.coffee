@@ -16,6 +16,7 @@ class C.Variable extends C.Expr
 class C.Application extends C.Expr
   constructor: ->
     @fn = new C.BuiltInFn("identity")
+    @label = ""
     @paramExprs = []
     @isProvisional = false
 
@@ -31,6 +32,10 @@ class C.Application extends C.Expr
   setStagedApplication: (application) ->
     @fn = application.fn
     @paramExprs = application.paramExprs
+
+  clearStagedApplication: ->
+    @fn = new C.BuiltInFn("identity")
+    @paramExprs = @paramExprs.slice(0, 1)
 
   commitApplication: ->
     @isProvisional = false
