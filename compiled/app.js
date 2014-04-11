@@ -393,27 +393,6 @@
   pow = convertFn(pow);
 
 }).call(this);
-}, "compile/hasDiscontinuityFns": function(exports, require, module) {(function() {
-  var discontinuityFns, hasDiscontinuityFns;
-
-  discontinuityFns = ["floor", "ceil", "fract"];
-
-  module.exports = hasDiscontinuityFns = function(expr) {
-    var fnName;
-    if (expr instanceof C.Variable) {
-      return false;
-    }
-    if (expr instanceof C.Application) {
-      fnName = expr.fn.fnName;
-      if (_.contains(discontinuityFns, fnName)) {
-        return true;
-      } else {
-        return _.any(expr.paramExprs, hasDiscontinuityFns);
-      }
-    }
-  };
-
-}).call(this);
 }, "config": function(exports, require, module) {(function() {
   var config;
 
@@ -2665,15 +2644,13 @@
 
 }).call(this);
 }, "view/plot/PlotView": function(exports, require, module) {(function() {
-  var Compiler, evaluate, evaluateDiscontinuity, hasDiscontinuityFns;
+  var Compiler, evaluate, evaluateDiscontinuity;
 
   Compiler = require("../../compile/Compiler");
 
   evaluate = require("../../compile/evaluate");
 
   evaluateDiscontinuity = require("../../compile/evaluateDiscontinuity");
-
-  hasDiscontinuityFns = require("../../compile/hasDiscontinuityFns");
 
   R.create("PlotView", {
     propTypes: {
@@ -2697,14 +2674,15 @@
       return customFn.bounds;
     },
     drawFn: function(canvas) {
-      var compiled, ctx, fn, testDiscontinuity, testDiscontinuityHelper, xMax, xMin, yMax, yMin, _ref;
+      var compiled, ctx, fn, isDiscontinuous, testDiscontinuity, testDiscontinuityHelper, xMax, xMin, yMax, yMin, _ref;
       ctx = canvas.getContext("2d");
       compiled = this.compile();
       if (!compiled) {
         return;
       }
       fn = evaluate(compiled);
-      if (hasDiscontinuityFns(this.expr)) {
+      isDiscontinuous = /floor\(|ceil\(|fract\(/.test(compiled);
+      if (isDiscontinuous) {
         testDiscontinuityHelper = evaluateDiscontinuity(compiled);
         testDiscontinuity = function(range) {
           return testDiscontinuityHelper(range) === "found";

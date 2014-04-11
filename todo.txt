@@ -1,6 +1,7 @@
 Priorities
   Use custom fn's
-
+  Hovered/spread variable
+  Show number values on top of plot
 
 
 
@@ -14,7 +15,7 @@ Variable
 
 CustomFn
   Remove and reorder paramVariables
-  Add new custom fn
+  Remove and reorder CustomFns
 
 
 Plot

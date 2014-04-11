@@ -1,7 +1,6 @@
 Compiler = require("../../compile/Compiler")
 evaluate = require("../../compile/evaluate")
 evaluateDiscontinuity = require("../../compile/evaluateDiscontinuity")
-hasDiscontinuityFns = require("../../compile/hasDiscontinuityFns")
 
 
 R.create "PlotView",
@@ -31,7 +30,8 @@ R.create "PlotView",
     return unless compiled
     fn = evaluate(compiled)
 
-    if hasDiscontinuityFns(@expr)
+    isDiscontinuous = /floor\(|ceil\(|fract\(/.test(compiled)
+    if isDiscontinuous
       testDiscontinuityHelper = evaluateDiscontinuity(compiled)
       testDiscontinuity = (range) -> testDiscontinuityHelper(range) == "found"
     else

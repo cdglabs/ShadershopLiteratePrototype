@@ -89,7 +89,7 @@ canvas {
   background-color: #e5f4f9;
 }
 .ExprNodePlaceholder {
-  height: 40px;
+  height: 46px;
   margin-top: 1px;
   background-color: #bbb;
   box-shadow: inset 0px 1px 3px rgba(0,0,0,0.5);
@@ -100,8 +100,8 @@ canvas {
   vertical-align: middle;
   border: 1px solid #eee;
   background-color: #fff;
-  width: 40px;
-  height: 40px;
+  width: 46px;
+  height: 46px;
 }
 .ExprInternals {
   display: inline-block;
@@ -114,8 +114,8 @@ canvas {
   position: relative;
 }
 .Param .ExprThumbnail {
-  width: 28px;
-  height: 28px;
+  width: 34px;
+  height: 34px;
 }
 .Param .TranscludeLinkIndicator {
   top: 0px;
