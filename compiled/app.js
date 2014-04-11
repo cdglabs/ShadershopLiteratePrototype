@@ -1350,9 +1350,6 @@
     handleCreateRootExprButtonClick: function() {
       return this.customFn.createRootExpr();
     },
-    handleFnLabelInput: function(newValue) {
-      return this.customFn.label = newValue;
-    },
     render: function() {
       return R.div({
         className: "CustomFn"
@@ -1364,7 +1361,7 @@
         customFn: this.customFn
       }), this.customFn.rootExprs.map((function(_this) {
         return function(rootExpr, rootIndex) {
-          return R.RootExprTreeView({
+          return R.RootExprView({
             rootExpr: rootExpr,
             rootIndex: rootIndex
           });
@@ -1379,6 +1376,9 @@
   R.create("CustomFnHeaderView", {
     propTypes: {
       customFn: C.CustomFn
+    },
+    handleFnLabelInput: function(newValue) {
+      return this.customFn.label = newValue;
     },
     render: function() {
       return R.div({
@@ -1471,6 +1471,11 @@
         return this.startPan(e);
       }
     },
+    isMouseInBounds: function() {
+      var rect, _ref, _ref1;
+      rect = this.getDOMNode().getBoundingClientRect();
+      return (rect.left <= (_ref = UI.mousePosition.x) && _ref <= rect.right) && (rect.top <= (_ref1 = UI.mousePosition.y) && _ref1 <= rect.bottom);
+    },
     getLocalMouseCoords: function() {
       var bounds, rect, x, y;
       rect = this.getDOMNode().getBoundingClientRect();
@@ -1557,7 +1562,7 @@
     },
     cursor: function() {
       var variable;
-      if (this.isMounted()) {
+      if (this.isMounted() && this.isMouseInBounds()) {
         variable = this.hitDetect();
         if (variable) {
           if (variable.domain === "domain") {
@@ -1769,26 +1774,26 @@
 
 }).call(this);
 }, "view/RootExprTreeView": function(exports, require, module) {(function() {
-  R.create("RootExprTreeView", {
+  R.create("RootExprView", {
     propTypes: {
       rootExpr: C.Expr,
       rootIndex: Number
     },
     render: function() {
       return R.div({
-        className: "RootExprTree"
-      }, R.ExprTreeView({
+        className: "RootExpr"
+      }, R.ExprListView({
         expr: this.rootExpr,
         parentArray: this.lookup("customFn").rootExprs,
         parentArrayIndex: this.rootIndex
-      }), this.rootIndex > 0 ? R.RootExprTreeExtrasView({
+      }), this.rootIndex > 0 ? R.RootExprExtrasView({
         rootExpr: this.rootExpr,
         rootIndex: this.rootIndex
       }) : void 0);
     }
   });
 
-  R.create("RootExprTreeExtrasView", {
+  R.create("RootExprExtrasView", {
     propTypes: {
       rootExpr: C.Expr,
       rootIndex: Number
@@ -1804,55 +1809,10 @@
       customFn = this.lookup("customFn");
       return customFn.rootExprs.splice(this.rootIndex, 1);
     },
-    startTransclude: function(e) {
-      UI.dragging = {
-        cursor: config.cursor.grabbing
-      };
-      return util.onceDragConsummated(e, (function(_this) {
-        return function() {
-          return UI.dragging = {
-            cursor: config.cursor.grabbing,
-            offset: {
-              x: -4,
-              y: -10
-            },
-            render: function() {
-              return R.ExprThumbnailView({
-                expr: _this.rootExpr,
-                customFn: _this.lookup("customFn")
-              });
-            },
-            onMove: function(e) {
-              var dropView;
-              dropView = UI.getViewUnderMouse();
-              dropView = dropView != null ? dropView.lookupViewWithKey("handleTransclusionDrop") : void 0;
-              return UI.activeTransclusionDropView = dropView;
-            },
-            onUp: function(e) {
-              if (UI.activeTransclusionDropView) {
-                UI.activeTransclusionDropView.handleTransclusionDrop(_this.rootExpr);
-                _this.remove();
-              }
-              return UI.activeTransclusionDropView = null;
-            }
-          };
-        };
-      })(this));
-    },
-    handleTranscludeMouseDown: function(e) {
-      UI.preventDefault(e);
-      return this.startTransclude(e);
-    },
     render: function() {
       return R.div({
-        className: "RootExprTreeExtras"
+        className: "RootExprExtras"
       }, R.div({
-        className: "TranscludeLinkIndicator",
-        style: {
-          cursor: config.cursor.grab
-        },
-        onMouseDown: this.handleTranscludeMouseDown
-      }), R.div({
         className: "ExtrasLine"
       }, R.span({
         className: "ExtrasButton",
@@ -1866,36 +1826,20 @@
     }
   });
 
-  R.create("ExprTreeView", {
+  R.create("ExprListView", {
     propTypes: {
       expr: C.Expr,
       parentArray: Array,
       parentArrayIndex: Number
     },
-    isPlaceholder: function() {
-      var _ref;
-      return ((_ref = UI.dragging) != null ? _ref.application : void 0) === this.expr;
-    },
     render: function() {
-      return R.div({
-        className: "ExprTree"
-      }, this.expr instanceof C.Application ? R.div({
-        className: "ExprTreeChildren"
-      }, this.expr.paramExprs.map((function(_this) {
-        return function(paramExpr, paramIndex) {
-          if (paramIndex === 0 || (!_this.isPlaceholder() && paramExpr instanceof C.Application)) {
-            return R.ExprTreeView({
-              expr: paramExpr,
-              parentArray: _this.expr.paramExprs,
-              parentArrayIndex: paramIndex
-            });
-          }
-        };
-      })(this))) : void 0, R.ExprNodeView({
+      return R.span({}, this.expr instanceof C.Application ? R.ExprListView({
+        expr: this.expr.paramExprs[0],
+        parentArray: this.expr.paramExprs,
+        parentArrayIndex: 0
+      }) : void 0, R.ExprNodeView({
         expr: this.expr
-      }), this.lookup("customFn").rootExprs !== this.parentArray && this.parentArrayIndex > 0 ? R.div({
-        className: "TranscludeLinkIndicator"
-      }) : void 0);
+      }));
     }
   });
 
@@ -1944,7 +1888,7 @@
     },
     handleMouseDown: function(e) {
       var application, customFn, el, findInsertAfterEl, myHeight, myWidth, offset, onMove, parentArray, parentArrayIndex, rect, removeApplication;
-      if (e.target.closest(".CreateExprButton, .ApplicationAutoComplete, .Variable")) {
+      if (e.target.closest(".CreateExprButton, .ApplicationAutoComplete, .Variable, .ExprThumbnail")) {
         return;
       }
       UI.preventDefault(e);
@@ -2130,9 +2074,48 @@
     propTypes: {
       expr: C.Expr
     },
+    startTransclude: function(e) {
+      UI.dragging = {
+        cursor: config.cursor.grabbing
+      };
+      return util.onceDragConsummated(e, (function(_this) {
+        return function() {
+          return UI.dragging = {
+            cursor: config.cursor.grabbing,
+            offset: {
+              x: -4,
+              y: -10
+            },
+            render: function() {
+              return R.ExprThumbnailView({
+                expr: _this.expr,
+                customFn: _this.lookup("customFn")
+              });
+            },
+            onMove: function(e) {
+              var dropView;
+              dropView = UI.getViewUnderMouse();
+              dropView = dropView != null ? dropView.lookupViewWithKey("handleTransclusionDrop") : void 0;
+              return UI.activeTransclusionDropView = dropView;
+            },
+            onUp: function(e) {
+              if (UI.activeTransclusionDropView) {
+                UI.activeTransclusionDropView.handleTransclusionDrop(_this.expr);
+              }
+              return UI.activeTransclusionDropView = null;
+            }
+          };
+        };
+      })(this));
+    },
+    handleMouseDown: function(e) {
+      UI.preventDefault(e);
+      return this.startTransclude(e);
+    },
     render: function() {
       return R.div({
-        className: "ExprThumbnail"
+        className: "ExprThumbnail",
+        onMouseDown: this.handleMouseDown
       }, R.PlotView({
         expr: this.expr
       }));

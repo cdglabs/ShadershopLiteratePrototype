@@ -5,16 +5,13 @@ R.create "CustomFnView",
   handleCreateRootExprButtonClick: ->
     @customFn.createRootExpr()
 
-  handleFnLabelInput: (newValue) ->
-    @customFn.label = newValue
-
   render: ->
     R.div {className: "CustomFn"},
       R.CustomFnHeaderView {customFn: @customFn}
       R.div {className: "CustomFnDefinition"},
         R.MainPlotView {customFn: @customFn}
         @customFn.rootExprs.map (rootExpr, rootIndex) =>
-          R.RootExprTreeView {rootExpr, rootIndex}
+          R.RootExprView {rootExpr, rootIndex}
         R.button {className: "CreateRootExprButton", onClick: @handleCreateRootExprButtonClick}
 
 
@@ -23,6 +20,9 @@ R.create "CustomFnView",
 R.create "CustomFnHeaderView",
   propTypes:
     customFn: C.CustomFn
+
+  handleFnLabelInput: (newValue) ->
+    @customFn.label = newValue
 
   render: ->
     R.div {className: "CustomFnHeader"},
@@ -96,6 +96,10 @@ R.create "MainPlotView",
     else
       @startPan(e)
 
+  isMouseInBounds: ->
+    rect = @getDOMNode().getBoundingClientRect()
+    return rect.left <= UI.mousePosition.x <= rect.right and rect.top <= UI.mousePosition.y <= rect.bottom
+
   getLocalMouseCoords: ->
     rect = @getDOMNode().getBoundingClientRect()
     bounds = @customFn.bounds
@@ -166,7 +170,7 @@ R.create "MainPlotView",
     return Math.pow(10, digitPrecision)
 
   cursor: ->
-    if @isMounted()
+    if @isMounted() and @isMouseInBounds()
       variable = @hitDetect()
       if variable
         return config.cursor.horizontalScrub if variable.domain == "domain"

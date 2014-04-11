@@ -47,14 +47,14 @@ canvas
 // ============================================================================
 
 .draggingObject
-  position: absolute;
+  position: fixed
   z-index: 100;
   pointer-events: none;
 .draggingObject > *
   box-shadow: 0px 2px 6px rgba(0,0,0,0.5);
 
 .draggingOverlay
-  position: absolute
+  position: fixed
   top: 0; left: 0; bottom: 0; right: 0;
   z-index: 200
 
@@ -70,11 +70,12 @@ canvas
   height 420px
   margin-right 12px
 
-.RootExprTree
+.RootExpr
   inline(top)
+  margin-right 12px
   &:hover
     background-color tint(highlightColor, 97%)
-  .RootExprTreeExtras
+  .RootExprExtras
     position relative
     > .TranscludeLinkIndicator
       left 21px
@@ -88,30 +89,22 @@ canvas
       .ExtrasButton:hover
         color highlightColor
 
-.RootExprTreeExtras
+.RootExprExtras
   opacity 0
-.RootExprTree:hover .RootExprTreeExtras
+.RootExpr:hover .RootExprExtras
   opacity 1
 
 
-
-
-.ExprTree
-  inline(bottom)
-  position relative
-  > .TranscludeLinkIndicator
-    left 22px
 
 .ExprNode
   position relative
   margin-bottom -1px
   padding-right 6px
-  width 210px
+  min-width 174px
   &:hover
     background-color tint(highlightColor, 90%)
 
 .ExprNodePlaceholder
-  width 216px
   height 40px
   margin-top 1px
   background-color #bbb

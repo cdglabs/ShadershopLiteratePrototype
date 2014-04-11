@@ -21,7 +21,7 @@ canvas {
   white-space: nowrap;
 }
 .draggingObject {
-  position: absolute;
+  position: fixed;
   z-index: 100;
   pointer-events: none;
 }
@@ -29,7 +29,7 @@ canvas {
   box-shadow: 0px 2px 6px rgba(0,0,0,0.5);
 }
 .draggingOverlay {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   bottom: 0;
@@ -44,56 +44,48 @@ canvas {
   height: 420px;
   margin-right: 12px;
 }
-.RootExprTree {
+.RootExpr {
   display: inline-block;
   vertical-align: top;
+  margin-right: 12px;
 }
-.RootExprTree:hover {
+.RootExpr:hover {
   background-color: #f7fbfd;
 }
-.RootExprTree .RootExprTreeExtras {
+.RootExpr .RootExprExtras {
   position: relative;
 }
-.RootExprTree .RootExprTreeExtras > .TranscludeLinkIndicator {
+.RootExpr .RootExprExtras > .TranscludeLinkIndicator {
   left: 21px;
 }
-.RootExprTree .RootExprTreeExtras .ExtrasLine {
+.RootExpr .RootExprExtras .ExtrasLine {
   text-align: right;
   margin-right: 6px;
   margin-bottom: 6px;
   font-size: 10px;
 }
-.RootExprTree .RootExprTreeExtras .ExtrasLine .ExtrasButton {
+.RootExpr .RootExprExtras .ExtrasLine .ExtrasButton {
   cursor: pointer;
 }
-.RootExprTree .RootExprTreeExtras .ExtrasLine .ExtrasButton:hover {
+.RootExpr .RootExprExtras .ExtrasLine .ExtrasButton:hover {
   color: #09c;
 }
-.RootExprTreeExtras {
+.RootExprExtras {
   opacity: 0;
 }
-.RootExprTree:hover .RootExprTreeExtras {
+.RootExpr:hover .RootExprExtras {
   opacity: 1;
-}
-.ExprTree {
-  display: inline-block;
-  vertical-align: bottom;
-  position: relative;
-}
-.ExprTree > .TranscludeLinkIndicator {
-  left: 22px;
 }
 .ExprNode {
   position: relative;
   margin-bottom: -1px;
   padding-right: 6px;
-  width: 210px;
+  min-width: 174px;
 }
 .ExprNode:hover {
   background-color: #e5f4f9;
 }
 .ExprNodePlaceholder {
-  width: 216px;
   height: 40px;
   margin-top: 1px;
   background-color: #bbb;

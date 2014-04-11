@@ -1,20 +1,20 @@
-R.create "RootExprTreeView",
+R.create "RootExprView",
   propTypes:
     rootExpr: C.Expr
     rootIndex: Number
 
   render: ->
-    R.div {className: "RootExprTree"},
-      R.ExprTreeView {
+    R.div {className: "RootExpr"},
+      R.ExprListView {
         expr: @rootExpr
         parentArray: @lookup("customFn").rootExprs
         parentArrayIndex: @rootIndex
       }
       if @rootIndex > 0
-        R.RootExprTreeExtrasView {rootExpr: @rootExpr, rootIndex: @rootIndex}
+        R.RootExprExtrasView {rootExpr: @rootExpr, rootIndex: @rootIndex}
 
 
-R.create "RootExprTreeExtrasView",
+R.create "RootExprExtrasView",
   propTypes:
     rootExpr: C.Expr
     rootIndex: Number
@@ -28,38 +28,8 @@ R.create "RootExprTreeExtrasView",
     customFn = @lookup("customFn")
     customFn.rootExprs.splice(@rootIndex, 1)
 
-  startTransclude: (e) ->
-    UI.dragging = {
-      cursor: config.cursor.grabbing
-    }
-    util.onceDragConsummated e, =>
-      UI.dragging = {
-        cursor: config.cursor.grabbing
-        offset: {x: -4, y: -10}
-        render: =>
-          R.ExprThumbnailView {expr: @rootExpr, customFn: @lookup("customFn")}
-        onMove: (e) =>
-          dropView = UI.getViewUnderMouse()
-          dropView = dropView?.lookupViewWithKey("handleTransclusionDrop")
-          UI.activeTransclusionDropView = dropView
-        onUp: (e) =>
-          if UI.activeTransclusionDropView
-            UI.activeTransclusionDropView.handleTransclusionDrop(@rootExpr)
-            @remove()
-          UI.activeTransclusionDropView = null
-      }
-
-  handleTranscludeMouseDown: (e) ->
-    UI.preventDefault(e)
-    @startTransclude(e)
-
   render: ->
-    R.div {className: "RootExprTreeExtras"},
-      R.div {
-        className: "TranscludeLinkIndicator"
-        style: {cursor: config.cursor.grab}
-        onMouseDown: @handleTranscludeMouseDown
-      }
+    R.div {className: "RootExprExtras"},
       R.div {className: "ExtrasLine"},
         R.span {className: "ExtrasButton", onClick: @remove}, "remove"
       R.div {className: "ExtrasLine"},
@@ -69,29 +39,21 @@ R.create "RootExprTreeExtrasView",
 
 
 
-R.create "ExprTreeView",
+R.create "ExprListView",
   propTypes:
     expr: C.Expr
     parentArray: Array
     parentArrayIndex: Number
 
-  isPlaceholder: ->
-    UI.dragging?.application == @expr
-
   render: ->
-    R.div {className: "ExprTree"},
+    R.span {},
       if @expr instanceof C.Application
-        R.div {className: "ExprTreeChildren"},
-          @expr.paramExprs.map (paramExpr, paramIndex) =>
-            if paramIndex == 0 or (!@isPlaceholder() and paramExpr instanceof C.Application)
-              R.ExprTreeView {
-                expr: paramExpr
-                parentArray: @expr.paramExprs
-                parentArrayIndex: paramIndex
-              }
+        R.ExprListView {
+          expr: @expr.paramExprs[0]
+          parentArray: @expr.paramExprs
+          parentArrayIndex: 0
+        }
       R.ExprNodeView {expr: @expr}
-      if @lookup("customFn").rootExprs != @parentArray and @parentArrayIndex > 0
-        R.div {className: "TranscludeLinkIndicator"}
 
 
 R.create "ExprNodeView",
@@ -127,7 +89,7 @@ R.create "ExprNodeView",
     if @isReorderable() then config.cursor.grab else ""
 
   handleMouseDown: (e) ->
-    return if e.target.closest(".CreateExprButton, .ApplicationAutoComplete, .Variable")
+    return if e.target.closest(".CreateExprButton, .ApplicationAutoComplete, .Variable, .ExprThumbnail")
 
     UI.preventDefault(e)
 
@@ -282,8 +244,32 @@ R.create "ExprThumbnailView",
   propTypes:
     expr: C.Expr
 
+  startTransclude: (e) ->
+    UI.dragging = {
+      cursor: config.cursor.grabbing
+    }
+    util.onceDragConsummated e, =>
+      UI.dragging = {
+        cursor: config.cursor.grabbing
+        offset: {x: -4, y: -10}
+        render: =>
+          R.ExprThumbnailView {expr: @expr, customFn: @lookup("customFn")}
+        onMove: (e) =>
+          dropView = UI.getViewUnderMouse()
+          dropView = dropView?.lookupViewWithKey("handleTransclusionDrop")
+          UI.activeTransclusionDropView = dropView
+        onUp: (e) =>
+          if UI.activeTransclusionDropView
+            UI.activeTransclusionDropView.handleTransclusionDrop(@expr)
+          UI.activeTransclusionDropView = null
+      }
+
+  handleMouseDown: (e) ->
+    UI.preventDefault(e)
+    @startTransclude(e)
+
   render: ->
-    R.div {className: "ExprThumbnail"},
+    R.div {className: "ExprThumbnail", onMouseDown: @handleMouseDown},
       R.PlotView {expr: @expr}
 
 
