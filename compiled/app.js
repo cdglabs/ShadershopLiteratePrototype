@@ -197,7 +197,7 @@
     };
 
     Compiler.prototype.compile = function(expr) {
-      var compiledParamExprs, fn, found, id, paramExprs;
+      var compiledParamExprs, fn, found, id, paramExprs, paramIndex, paramVariable, subCompiler, _i, _len, _ref;
       id = C.id(expr);
       if (found = this.substitutions[id]) {
         return found;
@@ -213,7 +213,18 @@
             return _this.compile(expr);
           };
         })(this));
-        return fn.fnName + "(" + compiledParamExprs.join(",") + ")";
+        if (fn instanceof C.BuiltInFn) {
+          return fn.fnName + "(" + compiledParamExprs.join(",") + ")";
+        }
+        if (fn instanceof C.CustomFn) {
+          subCompiler = new Compiler();
+          _ref = fn.paramVariables;
+          for (paramIndex = _i = 0, _len = _ref.length; _i < _len; paramIndex = ++_i) {
+            paramVariable = _ref[paramIndex];
+            subCompiler.substitute(paramVariable, compiledParamExprs[paramIndex]);
+          }
+          return subCompiler.compile(fn.rootExprs[0]);
+        }
       }
     };
 
@@ -702,21 +713,6 @@
       this.isProvisional = false;
     }
 
-    Application.prototype.getPossibleApplications = function() {
-      return builtInFnDefinitions.map((function(_this) {
-        return function(definition) {
-          var application;
-          application = new C.Application();
-          application.fn = new C.BuiltInFn(definition.fnName);
-          application.paramExprs = definition.defaultParamValues.map(function(value) {
-            return new C.Variable("" + value);
-          });
-          application.paramExprs[0] = _this.paramExprs[0];
-          return application;
-        };
-      })(this));
-    };
-
     Application.prototype.setStagedApplication = function(application) {
       this.fn = application.fn;
       return this.paramExprs = application.paramExprs;
@@ -753,6 +749,10 @@
       return builtInFnDefinitions[this.fnName].label;
     };
 
+    BuiltInFn.prototype.getDefaultParamValues = function() {
+      return builtInFnDefinitions[this.fnName].defaultParamValues;
+    };
+
     return BuiltInFn;
 
   })(C.Fn);
@@ -779,10 +779,48 @@
       return this.label;
     };
 
+    CustomFn.prototype.getDefaultParamValues = function() {
+      return this.paramVariables.map((function(_this) {
+        return function(paramVariable) {
+          return paramVariable.getValue();
+        };
+      })(this));
+    };
+
     CustomFn.prototype.createRootExpr = function() {
       var variable;
       variable = new C.Variable();
       return this.rootExprs.push(variable);
+    };
+
+    CustomFn.prototype.getCustomFnDependencies = function() {
+      var dependencies, recurse, rootExpr, _i, _len, _ref;
+      dependencies = [this];
+      recurse = (function(_this) {
+        return function(expr) {
+          var fn, paramExpr, _i, _len, _ref, _results;
+          if (expr instanceof C.Application) {
+            fn = expr.fn;
+            if (fn instanceof C.CustomFn) {
+              dependencies.push(fn);
+              dependencies = dependencies.concat(fn.getCustomFnDependencies());
+            }
+            _ref = expr.paramExprs;
+            _results = [];
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+              paramExpr = _ref[_i];
+              _results.push(recurse(paramExpr));
+            }
+            return _results;
+          }
+        };
+      })(this);
+      _ref = this.rootExprs;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        rootExpr = _ref[_i];
+        recurse(rootExpr);
+      }
+      return _.unique(dependencies);
     };
 
     return CustomFn;
@@ -1359,11 +1397,11 @@
     render: function() {
       return R.div({
         className: "CustomFn"
-      }, R.CustomFnHeaderView({
+      }, R.MainPlotView({
         customFn: this.customFn
       }), R.div({
         className: "CustomFnDefinition"
-      }, R.MainPlotView({
+      }, R.CustomFnHeaderView({
         customFn: this.customFn
       }), this.customFn.rootExprs.map((function(_this) {
         return function(rootExpr, rootIndex) {
@@ -1648,6 +1686,10 @@
 
 }).call(this);
 }, "view/ProvisionalApplicationInternalsView": function(exports, require, module) {(function() {
+  var builtInFnDefinitions;
+
+  builtInFnDefinitions = require("../model/builtInFnDefinitions");
+
   R.create("ProvisionalApplicationInternalsView", {
     propTypes: {
       application: C.Application
@@ -1656,13 +1698,39 @@
       return this.application.label = newValue;
     },
     possibleApplications: function() {
-      var possibleApplications;
-      possibleApplications = this.application.getPossibleApplications();
-      return possibleApplications = _.filter(possibleApplications, (function(_this) {
-        return function(possibleApplication) {
-          return possibleApplication.fn.getLabel().indexOf(_this.application.label) !== -1;
+      var customFns, fns, possibleApplications, thisCustomFn;
+      fns = builtInFnDefinitions.map((function(_this) {
+        return function(definition) {
+          return new C.BuiltInFn(definition.fnName);
         };
       })(this));
+      thisCustomFn = this.lookup("customFn");
+      customFns = _.reject(editor.customFns, (function(_this) {
+        return function(customFn) {
+          var customFnDependencies;
+          customFnDependencies = customFn.getCustomFnDependencies();
+          return _.contains(customFnDependencies, thisCustomFn);
+        };
+      })(this));
+      fns = fns.concat(customFns);
+      fns = _.filter(fns, (function(_this) {
+        return function(fn) {
+          return fn.getLabel().indexOf(_this.application.label) !== -1;
+        };
+      })(this));
+      possibleApplications = fns.map((function(_this) {
+        return function(fn) {
+          var possibleApplication;
+          possibleApplication = new C.Application();
+          possibleApplication.fn = fn;
+          possibleApplication.paramExprs = fn.getDefaultParamValues().map(function(value) {
+            return new C.Variable("" + value);
+          });
+          possibleApplication.paramExprs[0] = _this.application.paramExprs[0];
+          return possibleApplication;
+        };
+      })(this));
+      return possibleApplications;
     },
     render: function() {
       var possibleApplications, _ref, _ref1;

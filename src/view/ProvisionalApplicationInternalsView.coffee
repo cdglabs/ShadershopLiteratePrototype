@@ -1,3 +1,6 @@
+builtInFnDefinitions = require("../model/builtInFnDefinitions")
+
+
 R.create "ProvisionalApplicationInternalsView",
   propTypes:
     application: C.Application
@@ -6,9 +9,31 @@ R.create "ProvisionalApplicationInternalsView",
     @application.label = newValue
 
   possibleApplications: ->
-    possibleApplications = @application.getPossibleApplications()
-    possibleApplications = _.filter possibleApplications, (possibleApplication) =>
-      possibleApplication.fn.getLabel().indexOf(@application.label) != -1
+    fns = builtInFnDefinitions.map (definition) =>
+      new C.BuiltInFn(definition.fnName)
+
+    thisCustomFn = @lookup("customFn")
+    customFns = _.reject editor.customFns, (customFn) =>
+      customFnDependencies = customFn.getCustomFnDependencies()
+      _.contains(customFnDependencies, thisCustomFn)
+
+    fns = fns.concat(customFns)
+
+    fns = _.filter fns, (fn) =>
+      fn.getLabel().indexOf(@application.label) != -1
+
+    possibleApplications = fns.map (fn) =>
+      possibleApplication = new C.Application()
+      possibleApplication.fn = fn
+      possibleApplication.paramExprs = fn.getDefaultParamValues().map (value) =>
+        # TODO: make defaultParamValues defaultParamValueStrings
+        new C.Variable(""+value)
+
+      possibleApplication.paramExprs[0] = @application.paramExprs[0]
+      return possibleApplication
+
+    return possibleApplications
+
 
   render: ->
 

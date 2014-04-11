@@ -20,15 +20,6 @@ class C.Application extends C.Expr
     @paramExprs = []
     @isProvisional = false
 
-  getPossibleApplications: ->
-    builtInFnDefinitions.map (definition) =>
-      application = new C.Application()
-      application.fn = new C.BuiltInFn(definition.fnName)
-      application.paramExprs = definition.defaultParamValues.map (value) =>
-        new C.Variable(""+value)
-      application.paramExprs[0] = @paramExprs[0]
-      return application
-
   setStagedApplication: (application) ->
     @fn = application.fn
     @paramExprs = application.paramExprs
@@ -50,6 +41,8 @@ class C.BuiltInFn extends C.Fn
   constructor: (@fnName) ->
   getLabel: ->
     builtInFnDefinitions[@fnName].label
+  getDefaultParamValues: ->
+    builtInFnDefinitions[@fnName].defaultParamValues
 
 
 class C.CustomFn extends C.Fn
@@ -63,10 +56,31 @@ class C.CustomFn extends C.Fn
     @bounds = {xMin: -6, xMax: 6, yMin: -6, yMax: 6}
 
   getLabel: -> @label
+  getDefaultParamValues: ->
+    @paramVariables.map (paramVariable) =>
+      paramVariable.getValue()
 
   createRootExpr: ->
     variable = new C.Variable()
     @rootExprs.push(variable)
+
+  getCustomFnDependencies: ->
+    dependencies = [this]
+
+    recurse = (expr) =>
+      if expr instanceof C.Application
+        fn = expr.fn
+        if fn instanceof C.CustomFn
+          dependencies.push(fn)
+          dependencies = dependencies.concat(fn.getCustomFnDependencies())
+
+        for paramExpr in expr.paramExprs
+          recurse(paramExpr)
+
+    for rootExpr in @rootExprs
+      recurse(rootExpr)
+
+    return _.unique(dependencies)
 
 
 class C.Editor

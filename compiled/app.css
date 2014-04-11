@@ -17,7 +17,7 @@ canvas {
   height: 100%;
 }
 #editor {
-  margin: 24px;
+  margin: 72px;
   white-space: nowrap;
 }
 .draggingObject {
@@ -37,7 +37,7 @@ canvas {
   z-index: 200;
 }
 .CustomFn {
-  margin-bottom: 48px;
+  margin-bottom: 72px;
 }
 .MainPlot {
   position: relative;
@@ -46,6 +46,10 @@ canvas {
   width: 420px;
   height: 420px;
   margin-right: 12px;
+}
+.CustomFnDefinition {
+  display: inline-block;
+  vertical-align: top;
 }
 .RootExpr {
   display: inline-block;
@@ -255,9 +259,6 @@ canvas {
 }
 .ExprNode:hover .CreateExprButton {
   opacity: 1;
-}
-.CreateRootExprButton {
-  margin-left: 12px;
 }
 .CreateRootExprButton {
   opacity: 0;

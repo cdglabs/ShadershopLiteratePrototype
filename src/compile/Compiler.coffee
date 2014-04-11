@@ -25,4 +25,11 @@ module.exports = class Compiler
       compiledParamExprs = paramExprs.map (expr) =>
         @compile(expr)
 
-      return fn.fnName + "(" + compiledParamExprs.join(",") + ")"
+      if fn instanceof C.BuiltInFn
+        return fn.fnName + "(" + compiledParamExprs.join(",") + ")"
+
+      if fn instanceof C.CustomFn
+        subCompiler = new Compiler()
+        for paramVariable, paramIndex in fn.paramVariables
+          subCompiler.substitute(paramVariable, compiledParamExprs[paramIndex])
+        return subCompiler.compile(fn.rootExprs[0])

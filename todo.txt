@@ -1,5 +1,4 @@
 Priorities
-  Use custom fn's
   Hovered/spread variable
   Show number values on top of plot
 
@@ -26,12 +25,6 @@ Plot
   Show number values on top of plot
   Snap pan/zoom
   Snap variable scrubbing
-
-
-
-Use custom fn
-  Put them in autocomplete
-  Compile/evaluate correctly
 
 
 

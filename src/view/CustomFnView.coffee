@@ -7,9 +7,10 @@ R.create "CustomFnView",
 
   render: ->
     R.div {className: "CustomFn"},
-      R.CustomFnHeaderView {customFn: @customFn}
+      R.MainPlotView {customFn: @customFn}
+
       R.div {className: "CustomFnDefinition"},
-        R.MainPlotView {customFn: @customFn}
+        R.CustomFnHeaderView {customFn: @customFn}
         @customFn.rootExprs.map (rootExpr, rootIndex) =>
           R.RootExprView {rootExpr, rootIndex}
         R.button {className: "CreateRootExprButton", onClick: @handleCreateRootExprButtonClick}
