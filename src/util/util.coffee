@@ -52,12 +52,19 @@ util.lerp = (x, dMin, dMax, rMin, rMax) ->
   ratio = (x - dMin) / (dMax - dMin)
   return ratio * (rMax - rMin) + rMin
 
-util.formatFloat = (value, precision = 4) ->
-  s = value.toFixed(precision)
-  if s.indexOf(".") != -1
-    s = s.replace(/\.?0*$/, "")
-  s = "0" if s == "-0"
-  return s
+
+util.floatToString = (value, precision = 0.1) ->
+  if precision < 1
+    digitPrecision = -Math.round(Math.log(precision)/Math.log(10))
+    string = value.toFixed(digitPrecision)
+  else
+    string = value.toFixed(0)
+
+  if /^-0(\.0*)?$/.test(string)
+    # Remove extraneous negative sign
+    string = string.slice(1)
+
+  return string
 
 
 util.onceDragConsummated = (downEvent, callback, notConsummatedCallback=null) ->

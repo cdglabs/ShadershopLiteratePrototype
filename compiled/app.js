@@ -1285,19 +1285,21 @@
     return ratio * (rMax - rMin) + rMin;
   };
 
-  util.formatFloat = function(value, precision) {
-    var s;
+  util.floatToString = function(value, precision) {
+    var digitPrecision, string;
     if (precision == null) {
-      precision = 4;
+      precision = 0.1;
     }
-    s = value.toFixed(precision);
-    if (s.indexOf(".") !== -1) {
-      s = s.replace(/\.?0*$/, "");
+    if (precision < 1) {
+      digitPrecision = -Math.round(Math.log(precision) / Math.log(10));
+      string = value.toFixed(digitPrecision);
+    } else {
+      string = value.toFixed(0);
     }
-    if (s === "-0") {
-      s = "0";
+    if (/^-0(\.0*)?$/.test(string)) {
+      string = string.slice(1);
     }
-    return s;
+    return string;
   };
 
   util.onceDragConsummated = function(downEvent, callback, notConsummatedCallback) {
@@ -1460,27 +1462,112 @@
       };
     },
     handleMouseDown: function(e) {
+      var variable;
       UI.preventDefault(e);
-      return this.startPan(e);
+      variable = this.hitDetect();
+      if (variable) {
+        return this.startScrub(variable, e);
+      } else {
+        return this.startPan(e);
+      }
     },
-    handleWheel: function(e) {
-      var bounds, centerX, centerY, rect, scale, scaleFactor;
-      e.preventDefault();
+    getLocalMouseCoords: function() {
+      var bounds, rect, x, y;
       rect = this.getDOMNode().getBoundingClientRect();
       bounds = this.customFn.bounds;
-      centerX = util.lerp(e.clientX, rect.left, rect.right, bounds.xMin, bounds.xMax);
-      centerY = util.lerp(e.clientY, rect.bottom, rect.top, bounds.yMin, bounds.yMax);
+      x = util.lerp(UI.mousePosition.x, rect.left, rect.right, bounds.xMin, bounds.xMax);
+      y = util.lerp(UI.mousePosition.y, rect.bottom, rect.top, bounds.yMin, bounds.yMax);
+      return {
+        x: x,
+        y: y
+      };
+    },
+    getCanvasCoords: function(x, y) {
+      var bounds, cx, cy, rect;
+      rect = this.getDOMNode().getBoundingClientRect();
+      bounds = this.customFn.bounds;
+      cx = util.lerp(x, bounds.xMin, bounds.xMax, rect.left, rect.right);
+      cy = util.lerp(y, bounds.yMin, bounds.yMax, rect.bottom, rect.top);
+      return {
+        cx: cx,
+        cy: cy
+      };
+    },
+    handleWheel: function(e) {
+      var bounds, scale, scaleFactor, x, y, _ref;
+      e.preventDefault();
+      bounds = this.customFn.bounds;
+      _ref = this.getLocalMouseCoords(), x = _ref.x, y = _ref.y;
       scaleFactor = 1.2;
       scale = e.deltaY > 0 ? scaleFactor : 1 / scaleFactor;
-      bounds.xMin = (bounds.xMin - centerX) * scale + centerX;
-      bounds.xMax = (bounds.xMax - centerX) * scale + centerX;
-      bounds.yMin = (bounds.yMin - centerY) * scale + centerY;
-      return bounds.yMax = (bounds.yMax - centerY) * scale + centerY;
+      bounds.xMin = (bounds.xMin - x) * scale + x;
+      bounds.xMax = (bounds.xMax - x) * scale + x;
+      bounds.yMin = (bounds.yMin - y) * scale + y;
+      return bounds.yMax = (bounds.yMax - y) * scale + y;
     },
     getDisplayVariables: function() {
       return this.customFn.paramVariables;
     },
+    hitDetect: function() {
+      var cx, cy, found, hit, value, variable, _i, _len, _ref, _ref1, _ref2;
+      found = null;
+      _ref = this.getDisplayVariables();
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        variable = _ref[_i];
+        value = variable.getValue();
+        if (variable.domain === "domain") {
+          _ref1 = this.getCanvasCoords(value, 0), cx = _ref1.cx, cy = _ref1.cy;
+          hit = Math.abs(cx - UI.mousePosition.x) < config.hitTolerance;
+        } else if (variable.domain === "range") {
+          _ref2 = this.getCanvasCoords(0, value), cx = _ref2.cx, cy = _ref2.cy;
+          hit = Math.abs(cy - UI.mousePosition.y) < config.hitTolerance;
+        }
+        if (hit) {
+          found = variable;
+          break;
+        }
+      }
+      return found;
+    },
+    startScrub: function(variable, e) {
+      return UI.dragging = {
+        cursor: this.cursor(),
+        onMove: (function(_this) {
+          return function(e) {
+            var precision, value, x, y, _ref;
+            _ref = _this.getLocalMouseCoords(), x = _ref.x, y = _ref.y;
+            if (variable.domain === "domain") {
+              value = x;
+            } else if (variable.domain === "range") {
+              value = y;
+            }
+            precision = _this.getPrecision();
+            return variable.valueString = util.floatToString(value, precision);
+          };
+        })(this)
+      };
+    },
+    getPrecision: function() {
+      var bounds, digitPrecision, pixelWidth, rect;
+      rect = this.getDOMNode().getBoundingClientRect();
+      bounds = this.customFn.bounds;
+      pixelWidth = (bounds.xMax - bounds.xMin) / rect.width;
+      digitPrecision = Math.floor(Math.log(pixelWidth) / Math.log(10));
+      return Math.pow(10, digitPrecision);
+    },
     cursor: function() {
+      var variable;
+      if (this.isMounted()) {
+        variable = this.hitDetect();
+        if (variable) {
+          if (variable.domain === "domain") {
+            return config.cursor.horizontalScrub;
+          }
+          if (variable.domain === "range") {
+            return config.cursor.verticalScrub;
+          }
+        }
+      }
       return config.cursor.grab;
     },
     render: function() {
@@ -2325,7 +2412,7 @@
         cursor: this.cursor(),
         onMove: (function(_this) {
           return function(e) {
-            var d, digitPrecision, dx, dy, value;
+            var d, dx, dy, value;
             dx = e.clientX - originalX;
             dy = -(e.clientY - originalY);
             if (_this.variable.domain === "domain") {
@@ -2334,12 +2421,7 @@
               d = dy;
             }
             value = originalValue + d * precision;
-            if (precision < 1) {
-              digitPrecision = -Math.round(Math.log(precision) / Math.log(10));
-              return _this.variable.valueString = value.toFixed(digitPrecision);
-            } else {
-              return _this.variable.valueString = value.toFixed(0);
-            }
+            return _this.variable.valueString = util.floatToString(value, precision);
           };
         })(this),
         onUp: (function(_this) {

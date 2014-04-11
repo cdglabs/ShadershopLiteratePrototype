@@ -90,31 +90,88 @@ R.create "MainPlotView",
 
   handleMouseDown: (e) ->
     UI.preventDefault(e)
-    @startPan(e)
+    variable = @hitDetect()
+    if variable
+      @startScrub(variable, e)
+    else
+      @startPan(e)
+
+  getLocalMouseCoords: ->
+    rect = @getDOMNode().getBoundingClientRect()
+    bounds = @customFn.bounds
+    x = util.lerp(UI.mousePosition.x, rect.left, rect.right, bounds.xMin, bounds.xMax)
+    y = util.lerp(UI.mousePosition.y, rect.bottom, rect.top, bounds.yMin, bounds.yMax)
+    return {x, y}
+
+  getCanvasCoords: (x, y) ->
+    rect = @getDOMNode().getBoundingClientRect()
+    bounds = @customFn.bounds
+    cx = util.lerp(x, bounds.xMin, bounds.xMax, rect.left, rect.right)
+    cy = util.lerp(y, bounds.yMin, bounds.yMax, rect.bottom, rect.top)
+    return {cx, cy}
 
   handleWheel: (e) ->
     e.preventDefault()
 
-    rect = @getDOMNode().getBoundingClientRect()
     bounds = @customFn.bounds
-    centerX = util.lerp(e.clientX, rect.left, rect.right, bounds.xMin, bounds.xMax)
-    centerY = util.lerp(e.clientY, rect.bottom, rect.top, bounds.yMin, bounds.yMax)
+    {x, y} = @getLocalMouseCoords()
 
     scaleFactor = 1.2
     scale = if e.deltaY > 0 then scaleFactor else 1/scaleFactor
 
-    bounds.xMin = (bounds.xMin - centerX) * scale + centerX
-    bounds.xMax = (bounds.xMax - centerX) * scale + centerX
-    bounds.yMin = (bounds.yMin - centerY) * scale + centerY
-    bounds.yMax = (bounds.yMax - centerY) * scale + centerY
+    bounds.xMin = (bounds.xMin - x) * scale + x
+    bounds.xMax = (bounds.xMax - x) * scale + x
+    bounds.yMin = (bounds.yMin - y) * scale + y
+    bounds.yMax = (bounds.yMax - y) * scale + y
 
 
   getDisplayVariables: ->
     @customFn.paramVariables
 
+  hitDetect: ->
+    found = null
+    for variable in @getDisplayVariables()
+      value = variable.getValue()
+      if variable.domain == "domain" # vertical
+        {cx, cy} = @getCanvasCoords(value, 0)
+        hit = (Math.abs(cx - UI.mousePosition.x) < config.hitTolerance)
+      else if variable.domain == "range" # horizontal
+        {cx, cy} = @getCanvasCoords(0, value)
+        hit = (Math.abs(cy - UI.mousePosition.y) < config.hitTolerance)
+      if hit
+        found = variable
+        break
+    return found
+
+  startScrub: (variable, e) ->
+    UI.dragging = {
+      cursor: @cursor()
+      onMove: (e) =>
+        {x, y} = @getLocalMouseCoords()
+        if variable.domain == "domain" # vertical
+          value = x
+        else if variable.domain == "range" # horizontal
+          value = y
+
+        precision = @getPrecision()
+        variable.valueString = util.floatToString(value, precision)
+    }
+
+  getPrecision: ->
+    rect = @getDOMNode().getBoundingClientRect()
+    bounds = @customFn.bounds
+    pixelWidth = (bounds.xMax - bounds.xMin) / rect.width
+
+    digitPrecision = Math.floor(Math.log(pixelWidth) / Math.log(10))
+    return Math.pow(10, digitPrecision)
 
   cursor: ->
-    config.cursor.grab
+    if @isMounted()
+      variable = @hitDetect()
+      if variable
+        return config.cursor.horizontalScrub if variable.domain == "domain"
+        return config.cursor.verticalScrub if variable.domain == "range"
+    return config.cursor.grab
 
   render: ->
     R.div {

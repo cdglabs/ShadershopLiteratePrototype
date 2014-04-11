@@ -1,6 +1,4 @@
 Priorities
-  Display variables on main plot
-  Direct manipulate variables
   Use custom fn's
 
 
@@ -25,8 +23,8 @@ Plot
   Hover thumbnail plots
   Show params on thumbnail plots
   Show number values on top of plot
-  Direct manipulate variables
   Snap pan/zoom
+  Snap variable scrubbing
 
 
 Autocomplete with search lookup

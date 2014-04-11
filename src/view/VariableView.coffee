@@ -104,11 +104,7 @@ R.create "VariableValueView",
           d = dy
 
         value = originalValue + d * precision
-        if precision < 1
-          digitPrecision = -Math.round(Math.log(precision)/Math.log(10))
-          @variable.valueString = value.toFixed(digitPrecision)
-        else
-          @variable.valueString = value.toFixed(0)
+        @variable.valueString = util.floatToString(value, precision)
       onUp: =>
     }
 
