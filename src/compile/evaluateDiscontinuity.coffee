@@ -41,9 +41,14 @@ convertFn = (fn, detector=null) ->
       if detector(args[0][0]) != detector(args[0][1])
         return "found"
 
-    return [0, 1].map (index) ->
+    result = [0, 1].map (index) ->
       fnArgs = args.map (arg) -> arg[index] ? arg
       return fn(fnArgs...)
+
+    if result[0]? and result[0] == result[1]
+      result = result[0]
+
+    return result
 
 
 identity = convertFn(identity)

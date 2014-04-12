@@ -30,6 +30,12 @@ saveState = ->
   window.localStorage[storageName] = json
 
 
+window.save = ->
+  window.localStorage[storageName]
+
+window.restore = (jsonString) ->
+  window.localStorage[storageName] = jsonString
+  location.reload()
 
 
 

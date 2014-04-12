@@ -350,7 +350,7 @@
       detector = null;
     }
     return function() {
-      var args;
+      var args, result;
       args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
       if (_.any(args, function(x) {
         return x === "found";
@@ -362,7 +362,7 @@
           return "found";
         }
       }
-      return [0, 1].map(function(index) {
+      result = [0, 1].map(function(index) {
         var fnArgs;
         fnArgs = args.map(function(arg) {
           var _ref;
@@ -370,6 +370,10 @@
         });
         return fn.apply(null, fnArgs);
       });
+      if ((result[0] != null) && result[0] === result[1]) {
+        result = result[0];
+      }
+      return result;
     };
   };
 
@@ -455,6 +459,15 @@
     json = C.deconstruct(editor);
     json = JSON.stringify(json);
     return window.localStorage[storageName] = json;
+  };
+
+  window.save = function() {
+    return window.localStorage[storageName];
+  };
+
+  window.restore = function(jsonString) {
+    window.localStorage[storageName] = jsonString;
+    return location.reload();
   };
 
   willRefreshNextFrame = false;
@@ -1149,7 +1162,6 @@
     var host, selection;
     selection = window.getSelection();
     if (range == null) {
-      focusBody();
       return selection.removeAllRanges();
     } else {
       host = findEditingHost(range.commonAncestorContainer);
@@ -2758,6 +2770,7 @@
       } else {
         testDiscontinuity = null;
       }
+      testDiscontinuity = null;
       util.canvas.clear(ctx);
       _ref = this.getBounds(), xMin = _ref.xMin, xMax = _ref.xMax, yMin = _ref.yMin, yMax = _ref.yMax;
       util.canvas.drawCartesian(ctx, {

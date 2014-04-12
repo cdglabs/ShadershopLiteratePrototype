@@ -9,7 +9,7 @@ get = ->
 set = (range) ->
   selection = window.getSelection()
   if !range?
-    focusBody()
+    # focusBody()
     selection.removeAllRanges()
   else
     # Focusing the host is necessary in FF for the text cursor to show up.

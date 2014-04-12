@@ -37,6 +37,8 @@ R.create "PlotView",
     else
       testDiscontinuity = null
 
+    testDiscontinuity = null
+
     util.canvas.clear(ctx)
 
     {xMin, xMax, yMin, yMax} = @getBounds()
