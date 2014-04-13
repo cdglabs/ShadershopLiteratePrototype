@@ -492,7 +492,7 @@
     }), editorEl);
   };
 
-  refreshEventNames = ["mousedown", "mousemove", "mouseup", "keydown", "scroll", "change", "wheel"];
+  refreshEventNames = ["mousedown", "mousemove", "mouseup", "keydown", "scroll", "change", "wheel", "mousewheel"];
 
   for (_i = 0, _len = refreshEventNames.length; _i < _len; _i++) {
     eventName = refreshEventNames[_i];

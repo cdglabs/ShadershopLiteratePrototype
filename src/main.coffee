@@ -72,6 +72,7 @@ refreshEventNames = [
   "scroll"
   "change"
   "wheel"
+  "mousewheel"
 ]
 
 for eventName in refreshEventNames
