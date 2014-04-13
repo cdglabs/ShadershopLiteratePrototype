@@ -1335,6 +1335,16 @@
     return result;
   };
 
+  Element.prototype.isOnScreen = function() {
+    var horizontal, rect, screenHeight, screenWidth, vertical, _ref2, _ref3, _ref4, _ref5;
+    rect = this.getBoundingClientRect();
+    screenWidth = window.innerWidth;
+    screenHeight = window.innerHeight;
+    vertical = (0 <= (_ref2 = rect.top) && _ref2 <= screenHeight) || (0 <= (_ref3 = rect.bottom) && _ref3 <= screenHeight);
+    horizontal = (0 <= (_ref4 = rect.left) && _ref4 <= screenWidth) || (0 <= (_ref5 = rect.right) && _ref5 <= screenWidth);
+    return vertical && horizontal;
+  };
+
   util.lerp = function(x, dMin, dMax, rMin, rMax) {
     var ratio;
     ratio = (x - dMin) / (dMax - dMin);
@@ -1402,6 +1412,11 @@
   R.create("CustomFnView", {
     propTypes: {
       customFn: C.CustomFn
+    },
+    shouldComponentUpdate: function() {
+      var el;
+      el = this.getDOMNode();
+      return el.isOnScreen();
     },
     handleCreateRootExprButtonClick: function() {
       return this.customFn.createRootExpr();
@@ -1967,14 +1982,26 @@
       rootExpr: C.Expr,
       rootIndex: Number
     },
+    renderExprNodeViews: function() {
+      var exprNodeViews, recurse;
+      exprNodeViews = [];
+      recurse = function(expr, parentArray, parentArrayIndex) {
+        exprNodeViews.unshift(R.ExprNodeView({
+          expr: expr,
+          parentArray: parentArray,
+          parentArrayIndex: parentArrayIndex
+        }));
+        if (expr instanceof C.Application) {
+          return recurse(expr.paramExprs[0], expr.paramExprs, 0);
+        }
+      };
+      recurse(this.rootExpr, this.lookup("customFn").rootExprs, this.rootIndex);
+      return exprNodeViews;
+    },
     render: function() {
       return R.div({
         className: "RootExpr"
-      }, R.ExprListView({
-        expr: this.rootExpr,
-        parentArray: this.lookup("customFn").rootExprs,
-        parentArrayIndex: this.rootIndex
-      }), this.rootIndex > 0 ? R.RootExprExtrasView({
+      }, this.renderExprNodeViews(), this.rootIndex > 0 ? R.RootExprExtrasView({
         rootExpr: this.rootExpr,
         rootIndex: this.rootIndex
       }) : void 0);
@@ -2014,27 +2041,12 @@
     }
   });
 
-  R.create("ExprListView", {
-    propTypes: {
-      expr: C.Expr,
-      parentArray: Array,
-      parentArrayIndex: Number
-    },
-    render: function() {
-      return R.span({}, this.expr instanceof C.Application ? R.ExprListView({
-        expr: this.expr.paramExprs[0],
-        parentArray: this.expr.paramExprs,
-        parentArrayIndex: 0
-      }) : void 0, R.ExprNodeView({
-        expr: this.expr
-      }));
-    }
-  });
-
   R.create("ExprNodeView", {
     propTypes: {
       expr: C.Expr,
-      isDraggingCopy: Boolean
+      isDraggingCopy: Boolean,
+      parentArray: Array,
+      parentArrayIndex: Number
     },
     getDefaultProps: function() {
       return {

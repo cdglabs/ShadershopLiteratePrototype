@@ -43,6 +43,14 @@ Element::getMarginRect = ->
   result.height = result.bottom - result.top
   return result
 
+Element::isOnScreen = ->
+  rect = @getBoundingClientRect()
+  screenWidth = window.innerWidth
+  screenHeight = window.innerHeight
+  vertical = (0 <= rect.top <= screenHeight or 0 <= rect.bottom <= screenHeight)
+  horizontal = (0 <= rect.left <= screenWidth or 0 <= rect.right <= screenWidth)
+  return vertical and horizontal
+
 
 # =============================================================================
 # Util functions

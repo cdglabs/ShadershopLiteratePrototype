@@ -3,13 +3,18 @@ R.create "RootExprView",
     rootExpr: C.Expr
     rootIndex: Number
 
+  renderExprNodeViews: ->
+    exprNodeViews = []
+    recurse = (expr, parentArray, parentArrayIndex) ->
+      exprNodeViews.unshift R.ExprNodeView {expr, parentArray, parentArrayIndex}
+      if expr instanceof C.Application
+        recurse(expr.paramExprs[0], expr.paramExprs, 0)
+    recurse(@rootExpr, @lookup("customFn").rootExprs, @rootIndex)
+    return exprNodeViews
+
   render: ->
     R.div {className: "RootExpr"},
-      R.ExprListView {
-        expr: @rootExpr
-        parentArray: @lookup("customFn").rootExprs
-        parentArrayIndex: @rootIndex
-      }
+      @renderExprNodeViews()
       if @rootIndex > 0
         R.RootExprExtrasView {rootExpr: @rootExpr, rootIndex: @rootIndex}
 
@@ -37,29 +42,12 @@ R.create "RootExprExtrasView",
 
 
 
-
-
-R.create "ExprListView",
-  propTypes:
-    expr: C.Expr
-    parentArray: Array
-    parentArrayIndex: Number
-
-  render: ->
-    R.span {},
-      if @expr instanceof C.Application
-        R.ExprListView {
-          expr: @expr.paramExprs[0]
-          parentArray: @expr.paramExprs
-          parentArrayIndex: 0
-        }
-      R.ExprNodeView {expr: @expr}
-
-
 R.create "ExprNodeView",
   propTypes:
     expr: C.Expr
     isDraggingCopy: Boolean
+    parentArray: Array
+    parentArrayIndex: Number
 
   getDefaultProps: ->
     isDraggingCopy: false

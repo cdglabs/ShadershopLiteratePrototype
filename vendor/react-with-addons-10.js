@@ -8704,6 +8704,7 @@ function inject() {
     if ((/[?&]react_perf\b/).test(url)) {
       var ReactDefaultPerf = _dereq_("./ReactDefaultPerf");
       ReactDefaultPerf.start();
+      window.ReactDefaultPerf = ReactDefaultPerf;
     }
   }
 }

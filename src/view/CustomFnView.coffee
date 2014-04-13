@@ -2,6 +2,10 @@ R.create "CustomFnView",
   propTypes:
     customFn: C.CustomFn
 
+  shouldComponentUpdate: ->
+    el = @getDOMNode()
+    return el.isOnScreen()
+
   handleCreateRootExprButtonClick: ->
     @customFn.createRootExpr()
 
