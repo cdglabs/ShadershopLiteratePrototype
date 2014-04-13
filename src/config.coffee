@@ -1,3 +1,6 @@
+mainLineWidth = 1.25
+
+
 window.config = config = {
 
   storageName: "spaceshader4"
@@ -12,6 +15,24 @@ window.config = config = {
   snapTolerance: 5
 
   gridColor: "204,194,163"
+
+  style: {
+    mainExpr: {
+      strokeStyle: "#000"
+      lineWidth: mainLineWidth
+      lineCap: "round"
+    }
+    hoveredExpr: {
+      strokeStyle: "#900"
+      lineWidth: mainLineWidth
+      lineCap: "round"
+    }
+    paramExpr: {
+      strokeStyle: "#bbb"
+      lineWidth: mainLineWidth
+      lineCap: "round"
+    }
+  }
 
   cursor: {
     text: "text"

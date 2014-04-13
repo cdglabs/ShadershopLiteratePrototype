@@ -6,6 +6,7 @@ evaluateDiscontinuity = require("../../compile/evaluateDiscontinuity")
 R.create "PlotView",
   propTypes:
     expr: C.Expr
+    style: String
 
   compile: ->
     customFn = @lookup("customFn")
@@ -50,9 +51,7 @@ R.create "PlotView",
       fn: fn
       testDiscontinuity: testDiscontinuity
 
-    ctx.strokeStyle = "#000"
-    ctx.lineWidth = config.mainLineWidth
-    ctx.lineCap = "round"
+    util.canvas.setStyle(ctx, config.style[@style])
     ctx.stroke()
 
 
@@ -60,7 +59,7 @@ R.create "PlotView",
     # As an optimization, we check that the draw parameters are different before we draw
     {xMin, xMax, yMin, yMax} = @getBounds()
     compileString = @compile()
-    drawParameters = {xMin, xMax, yMin, yMax, compileString}
+    drawParameters = {xMin, xMax, yMin, yMax, compileString, style: @style}
     unless _.isEqual(drawParameters, @_previousDrawParameters)
       @refs.canvas.draw()
     @_previousDrawParameters = drawParameters

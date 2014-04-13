@@ -255,8 +255,14 @@ R.create "ExprThumbnailView",
     @startTransclude(e)
 
   render: ->
-    R.div {className: "ExprThumbnail", onMouseDown: @handleMouseDown},
-      R.PlotView {expr: @expr}
+    className = R.cx {
+      ExprThumbnail: true
+      Hovered: UI.hoverData?.expr == @expr
+    }
+    R.HoverCaptureView {hoverData: {expr: @expr, customFn: @lookup("customFn")}},
+      R.div {className: className, onMouseDown: @handleMouseDown},
+        R.PlotWithParametersView {expr: @expr}
+        # R.PlotView {expr: @expr, style: "mainExpr"}
 
 
 

@@ -1,7 +1,5 @@
 Priorities
   Comments on fn's or literate..
-  Hover a thumbnail to see it in main plot
-  Hover a variable
   Preloaded "examples"
     Blank
     Waveforms

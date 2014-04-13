@@ -111,6 +111,7 @@ require("./editor/EditorView")
 require("./editor/DraggingView")
 
 require("./CustomFnView")
+require("./MainPlotView")
 require("./RootExprTreeView")
 require("./ProvisionalApplicationInternalsView")
 

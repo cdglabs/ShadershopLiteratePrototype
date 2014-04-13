@@ -413,7 +413,9 @@
 
 }).call(this);
 }, "config": function(exports, require, module) {(function() {
-  var config;
+  var config, mainLineWidth;
+
+  mainLineWidth = 1.25;
 
   window.config = config = {
     storageName: "spaceshader4",
@@ -423,6 +425,23 @@
     hitTolerance: 15,
     snapTolerance: 5,
     gridColor: "204,194,163",
+    style: {
+      mainExpr: {
+        strokeStyle: "#000",
+        lineWidth: mainLineWidth,
+        lineCap: "round"
+      },
+      hoveredExpr: {
+        strokeStyle: "#900",
+        lineWidth: mainLineWidth,
+        lineCap: "round"
+      },
+      paramExpr: {
+        strokeStyle: "#bbb",
+        lineWidth: mainLineWidth,
+        lineCap: "round"
+      }
+    },
     cursor: {
       text: "text",
       grab: "-webkit-grab",
@@ -863,7 +882,8 @@
 
 }).call(this);
 }, "util/canvas": function(exports, require, module) {(function() {
-  var canvasBounds, clear, drawCartesian, drawGrid, drawHorizontal, drawLine, drawVertical, lerp, ticks;
+  var canvasBounds, clear, drawCartesian, drawGrid, drawHorizontal, drawLine, drawVertical, lerp, setStyle, ticks,
+    __hasProp = {}.hasOwnProperty;
 
   lerp = util.lerp;
 
@@ -884,6 +904,17 @@
     var canvas;
     canvas = ctx.canvas;
     return ctx.clearRect(0, 0, canvas.width, canvas.height);
+  };
+
+  setStyle = function(ctx, styleOpts) {
+    var key, value, _results;
+    _results = [];
+    for (key in styleOpts) {
+      if (!__hasProp.call(styleOpts, key)) continue;
+      value = styleOpts[key];
+      _results.push(ctx[key] = value);
+    }
+    return _results;
   };
 
   drawCartesian = function(ctx, opts) {
@@ -1142,6 +1173,7 @@
   util.canvas = {
     lerp: lerp,
     clear: clear,
+    setStyle: setStyle,
     drawCartesian: drawCartesian,
     drawVertical: drawVertical,
     drawHorizontal: drawHorizontal,
@@ -1505,6 +1537,8 @@
     }
   });
 
+}).call(this);
+}, "view/MainPlotView": function(exports, require, module) {(function() {
   R.create("MainPlotView", {
     propTypes: {
       customFn: C.CustomFn
@@ -1652,7 +1686,7 @@
       return config.cursor.grab;
     },
     render: function() {
-      var variable;
+      var variable, _ref, _ref1;
       return R.div({
         className: "MainPlot",
         onMouseDown: this.handleMouseDown,
@@ -1663,19 +1697,43 @@
       }, R.GridView({
         customFn: this.customFn
       }), R.PlotView({
-        expr: this.customFn.rootExprs[0]
-      }), (function() {
-        var _i, _len, _ref, _results;
-        _ref = this.getDisplayVariables();
+        expr: this.customFn.rootExprs[0],
+        style: "mainExpr"
+      }), ((_ref = UI.hoverData) != null ? _ref.expr : void 0) && ((_ref1 = UI.hoverData) != null ? _ref1.customFn : void 0) === this.customFn ? R.PlotWithParametersView({
+        expr: UI.hoverData.expr
+      }) : void 0, (function() {
+        var _i, _len, _ref2, _results;
+        _ref2 = this.getDisplayVariables();
         _results = [];
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          variable = _ref[_i];
+        for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
+          variable = _ref2[_i];
           _results.push(R.PlotVariableView({
             variable: variable
           }));
         }
         return _results;
       }).call(this));
+    }
+  });
+
+  R.create("PlotWithParametersView", {
+    propTypes: {
+      expr: C.Expr
+    },
+    render: function() {
+      var style, _ref;
+      style = ((_ref = UI.hoverData) != null ? _ref.expr : void 0) === this.expr ? "hoveredExpr" : "mainExpr";
+      return R.span({}, this.expr instanceof C.Application ? this.expr.paramExprs.map((function(_this) {
+        return function(paramExpr) {
+          return R.PlotView({
+            expr: paramExpr,
+            style: "paramExpr"
+          });
+        };
+      })(this)) : void 0, R.PlotView({
+        expr: this.expr,
+        style: style
+      }));
     }
   });
 
@@ -1990,6 +2048,8 @@
   require("./editor/DraggingView");
 
   require("./CustomFnView");
+
+  require("./MainPlotView");
 
   require("./RootExprTreeView");
 
@@ -2339,12 +2399,22 @@
       return this.startTransclude(e);
     },
     render: function() {
-      return R.div({
-        className: "ExprThumbnail",
+      var className, _ref;
+      className = R.cx({
+        ExprThumbnail: true,
+        Hovered: ((_ref = UI.hoverData) != null ? _ref.expr : void 0) === this.expr
+      });
+      return R.HoverCaptureView({
+        hoverData: {
+          expr: this.expr,
+          customFn: this.lookup("customFn")
+        }
+      }, R.div({
+        className: className,
         onMouseDown: this.handleMouseDown
-      }, R.PlotView({
+      }, R.PlotWithParametersView({
         expr: this.expr
-      }));
+      })));
     }
   });
 
@@ -2673,7 +2743,8 @@
 
   R.create("PlotView", {
     propTypes: {
-      expr: C.Expr
+      expr: C.Expr,
+      style: String
     },
     compile: function() {
       var compiled, compiler, customFn, xVariable;
@@ -2720,9 +2791,7 @@
         fn: fn,
         testDiscontinuity: testDiscontinuity
       });
-      ctx.strokeStyle = "#000";
-      ctx.lineWidth = config.mainLineWidth;
-      ctx.lineCap = "round";
+      util.canvas.setStyle(ctx, config.style[this.style]);
       return ctx.stroke();
     },
     componentDidUpdate: function() {
@@ -2734,7 +2803,8 @@
         xMax: xMax,
         yMin: yMin,
         yMax: yMax,
-        compileString: compileString
+        compileString: compileString,
+        style: this.style
       };
       if (!_.isEqual(drawParameters, this._previousDrawParameters)) {
         this.refs.canvas.draw();

@@ -19,6 +19,11 @@ clear = (ctx) ->
   ctx.clearRect(0, 0, canvas.width, canvas.height)
 
 
+setStyle = (ctx, styleOpts) ->
+  for own key, value of styleOpts
+    ctx[key] = value
+
+
 drawCartesian = (ctx, opts) ->
   xMin = opts.xMin
   xMax = opts.xMax
@@ -254,4 +259,4 @@ drawGrid = (ctx, opts) ->
 
 
 
-util.canvas = {lerp, clear, drawCartesian, drawVertical, drawHorizontal, drawGrid}
+util.canvas = {lerp, clear, setStyle, drawCartesian, drawVertical, drawHorizontal, drawGrid}
