@@ -1,5 +1,14 @@
 Priorities
-  Hovered/spread variable
+  Comments on fn's or literate..
+  Hover a thumbnail to see it in main plot
+  Hover a variable
+  Preloaded "examples"
+    Blank
+    Waveforms
+    Noise
+  + button autofocuses
+  Undo
+  Show spread with hovered variable
   Show number values on top of plot
 
 
@@ -34,6 +43,7 @@ Evaluation
 
 
 Cleanup
+  Abstract all sizing variables in styl
   Get rid of lookup calls and do explicit passing?
   Reordering applications could use more cleanup
   Will need to cleanup variable domain/range stuff when generalizing to more than R1 -> R1

@@ -51,7 +51,7 @@ R.create "PlotView",
       testDiscontinuity: testDiscontinuity
 
     ctx.strokeStyle = "#000"
-    ctx.lineWidth = 1.5
+    ctx.lineWidth = config.mainLineWidth
     ctx.lineCap = "round"
     ctx.stroke()
 

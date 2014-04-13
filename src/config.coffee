@@ -4,6 +4,8 @@ window.config = config = {
 
   resolution: 0.5
 
+  mainLineWidth: 1.25
+
   # In pixels:
   minGridSpacing: 70
   hitTolerance: 15

@@ -414,6 +414,7 @@
   window.config = config = {
     storageName: "spaceshader4",
     resolution: 0.5,
+    mainLineWidth: 1.25,
     minGridSpacing: 70,
     hitTolerance: 15,
     snapTolerance: 5,
@@ -1067,7 +1068,7 @@
     axesColor = "rgba(" + color + ", " + axesOpacity + ")";
     labelColor = "rgba(" + color + ", " + labelOpacity + ")";
     ctx.save();
-    ctx.lineWidth = 0.5;
+    ctx.lineWidth = 0.25;
     ctx.strokeStyle = minorColor;
     _ref1 = ticks(smallSpacing, xMin, xMax);
     for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
@@ -1711,7 +1712,7 @@
         });
       }
       ctx.strokeStyle = "#090";
-      ctx.lineWidth = 1.5;
+      ctx.lineWidth = config.mainLineWidth;
       return ctx.stroke();
     },
     componentDidUpdate: function() {
@@ -2818,7 +2819,7 @@
         testDiscontinuity: testDiscontinuity
       });
       ctx.strokeStyle = "#000";
-      ctx.lineWidth = 1.5;
+      ctx.lineWidth = config.mainLineWidth;
       ctx.lineCap = "round";
       return ctx.stroke();
     },

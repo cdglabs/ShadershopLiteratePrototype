@@ -222,7 +222,7 @@ R.create "PlotVariableView",
         y: value
 
     ctx.strokeStyle = "#090"
-    ctx.lineWidth = 1.5
+    ctx.lineWidth = config.mainLineWidth
     ctx.stroke()
 
   componentDidUpdate: ->

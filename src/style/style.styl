@@ -2,11 +2,15 @@
 // Config
 // ============================================================================
 
-wordPadding = 3px
-wordBorderRadius = 5px
-lineSpacing = 4px
-
 highlightColor = #09c
+
+PlusButtonSize = 14px
+
+wordSpacingSize = 5px
+mainSpacingSize = 10px
+largeSpacingSize = 50px
+
+
 
 
 paramColor = #ffe
@@ -25,7 +29,7 @@ inline(va)
 html, body
   // overflow hidden
   font-family "Lucida Sans Unicode", "Lucida Grande", sans-serif
-  font-size 13px
+  font-size 12px
   // line-height 14px
   color #444
   margin 0
@@ -39,7 +43,7 @@ canvas
   height 100%
 
 #editor
-  margin 72px
+  margin largeSpacingSize
   white-space nowrap
 
 // ============================================================================
@@ -63,23 +67,23 @@ canvas
 
 
 .CustomFn
-  margin-bottom 72px
+  margin-bottom largeSpacingSize
 
 
 
 .MainPlot
   position relative
   inline(top)
-  width 390px
-  height 390px
-  margin-right 12px
+  width mainSpacingSize * 36
+  height mainSpacingSize * 36
+  margin-right mainSpacingSize
 
 .CustomFnDefinition
   inline(top)
 
 .RootExpr
   inline(top)
-  margin-right 12px
+  margin-right mainSpacingSize
   &:hover
     background-color tint(highlightColor, 97%)
   .RootExprExtras
@@ -88,8 +92,8 @@ canvas
       left 21px
     .ExtrasLine
       text-align right
-      margin-right 6px
-      margin-bottom 6px
+      margin-right wordSpacingSize
+      margin-bottom wordSpacingSize
       font-size 10px
       .ExtrasButton
         cursor pointer
@@ -106,7 +110,7 @@ canvas
 .ExprNode
   position relative
   margin-bottom -1px
-  padding-right 6px
+  padding-right wordSpacingSize
   min-width 174px
   &:hover
     background-color tint(highlightColor, 90%)
@@ -123,8 +127,9 @@ canvas
   inline(middle)
   border 1px solid #eee
   background-color #fff
-  width 46px
-  height 46px
+  box-sizing border-box
+  width 4 * mainSpacingSize
+  height 4 * mainSpacingSize
 
 
 .ExprInternals
@@ -132,18 +137,14 @@ canvas
 
 .Param
   inline(middle)
-  margin-left 6px
-  position relative
+  margin-left wordSpacingSize
   .ExprThumbnail
-    width 34px
-    height 34px
-  .TranscludeLinkIndicator
-    top 0px
-    left 15px
+    width 3 * mainSpacingSize
+    height 3 * mainSpacingSize
 
 .ParamPlaceholder
   inline(middle)
-  margin-left 6px
+  margin-left wordSpacingSize
   width 30px
   height 1em
   padding 2px 4px
@@ -172,13 +173,13 @@ canvas
 
 .FnLabel
   inline(middle)
-  margin-left 6px
+  margin-left wordSpacingSize
   min-width 11px // so +, -, *, and / line up
 
 
 .ApplicationLabel
   inline(middle)
-  margin-left 6px
+  margin-left wordSpacingSize
   font-style italic
 
 .ApplicationLabel:empty
@@ -195,23 +196,14 @@ canvas
 
 
 
-.TranscludeLinkIndicator
-  position absolute
-  background-color rgba(0,0,0,0.2)
-  margin-top -6px
-  margin-left -6px
-  width 12px
-  height 12px
-  border-radius 6px
-
 
 
 
 
 
 .CustomFnHeader
-  padding-bottom 12px
-  margin-bottom 12px
+  padding-bottom mainSpacingSize
+  margin-bottom mainSpacingSize
   border-bottom 1px solid #eee
   .FnLabel
     font-weight bold
@@ -227,10 +219,10 @@ canvas
   cursor default
   left 0
   top 100%
-  padding 6px
-  margin -6px
+  padding wordSpacingSize
+  margin -1*wordSpacingSize
   background-color #fff
-  border-radius 6px
+  border-radius wordSpacingSize
   box-shadow 0px 6px 24px rgba(0,0,0,0.25)
   .Scroller
     width 216px
@@ -244,7 +236,7 @@ canvas
 
 
 
-PlusButtonSize = 14px
+
 
 .CreateExprButton, .CreateRootExprButton, .CreateCustomFn
   width PlusButtonSize

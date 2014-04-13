@@ -197,7 +197,7 @@ drawGrid = (ctx, opts) ->
   labelColor = "rgba(#{color}, #{labelOpacity})"
 
   ctx.save()
-  ctx.lineWidth = 0.5
+  ctx.lineWidth = 0.25
 
 
   # draw minor grid lines

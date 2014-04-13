@@ -1,7 +1,7 @@
 html,
 body {
   font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
-  font-size: 13px;
+  font-size: 12px;
   color: #444;
   margin: 0;
 }
@@ -17,7 +17,7 @@ canvas {
   height: 100%;
 }
 #editor {
-  margin: 72px;
+  margin: 50px;
   white-space: nowrap;
 }
 .draggingObject {
@@ -37,15 +37,15 @@ canvas {
   z-index: 200;
 }
 .CustomFn {
-  margin-bottom: 72px;
+  margin-bottom: 50px;
 }
 .MainPlot {
   position: relative;
   display: inline-block;
   vertical-align: top;
-  width: 390px;
-  height: 390px;
-  margin-right: 12px;
+  width: 360px;
+  height: 360px;
+  margin-right: 10px;
 }
 .CustomFnDefinition {
   display: inline-block;
@@ -54,7 +54,7 @@ canvas {
 .RootExpr {
   display: inline-block;
   vertical-align: top;
-  margin-right: 12px;
+  margin-right: 10px;
 }
 .RootExpr:hover {
   background-color: #f7fbfd;
@@ -67,8 +67,8 @@ canvas {
 }
 .RootExpr .RootExprExtras .ExtrasLine {
   text-align: right;
-  margin-right: 6px;
-  margin-bottom: 6px;
+  margin-right: 5px;
+  margin-bottom: 5px;
   font-size: 10px;
 }
 .RootExpr .RootExprExtras .ExtrasLine .ExtrasButton {
@@ -86,7 +86,7 @@ canvas {
 .ExprNode {
   position: relative;
   margin-bottom: -1px;
-  padding-right: 6px;
+  padding-right: 5px;
   min-width: 174px;
 }
 .ExprNode:hover {
@@ -104,8 +104,9 @@ canvas {
   vertical-align: middle;
   border: 1px solid #eee;
   background-color: #fff;
-  width: 46px;
-  height: 46px;
+  box-sizing: border-box;
+  width: 40px;
+  height: 40px;
 }
 .ExprInternals {
   display: inline-block;
@@ -114,21 +115,16 @@ canvas {
 .Param {
   display: inline-block;
   vertical-align: middle;
-  margin-left: 6px;
-  position: relative;
+  margin-left: 5px;
 }
 .Param .ExprThumbnail {
-  width: 34px;
-  height: 34px;
-}
-.Param .TranscludeLinkIndicator {
-  top: 0px;
-  left: 15px;
+  width: 30px;
+  height: 30px;
 }
 .ParamPlaceholder {
   display: inline-block;
   vertical-align: middle;
-  margin-left: 6px;
+  margin-left: 5px;
   width: 30px;
   height: 1em;
   padding: 2px 4px;
@@ -157,13 +153,13 @@ canvas {
 .FnLabel {
   display: inline-block;
   vertical-align: middle;
-  margin-left: 6px;
+  margin-left: 5px;
   min-width: 11px;
 }
 .ApplicationLabel {
   display: inline-block;
   vertical-align: middle;
-  margin-left: 6px;
+  margin-left: 5px;
   font-style: italic;
 }
 .ApplicationLabel:empty {
@@ -174,18 +170,9 @@ canvas {
 .ActiveTransclusionDrop .ParamPlaceholder {
   box-shadow: 0px 0px 16px 0px rgba(0,153,204,0.5);
 }
-.TranscludeLinkIndicator {
-  position: absolute;
-  background-color: rgba(0,0,0,0.2);
-  margin-top: -6px;
-  margin-left: -6px;
-  width: 12px;
-  height: 12px;
-  border-radius: 6px;
-}
 .CustomFnHeader {
-  padding-bottom: 12px;
-  margin-bottom: 12px;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
   border-bottom: 1px solid #eee;
 }
 .CustomFnHeader .FnLabel {
@@ -198,10 +185,10 @@ canvas {
   cursor: default;
   left: 0;
   top: 100%;
-  padding: 6px;
-  margin: -6px;
+  padding: 5px;
+  margin: -5px;
   background-color: #fff;
-  border-radius: 6px;
+  border-radius: 5px;
   box-shadow: 0px 6px 24px rgba(0,0,0,0.25);
 }
 .ApplicationAutoComplete .Scroller {
