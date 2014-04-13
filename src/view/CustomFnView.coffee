@@ -199,21 +199,27 @@ R.create "PlotVariableView",
   propTypes:
     variable: C.Variable
 
+  getDrawInfo: ->
+    {xMin, xMax, yMin, yMax} = @lookup("customFn").bounds
+    domain = @variable.domain
+    value = @variable.getValue()
+    return {xMin, xMax, yMin, yMax, domain, value}
+
   drawFn: (canvas) ->
-    bounds = @lookup("customFn").bounds
+    {xMin, xMax, yMin, yMax, domain, value} = @_lastDrawInfo = @getDrawInfo()
 
     ctx = canvas.getContext("2d")
     util.canvas.clear(ctx)
-    if @variable.domain == "domain"
+    if domain == "domain"
       util.canvas.drawVertical ctx,
-        xMin: bounds.xMin
-        xMax: bounds.xMax
-        x: @variable.getValue()
-    else if @variable.domain == "range"
+        xMin: xMin
+        xMax: xMax
+        x: value
+    else if domain == "range"
       util.canvas.drawHorizontal ctx,
-        yMin: bounds.yMin
-        yMax: bounds.yMax
-        y: @variable.getValue()
+        yMin: yMin
+        yMax: yMax
+        y: value
 
     ctx.strokeStyle = "#090"
     ctx.lineWidth = 1.5
@@ -221,6 +227,10 @@ R.create "PlotVariableView",
 
   componentDidUpdate: ->
     @refs.canvas.draw()
+
+  shouldComponentUpdate: ->
+    drawInfo = @getDrawInfo()
+    return !_.isEqual(drawInfo, @_lastDrawInfo)
 
   render: ->
     R.CanvasView {drawFn: @drawFn, ref: "canvas"}

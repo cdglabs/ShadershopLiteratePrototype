@@ -38,6 +38,7 @@ Cleanup
   Reordering applications could use more cleanup
   Will need to cleanup variable domain/range stuff when generalizing to more than R1 -> R1
   Unify startTransclude on VariableLabel and TranscludeLinkIndicator
+  Figure out a way to unify shouldComponentUpdate-thing on all the canvas views
 
 
 Robustness

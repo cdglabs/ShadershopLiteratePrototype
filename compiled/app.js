@@ -1678,22 +1678,36 @@
     propTypes: {
       variable: C.Variable
     },
+    getDrawInfo: function() {
+      var domain, value, xMax, xMin, yMax, yMin, _ref;
+      _ref = this.lookup("customFn").bounds, xMin = _ref.xMin, xMax = _ref.xMax, yMin = _ref.yMin, yMax = _ref.yMax;
+      domain = this.variable.domain;
+      value = this.variable.getValue();
+      return {
+        xMin: xMin,
+        xMax: xMax,
+        yMin: yMin,
+        yMax: yMax,
+        domain: domain,
+        value: value
+      };
+    },
     drawFn: function(canvas) {
-      var bounds, ctx;
-      bounds = this.lookup("customFn").bounds;
+      var ctx, domain, value, xMax, xMin, yMax, yMin, _ref;
+      _ref = this._lastDrawInfo = this.getDrawInfo(), xMin = _ref.xMin, xMax = _ref.xMax, yMin = _ref.yMin, yMax = _ref.yMax, domain = _ref.domain, value = _ref.value;
       ctx = canvas.getContext("2d");
       util.canvas.clear(ctx);
-      if (this.variable.domain === "domain") {
+      if (domain === "domain") {
         util.canvas.drawVertical(ctx, {
-          xMin: bounds.xMin,
-          xMax: bounds.xMax,
-          x: this.variable.getValue()
+          xMin: xMin,
+          xMax: xMax,
+          x: value
         });
-      } else if (this.variable.domain === "range") {
+      } else if (domain === "range") {
         util.canvas.drawHorizontal(ctx, {
-          yMin: bounds.yMin,
-          yMax: bounds.yMax,
-          y: this.variable.getValue()
+          yMin: yMin,
+          yMax: yMax,
+          y: value
         });
       }
       ctx.strokeStyle = "#090";
@@ -1702,6 +1716,11 @@
     },
     componentDidUpdate: function() {
       return this.refs.canvas.draw();
+    },
+    shouldComponentUpdate: function() {
+      var drawInfo;
+      drawInfo = this.getDrawInfo();
+      return !_.isEqual(drawInfo, this._lastDrawInfo);
     },
     render: function() {
       return R.CanvasView({
