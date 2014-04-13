@@ -2363,12 +2363,16 @@
         onBlur: function() {}
       };
     },
+    shouldComponentUpdate: function(nextProps) {
+      return this._isDirty || nextProps.value !== this.props.value;
+    },
     refresh: function() {
       var el;
       el = this.getDOMNode();
       if (el.textContent !== this.value) {
         el.textContent = this.value;
       }
+      this._isDirty = false;
       return UI.attemptAutoFocus(this);
     },
     componentDidMount: function() {
@@ -2379,6 +2383,7 @@
     },
     handleInput: function() {
       var el, newValue;
+      this._isDirty = true;
       el = this.getDOMNode();
       newValue = el.textContent;
       return this.onInput(newValue);

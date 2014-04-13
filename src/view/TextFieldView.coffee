@@ -18,10 +18,14 @@ R.create "TextFieldView",
       onBlur: ->
     }
 
+  shouldComponentUpdate: (nextProps) ->
+    return @_isDirty or nextProps.value != @props.value
+
   refresh: ->
     el = @getDOMNode()
     if el.textContent != @value
       el.textContent = @value
+    @_isDirty = false
 
     UI.attemptAutoFocus(this)
 
@@ -29,6 +33,7 @@ R.create "TextFieldView",
   componentDidUpdate: -> @refresh()
 
   handleInput: ->
+    @_isDirty = true
     el = @getDOMNode()
     newValue = el.textContent
     @onInput(newValue)
