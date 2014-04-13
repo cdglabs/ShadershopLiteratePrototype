@@ -3,9 +3,14 @@ R.create "VariableView",
     variable: C.Variable
 
   render: ->
-    R.div {className: "Variable"},
-      R.VariableLabelView {variable: @variable}
-      R.VariableValueView {variable: @variable}
+    className = R.cx {
+      Variable: true
+      Hovered: UI.hoverData?.variable == @variable
+    }
+    R.HoverCaptureView {hoverData: {variable: @variable}},
+      R.div {className: className},
+        R.VariableLabelView {variable: @variable}
+        R.VariableValueView {variable: @variable}
 
 
 # =============================================================================

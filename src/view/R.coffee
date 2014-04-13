@@ -82,6 +82,8 @@ R.create = (name, opts) ->
       propType = React.PropTypes.func
     else if propType == Array
       propType = React.PropTypes.array
+    else if propType == Object
+      propType = React.PropTypes.object
     else
       propType = React.PropTypes.instanceOf(propType)
 
@@ -102,6 +104,9 @@ R.create = (name, opts) ->
 # Include all the view code
 # =============================================================================
 
+require("./ui/TextFieldView")
+require("./ui/HoverCaptureView")
+
 require("./editor/EditorView")
 require("./editor/DraggingView")
 
@@ -110,7 +115,6 @@ require("./RootExprTreeView")
 require("./ProvisionalApplicationInternalsView")
 
 require("./VariableView")
-require("./TextFieldView")
 
 require("./plot/PlotView")
 require("./plot/CanvasView")

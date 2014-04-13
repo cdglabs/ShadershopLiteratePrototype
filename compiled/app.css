@@ -135,6 +135,9 @@ canvas {
   background-color: #fff;
   border-radius: 4px;
 }
+.Variable.Hovered {
+  background-color: #cfc;
+}
 .VariableLabel,
 .VariableValue {
   display: inline-block;

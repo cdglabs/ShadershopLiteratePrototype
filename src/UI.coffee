@@ -3,8 +3,9 @@ window.UI = UI = new class
     @dragging = null
     @autofocus = null
 
-    @hoveredWord = null
-    @activeWord = null
+    @hoverData = null
+    @hoverIsActive = false
+
     @activeTransclusionDropView = null
 
     @registerEvents()
@@ -34,6 +35,9 @@ window.UI = UI = new class
   handleWindowMouseUp: (e) =>
     @dragging?.onUp?(e)
     @dragging = null
+    if @hoverIsActive
+      @hoverData = null
+      @hoverIsActive = false
 
   getElementUnderMouse: ->
     draggingOverlayEl = document.querySelector(".draggingOverlay")

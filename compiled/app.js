@@ -58,8 +58,8 @@
       this.handleWindowMouseMove = __bind(this.handleWindowMouseMove, this);
       this.dragging = null;
       this.autofocus = null;
-      this.hoveredWord = null;
-      this.activeWord = null;
+      this.hoverData = null;
+      this.hoverIsActive = false;
       this.activeTransclusionDropView = null;
       this.registerEvents();
     }
@@ -90,7 +90,11 @@
           _ref.onUp(e);
         }
       }
-      return this.dragging = null;
+      this.dragging = null;
+      if (this.hoverIsActive) {
+        this.hoverData = null;
+        return this.hoverIsActive = false;
+      }
     };
 
     _Class.prototype.getElementUnderMouse = function() {
@@ -1960,6 +1964,8 @@
         propType = React.PropTypes.func;
       } else if (propType === Array) {
         propType = React.PropTypes.array;
+      } else if (propType === Object) {
+        propType = React.PropTypes.object;
       } else {
         propType = React.PropTypes.instanceOf(propType);
       }
@@ -1975,6 +1981,10 @@
     return R[name] = React.createClass(opts);
   };
 
+  require("./ui/TextFieldView");
+
+  require("./ui/HoverCaptureView");
+
   require("./editor/EditorView");
 
   require("./editor/DraggingView");
@@ -1986,8 +1996,6 @@
   require("./ProvisionalApplicationInternalsView");
 
   require("./VariableView");
-
-  require("./TextFieldView");
 
   require("./plot/PlotView");
 
@@ -2341,134 +2349,28 @@
   });
 
 }).call(this);
-}, "view/TextFieldView": function(exports, require, module) {(function() {
-  var findAdjacentHost;
-
-  R.create("TextFieldView", {
-    propTypes: {
-      value: String,
-      className: String,
-      onInput: Function,
-      onBackSpace: Function,
-      onFocus: Function,
-      onBlur: Function
-    },
-    getDefaultProps: function() {
-      return {
-        value: "",
-        className: "",
-        onInput: function(newValue) {},
-        onBackSpace: function() {},
-        onEnter: function() {},
-        onFocus: function() {},
-        onBlur: function() {}
-      };
-    },
-    shouldComponentUpdate: function(nextProps) {
-      return this._isDirty || nextProps.value !== this.props.value;
-    },
-    refresh: function() {
-      var el;
-      el = this.getDOMNode();
-      if (el.textContent !== this.value) {
-        el.textContent = this.value;
-      }
-      this._isDirty = false;
-      return UI.attemptAutoFocus(this);
-    },
-    componentDidMount: function() {
-      return this.refresh();
-    },
-    componentDidUpdate: function() {
-      return this.refresh();
-    },
-    handleInput: function() {
-      var el, newValue;
-      this._isDirty = true;
-      el = this.getDOMNode();
-      newValue = el.textContent;
-      return this.onInput(newValue);
-    },
-    handleKeyDown: function(e) {
-      var host, nextHost, previousHost;
-      host = util.selection.getHost();
-      if (e.keyCode === 37) {
-        if (util.selection.isAtStart()) {
-          previousHost = findAdjacentHost(host, -1);
-          if (previousHost) {
-            e.preventDefault();
-            return util.selection.setAtEnd(previousHost);
-          }
-        }
-      } else if (e.keyCode === 39) {
-        if (util.selection.isAtEnd()) {
-          nextHost = findAdjacentHost(host, 1);
-          if (nextHost) {
-            e.preventDefault();
-            return util.selection.setAtStart(nextHost);
-          }
-        }
-      } else if (e.keyCode === 8) {
-        if (util.selection.isAtStart()) {
-          e.preventDefault();
-          return this.onBackSpace();
-        }
-      } else if (e.keyCode === 13) {
-        e.preventDefault();
-        return this.onEnter();
-      }
-    },
-    handleFocus: function() {
-      return this.onFocus();
-    },
-    handleBlur: function() {
-      return this.onBlur();
-    },
-    selectAll: function() {
-      var el;
-      el = this.getDOMNode();
-      return util.selection.setAll(el);
-    },
-    isFocused: function() {
-      var el, host;
-      el = this.getDOMNode();
-      host = util.selection.getHost();
-      return el === host;
-    },
-    render: function() {
-      return R.div({
-        className: this.className,
-        contentEditable: true,
-        onInput: this.handleInput,
-        onKeyDown: this.handleKeyDown,
-        onFocus: this.handleFocus,
-        onBlur: this.handleBlur
-      });
-    }
-  });
-
-  findAdjacentHost = function(el, direction) {
-    var hosts, index;
-    hosts = document.querySelectorAll("[contenteditable]");
-    hosts = _.toArray(hosts);
-    index = hosts.indexOf(el);
-    return hosts[index + direction];
-  };
-
-}).call(this);
 }, "view/VariableView": function(exports, require, module) {(function() {
   R.create("VariableView", {
     propTypes: {
       variable: C.Variable
     },
     render: function() {
-      return R.div({
-        className: "Variable"
+      var className, _ref;
+      className = R.cx({
+        Variable: true,
+        Hovered: ((_ref = UI.hoverData) != null ? _ref.variable : void 0) === this.variable
+      });
+      return R.HoverCaptureView({
+        hoverData: {
+          variable: this.variable
+        }
+      }, R.div({
+        className: className
       }, R.VariableLabelView({
         variable: this.variable
       }), R.VariableValueView({
         variable: this.variable
-      }));
+      })));
     }
   });
 
@@ -2846,6 +2748,148 @@
       });
     }
   });
+
+}).call(this);
+}, "view/ui/HoverCaptureView": function(exports, require, module) {(function() {
+  R.create("HoverCaptureView", {
+    propTypes: {
+      hoverData: Object
+    },
+    handleMouseDown: function() {
+      return UI.hoverIsActive = true;
+    },
+    handleMouseEnter: function() {
+      return UI.hoverData = this.hoverData;
+    },
+    handleMouseLeave: function() {
+      if (UI.hoverIsActive) {
+        return;
+      }
+      return UI.hoverData = null;
+    },
+    render: function() {
+      return R.span({
+        onMouseDown: this.handleMouseDown,
+        onMouseEnter: this.handleMouseEnter,
+        onMouseLeave: this.handleMouseLeave
+      }, this.props.children);
+    }
+  });
+
+}).call(this);
+}, "view/ui/TextFieldView": function(exports, require, module) {(function() {
+  var findAdjacentHost;
+
+  R.create("TextFieldView", {
+    propTypes: {
+      value: String,
+      className: String,
+      onInput: Function,
+      onBackSpace: Function,
+      onFocus: Function,
+      onBlur: Function
+    },
+    getDefaultProps: function() {
+      return {
+        value: "",
+        className: "",
+        onInput: function(newValue) {},
+        onBackSpace: function() {},
+        onEnter: function() {},
+        onFocus: function() {},
+        onBlur: function() {}
+      };
+    },
+    shouldComponentUpdate: function(nextProps) {
+      return this._isDirty || nextProps.value !== this.props.value;
+    },
+    refresh: function() {
+      var el;
+      el = this.getDOMNode();
+      if (el.textContent !== this.value) {
+        el.textContent = this.value;
+      }
+      this._isDirty = false;
+      return UI.attemptAutoFocus(this);
+    },
+    componentDidMount: function() {
+      return this.refresh();
+    },
+    componentDidUpdate: function() {
+      return this.refresh();
+    },
+    handleInput: function() {
+      var el, newValue;
+      this._isDirty = true;
+      el = this.getDOMNode();
+      newValue = el.textContent;
+      return this.onInput(newValue);
+    },
+    handleKeyDown: function(e) {
+      var host, nextHost, previousHost;
+      host = util.selection.getHost();
+      if (e.keyCode === 37) {
+        if (util.selection.isAtStart()) {
+          previousHost = findAdjacentHost(host, -1);
+          if (previousHost) {
+            e.preventDefault();
+            return util.selection.setAtEnd(previousHost);
+          }
+        }
+      } else if (e.keyCode === 39) {
+        if (util.selection.isAtEnd()) {
+          nextHost = findAdjacentHost(host, 1);
+          if (nextHost) {
+            e.preventDefault();
+            return util.selection.setAtStart(nextHost);
+          }
+        }
+      } else if (e.keyCode === 8) {
+        if (util.selection.isAtStart()) {
+          e.preventDefault();
+          return this.onBackSpace();
+        }
+      } else if (e.keyCode === 13) {
+        e.preventDefault();
+        return this.onEnter();
+      }
+    },
+    handleFocus: function() {
+      return this.onFocus();
+    },
+    handleBlur: function() {
+      return this.onBlur();
+    },
+    selectAll: function() {
+      var el;
+      el = this.getDOMNode();
+      return util.selection.setAll(el);
+    },
+    isFocused: function() {
+      var el, host;
+      el = this.getDOMNode();
+      host = util.selection.getHost();
+      return el === host;
+    },
+    render: function() {
+      return R.div({
+        className: this.className,
+        contentEditable: true,
+        onInput: this.handleInput,
+        onKeyDown: this.handleKeyDown,
+        onFocus: this.handleFocus,
+        onBlur: this.handleBlur
+      });
+    }
+  });
+
+  findAdjacentHost = function(el, direction) {
+    var hosts, index;
+    hosts = document.querySelectorAll("[contenteditable]");
+    hosts = _.toArray(hosts);
+    index = hosts.indexOf(el);
+    return hosts[index + direction];
+  };
 
 }).call(this);
 }});

@@ -16,7 +16,7 @@ Priorities
 
 
 Variable
-  hovered variable
+  deal with hover in main plot
   right click menu
     unsync
     change domain
