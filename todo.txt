@@ -11,11 +11,19 @@ Priorities
 
 
 
-Highlight plot variables in some way if they're hovered
 Unify scrub in VariableValueView and MainPlotView
 Have scrub save original value
 Use original value for spread
 
+
+
+
+
+Change Editor to Workspace
+Workspace has a list of CustomFn's and Paragraphs
+Insert new (CustomFn or Paragraph) between any other two
+Remove
+Move down/up
 
 
 
