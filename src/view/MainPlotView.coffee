@@ -229,7 +229,8 @@ R.create "PlotVariableView",
     {xMin, xMax, yMin, yMax} = @lookup("customFn").bounds
     domain = @variable.domain
     value = @variable.getValue()
-    return {xMin, xMax, yMin, yMax, domain, value}
+    hovered = (@variable == UI.hoverData?.variable)
+    return {xMin, xMax, yMin, yMax, domain, value, hovered}
 
   drawFn: (canvas) ->
     {xMin, xMax, yMin, yMax, domain, value} = @_lastDrawInfo = @getDrawInfo()
@@ -247,8 +248,12 @@ R.create "PlotVariableView",
         yMax: yMax
         y: value
 
-    ctx.strokeStyle = "#090"
-    ctx.lineWidth = config.mainLineWidth
+    if (@variable == UI.hoverData?.variable)
+      style = config.style.hoveredVariable
+    else
+      style = config.style.variable
+    util.canvas.setStyle(ctx, style)
+
     ctx.stroke()
 
   componentDidUpdate: ->

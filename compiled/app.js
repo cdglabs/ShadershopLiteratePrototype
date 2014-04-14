@@ -415,7 +415,7 @@
 }, "config": function(exports, require, module) {(function() {
   var config, mainLineWidth;
 
-  mainLineWidth = 1.25;
+  mainLineWidth = 1.2;
 
   window.config = config = {
     storageName: "spaceshader4",
@@ -449,6 +449,16 @@
       spreadNegativeExpr: {
         strokeStyle: "#009",
         lineWidth: mainLineWidth,
+        lineCap: "round"
+      },
+      variable: {
+        strokeStyle: "rgba(77,158,51,0.5)",
+        lineWidth: 1,
+        lineCap: "round"
+      },
+      hoveredVariable: {
+        strokeStyle: "rgba(77,158,51,1)",
+        lineWidth: 2,
         lineCap: "round"
       }
     },
@@ -1105,9 +1115,9 @@
     };
     labelDistance = 5;
     color = config.gridColor;
-    minorOpacity = 0.3;
-    majorOpacity = 0.4;
-    axesOpacity = 1.0;
+    minorOpacity = 0.075;
+    majorOpacity = 0.1;
+    axesOpacity = 0.25;
     labelOpacity = 1.0;
     textHeight = 12;
     minorColor = "rgba(" + color + ", " + minorOpacity + ")";
@@ -1115,7 +1125,7 @@
     axesColor = "rgba(" + color + ", " + axesOpacity + ")";
     labelColor = "rgba(" + color + ", " + labelOpacity + ")";
     ctx.save();
-    ctx.lineWidth = 0.25;
+    ctx.lineWidth = 1;
     ctx.strokeStyle = minorColor;
     _ref1 = ticks(smallSpacing, xMin, xMax);
     for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
@@ -1839,21 +1849,23 @@
       variable: C.Variable
     },
     getDrawInfo: function() {
-      var domain, value, xMax, xMin, yMax, yMin, _ref;
+      var domain, hovered, value, xMax, xMin, yMax, yMin, _ref, _ref1;
       _ref = this.lookup("customFn").bounds, xMin = _ref.xMin, xMax = _ref.xMax, yMin = _ref.yMin, yMax = _ref.yMax;
       domain = this.variable.domain;
       value = this.variable.getValue();
+      hovered = this.variable === ((_ref1 = UI.hoverData) != null ? _ref1.variable : void 0);
       return {
         xMin: xMin,
         xMax: xMax,
         yMin: yMin,
         yMax: yMax,
         domain: domain,
-        value: value
+        value: value,
+        hovered: hovered
       };
     },
     drawFn: function(canvas) {
-      var ctx, domain, value, xMax, xMin, yMax, yMin, _ref;
+      var ctx, domain, style, value, xMax, xMin, yMax, yMin, _ref, _ref1;
       _ref = this._lastDrawInfo = this.getDrawInfo(), xMin = _ref.xMin, xMax = _ref.xMax, yMin = _ref.yMin, yMax = _ref.yMax, domain = _ref.domain, value = _ref.value;
       ctx = canvas.getContext("2d");
       util.canvas.clear(ctx);
@@ -1870,8 +1882,12 @@
           y: value
         });
       }
-      ctx.strokeStyle = "#090";
-      ctx.lineWidth = config.mainLineWidth;
+      if (this.variable === ((_ref1 = UI.hoverData) != null ? _ref1.variable : void 0)) {
+        style = config.style.hoveredVariable;
+      } else {
+        style = config.style.variable;
+      }
+      util.canvas.setStyle(ctx, style);
       return ctx.stroke();
     },
     componentDidUpdate: function() {

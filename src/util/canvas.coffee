@@ -190,9 +190,9 @@ drawGrid = (ctx, opts) ->
 
   labelDistance = 5
   color = config.gridColor
-  minorOpacity = 0.3
-  majorOpacity = 0.4
-  axesOpacity = 1.0
+  minorOpacity = 0.075
+  majorOpacity = 0.1
+  axesOpacity = 0.25
   labelOpacity = 1.0
   textHeight = 12
 
@@ -202,7 +202,7 @@ drawGrid = (ctx, opts) ->
   labelColor = "rgba(#{color}, #{labelOpacity})"
 
   ctx.save()
-  ctx.lineWidth = 0.25
+  ctx.lineWidth = 1
 
 
   # draw minor grid lines

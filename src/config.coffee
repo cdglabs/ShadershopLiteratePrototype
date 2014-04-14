@@ -1,4 +1,4 @@
-mainLineWidth = 1.25
+mainLineWidth = 1.2
 
 
 window.config = config = {
@@ -40,6 +40,18 @@ window.config = config = {
     spreadNegativeExpr: {
       strokeStyle: "#009"
       lineWidth: mainLineWidth
+      lineCap: "round"
+    }
+    variable: {
+      strokeStyle: "rgba(77,158,51,0.5)"
+      # strokeStyle: "rgba(0,153,0,0.5)"
+      lineWidth: 1
+      lineCap: "round"
+    }
+    hoveredVariable: {
+      strokeStyle: "rgba(77,158,51,1)"
+      # strokeStyle: "rgba(0,153,0,1)"
+      lineWidth: 2
       lineCap: "round"
     }
   }
