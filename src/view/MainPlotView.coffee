@@ -124,7 +124,9 @@ R.create "MainPlotView",
       style: {cursor: @cursor()}
     },
       R.GridView {customFn: @customFn}
-      R.PlotView {expr: @customFn.rootExprs[0], style: "mainExpr"}
+
+      R.PlotWithSpreadView {expr: @customFn.rootExprs[0]}
+
       if UI.hoverData?.expr and UI.hoverData?.customFn == @customFn
         R.PlotWithParametersView {expr: UI.hoverData.expr}
       for variable in @getDisplayVariables()
@@ -133,17 +135,69 @@ R.create "MainPlotView",
 
 # =============================================================================
 
+Compiler = require("../../compile/Compiler")
+
+R.create "PlotWithSpreadView",
+  propTypes:
+    expr: C.Expr
+
+  renderSpreads: ->
+    spreadVariable = UI.hoverData?.variable
+    return unless spreadVariable
+
+    customFn = @lookup("customFn")
+    return unless UI.hoverData?.customFn == customFn
+
+    xVariable = customFn.paramVariables[0]
+    return if xVariable == spreadVariable
+
+    spreadDistance = 0.5
+    spreadNum = 5
+
+    views = []
+
+    for i in [1...spreadNum]
+      for neg in [-1, 1]
+        if neg == -1
+          style = _.clone(config.style.spreadNegativeExpr)
+        else
+          style = _.clone(config.style.spreadPositiveExpr)
+        style.globalAlpha = util.lerp(i, 1, spreadNum, config.spreadOpacityMax, config.spreadOpacityMin)
+        spreadOffset = spreadDistance * i * neg
+
+        spreadValue = spreadVariable.getValue() + spreadOffset
+
+        compiler = new Compiler()
+
+        compiler.substitute(xVariable, "x")
+        compiler.substitute(spreadVariable, ""+spreadValue)
+
+        fnString = compiler.compile(@expr)
+        fnString = "(function (x) { return #{fnString} ; })"
+
+        view = R.PlotCartesianView {fnString, style}
+        views.push(view)
+
+    return views
+
+  render: ->
+    R.span {},
+      @renderSpreads()
+      R.PlotView {expr: @expr, style: config.style.mainExpr}
+
+# =============================================================================
+
 R.create "PlotWithParametersView",
   propTypes:
     expr: C.Expr
 
   render: ->
-    style = if UI.hoverData?.expr == @expr then "hoveredExpr" else "mainExpr"
+    style = if UI.hoverData?.expr == @expr then config.style.hoveredExpr else config.style.mainExpr
     R.span {},
       # Parameters
       if @expr instanceof C.Application
         @expr.paramExprs.map (paramExpr) =>
-          R.PlotView {expr: paramExpr, style: "paramExpr"}
+          R.PlotView {expr: paramExpr, style: config.style.paramExpr}
       # Expr itself
       R.PlotView {expr: @expr, style: style}
 

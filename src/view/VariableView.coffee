@@ -7,7 +7,7 @@ R.create "VariableView",
       Variable: true
       Hovered: UI.hoverData?.variable == @variable
     }
-    R.HoverCaptureView {hoverData: {variable: @variable}},
+    R.HoverCaptureView {hoverData: {variable: @variable, customFn: @lookup("customFn")}},
       R.div {className: className},
         R.VariableLabelView {variable: @variable}
         R.VariableValueView {variable: @variable}

@@ -9,7 +9,6 @@ module.exports = class Compiler
 
 
   compile: (expr) ->
-    # TODO: Doesn't work with calling other CustomFn's yet.
     id = C.id(expr)
 
     if found = @substitutions[id]

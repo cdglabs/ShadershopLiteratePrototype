@@ -437,11 +437,23 @@
         lineCap: "round"
       },
       paramExpr: {
-        strokeStyle: "#bbb",
+        strokeStyle: "#ccc",
+        lineWidth: mainLineWidth,
+        lineCap: "round"
+      },
+      spreadPositiveExpr: {
+        strokeStyle: "#900",
+        lineWidth: mainLineWidth,
+        lineCap: "round"
+      },
+      spreadNegativeExpr: {
+        strokeStyle: "#009",
         lineWidth: mainLineWidth,
         lineCap: "round"
       }
     },
+    spreadOpacityMax: 0.2,
+    spreadOpacityMin: 0.02,
     cursor: {
       text: "text",
       grab: "-webkit-grab",
@@ -1539,6 +1551,8 @@
 
 }).call(this);
 }, "view/MainPlotView": function(exports, require, module) {(function() {
+  var Compiler;
+
   R.create("MainPlotView", {
     propTypes: {
       customFn: C.CustomFn
@@ -1696,9 +1710,8 @@
         }
       }, R.GridView({
         customFn: this.customFn
-      }), R.PlotView({
-        expr: this.customFn.rootExprs[0],
-        style: "mainExpr"
+      }), R.PlotWithSpreadView({
+        expr: this.customFn.rootExprs[0]
       }), ((_ref = UI.hoverData) != null ? _ref.expr : void 0) && ((_ref1 = UI.hoverData) != null ? _ref1.customFn : void 0) === this.customFn ? R.PlotWithParametersView({
         expr: UI.hoverData.expr
       }) : void 0, (function() {
@@ -1716,18 +1729,75 @@
     }
   });
 
+  Compiler = require("../../compile/Compiler");
+
+  R.create("PlotWithSpreadView", {
+    propTypes: {
+      expr: C.Expr
+    },
+    renderSpreads: function() {
+      var compiler, customFn, fnString, i, neg, spreadDistance, spreadNum, spreadOffset, spreadValue, spreadVariable, style, view, views, xVariable, _i, _j, _len, _ref, _ref1, _ref2;
+      spreadVariable = (_ref = UI.hoverData) != null ? _ref.variable : void 0;
+      if (!spreadVariable) {
+        return;
+      }
+      customFn = this.lookup("customFn");
+      if (((_ref1 = UI.hoverData) != null ? _ref1.customFn : void 0) !== customFn) {
+        return;
+      }
+      xVariable = customFn.paramVariables[0];
+      if (xVariable === spreadVariable) {
+        return;
+      }
+      spreadDistance = 0.5;
+      spreadNum = 5;
+      views = [];
+      for (i = _i = 1; 1 <= spreadNum ? _i < spreadNum : _i > spreadNum; i = 1 <= spreadNum ? ++_i : --_i) {
+        _ref2 = [-1, 1];
+        for (_j = 0, _len = _ref2.length; _j < _len; _j++) {
+          neg = _ref2[_j];
+          if (neg === -1) {
+            style = _.clone(config.style.spreadNegativeExpr);
+          } else {
+            style = _.clone(config.style.spreadPositiveExpr);
+          }
+          style.globalAlpha = util.lerp(i, 1, spreadNum, config.spreadOpacityMax, config.spreadOpacityMin);
+          spreadOffset = spreadDistance * i * neg;
+          spreadValue = spreadVariable.getValue() + spreadOffset;
+          compiler = new Compiler();
+          compiler.substitute(xVariable, "x");
+          compiler.substitute(spreadVariable, "" + spreadValue);
+          fnString = compiler.compile(this.expr);
+          fnString = "(function (x) { return " + fnString + " ; })";
+          view = R.PlotCartesianView({
+            fnString: fnString,
+            style: style
+          });
+          views.push(view);
+        }
+      }
+      return views;
+    },
+    render: function() {
+      return R.span({}, this.renderSpreads(), R.PlotView({
+        expr: this.expr,
+        style: config.style.mainExpr
+      }));
+    }
+  });
+
   R.create("PlotWithParametersView", {
     propTypes: {
       expr: C.Expr
     },
     render: function() {
       var style, _ref;
-      style = ((_ref = UI.hoverData) != null ? _ref.expr : void 0) === this.expr ? "hoveredExpr" : "mainExpr";
+      style = ((_ref = UI.hoverData) != null ? _ref.expr : void 0) === this.expr ? config.style.hoveredExpr : config.style.mainExpr;
       return R.span({}, this.expr instanceof C.Application ? this.expr.paramExprs.map((function(_this) {
         return function(paramExpr) {
           return R.PlotView({
             expr: paramExpr,
-            style: "paramExpr"
+            style: config.style.paramExpr
           });
         };
       })(this)) : void 0, R.PlotView({
@@ -2058,6 +2128,8 @@
   require("./VariableView");
 
   require("./plot/PlotView");
+
+  require("./plot/PlotCartesianView");
 
   require("./plot/CanvasView");
 
@@ -2432,7 +2504,8 @@
       });
       return R.HoverCaptureView({
         hoverData: {
-          variable: this.variable
+          variable: this.variable,
+          customFn: this.lookup("customFn")
         }
       }, R.div({
         className: className
@@ -2732,6 +2805,56 @@
   });
 
 }).call(this);
+}, "view/plot/PlotCartesianView": function(exports, require, module) {(function() {
+  var evaluate, evaluateDiscontinuity;
+
+  evaluate = require("../../compile/evaluate");
+
+  evaluateDiscontinuity = require("../../compile/evaluateDiscontinuity");
+
+  R.create("PlotCartesianView", {
+    propTypes: {
+      fnString: String,
+      style: Object
+    },
+    getBounds: function() {
+      var customFn;
+      customFn = this.lookup("customFn");
+      return customFn.bounds;
+    },
+    drawFn: function(canvas) {
+      var ctx, fn, testDiscontinuity, xMax, xMin, yMax, yMin, _ref;
+      ctx = canvas.getContext("2d");
+      fn = evaluate(this.fnString);
+      testDiscontinuity = null;
+      util.canvas.clear(ctx);
+      _ref = this.getBounds(), xMin = _ref.xMin, xMax = _ref.xMax, yMin = _ref.yMin, yMax = _ref.yMax;
+      util.canvas.drawCartesian(ctx, {
+        xMin: xMin,
+        xMax: xMax,
+        yMin: yMin,
+        yMax: yMax,
+        fn: fn,
+        testDiscontinuity: testDiscontinuity
+      });
+      util.canvas.setStyle(ctx, this.style);
+      return ctx.stroke();
+    },
+    shouldComponentUpdate: function(nextProps) {
+      return nextProps.fnString !== this.fnString || !_.isEqual(nextProps.style, this.style);
+    },
+    componentDidUpdate: function() {
+      return this.refs.canvas.draw();
+    },
+    render: function() {
+      return R.CanvasView({
+        drawFn: this.drawFn,
+        ref: "canvas"
+      });
+    }
+  });
+
+}).call(this);
 }, "view/plot/PlotView": function(exports, require, module) {(function() {
   var Compiler, evaluate, evaluateDiscontinuity;
 
@@ -2744,7 +2867,7 @@
   R.create("PlotView", {
     propTypes: {
       expr: C.Expr,
-      style: String
+      style: Object
     },
     compile: function() {
       var compiled, compiler, customFn, xVariable;
@@ -2758,63 +2881,10 @@
       compiled = compiler.compile(this.expr);
       return compiled = "(function (x) { return " + compiled + " ; })";
     },
-    getBounds: function() {
-      var customFn;
-      customFn = this.lookup("customFn");
-      return customFn.bounds;
-    },
-    drawFn: function(canvas) {
-      var compiled, ctx, fn, isDiscontinuous, testDiscontinuity, testDiscontinuityHelper, xMax, xMin, yMax, yMin, _ref;
-      ctx = canvas.getContext("2d");
-      compiled = this.compile();
-      if (!compiled) {
-        return;
-      }
-      fn = evaluate(compiled);
-      isDiscontinuous = /floor\(|ceil\(|fract\(/.test(compiled);
-      if (isDiscontinuous) {
-        testDiscontinuityHelper = evaluateDiscontinuity(compiled);
-        testDiscontinuity = function(range) {
-          return testDiscontinuityHelper(range) === "found";
-        };
-      } else {
-        testDiscontinuity = null;
-      }
-      testDiscontinuity = null;
-      util.canvas.clear(ctx);
-      _ref = this.getBounds(), xMin = _ref.xMin, xMax = _ref.xMax, yMin = _ref.yMin, yMax = _ref.yMax;
-      util.canvas.drawCartesian(ctx, {
-        xMin: xMin,
-        xMax: xMax,
-        yMin: yMin,
-        yMax: yMax,
-        fn: fn,
-        testDiscontinuity: testDiscontinuity
-      });
-      util.canvas.setStyle(ctx, config.style[this.style]);
-      return ctx.stroke();
-    },
-    componentDidUpdate: function() {
-      var compileString, drawParameters, xMax, xMin, yMax, yMin, _ref;
-      _ref = this.getBounds(), xMin = _ref.xMin, xMax = _ref.xMax, yMin = _ref.yMin, yMax = _ref.yMax;
-      compileString = this.compile();
-      drawParameters = {
-        xMin: xMin,
-        xMax: xMax,
-        yMin: yMin,
-        yMax: yMax,
-        compileString: compileString,
-        style: this.style
-      };
-      if (!_.isEqual(drawParameters, this._previousDrawParameters)) {
-        this.refs.canvas.draw();
-      }
-      return this._previousDrawParameters = drawParameters;
-    },
     render: function() {
-      return R.CanvasView({
-        drawFn: this.drawFn,
-        ref: "canvas"
+      return R.PlotCartesianView({
+        fnString: this.compile(),
+        style: this.style
       });
     }
   });

@@ -28,11 +28,25 @@ window.config = config = {
       lineCap: "round"
     }
     paramExpr: {
-      strokeStyle: "#bbb"
+      strokeStyle: "#ccc"
+      lineWidth: mainLineWidth
+      lineCap: "round"
+    }
+    spreadPositiveExpr: {
+      strokeStyle: "#900"
+      lineWidth: mainLineWidth
+      lineCap: "round"
+    }
+    spreadNegativeExpr: {
+      strokeStyle: "#009"
       lineWidth: mainLineWidth
       lineCap: "round"
     }
   }
+
+  spreadOpacityMax: 0.2
+  spreadOpacityMin: 0.02
+
 
   cursor: {
     text: "text"

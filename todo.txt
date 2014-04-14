@@ -7,6 +7,8 @@ Priorities
   + button autofocuses
   Undo
   Show spread with hovered variable
+    Figure out a "scaling" for scrubbing
+
   Show number values on top of plot
 
 

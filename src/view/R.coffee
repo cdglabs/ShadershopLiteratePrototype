@@ -118,5 +118,6 @@ require("./ProvisionalApplicationInternalsView")
 require("./VariableView")
 
 require("./plot/PlotView")
+require("./plot/PlotCartesianView")
 require("./plot/CanvasView")
 require("./plot/GridView")
