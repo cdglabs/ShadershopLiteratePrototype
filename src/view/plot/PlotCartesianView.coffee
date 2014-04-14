@@ -41,9 +41,13 @@ R.create "PlotCartesianView",
 
 
   shouldComponentUpdate: (nextProps) ->
-    return nextProps.fnString != @fnString or !_.isEqual(nextProps.style, @style)
+    return true if nextProps.fnString != @fnString
+    return true if !_.isEqual(nextProps.style, @style)
+    return true if !_.isEqual(@getBounds(), @_lastBounds)
+    return false
 
   componentDidUpdate: ->
+    @_lastBounds = _.clone(@getBounds())
     @refs.canvas.draw()
 
   render: ->

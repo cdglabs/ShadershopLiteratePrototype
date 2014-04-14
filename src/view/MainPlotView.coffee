@@ -87,6 +87,7 @@ R.create "MainPlotView",
     return found
 
   startScrub: (variable, e) ->
+    UI.hoverIsActive = true
     UI.dragging = {
       cursor: @cursor()
       onMove: (e) =>
@@ -116,10 +117,24 @@ R.create "MainPlotView",
         return config.cursor.verticalScrub if variable.domain == "range"
     return config.cursor.grab
 
+  handleMouseMove: ->
+    return if UI.hoverIsActive
+    variable = @hitDetect()
+    if variable
+      UI.hoverData = {variable, customFn: @customFn}
+    else
+      UI.hoverData = null
+
+  handleMouseLeave: ->
+    return if UI.hoverIsActive
+    UI.hoverData = null
+
   render: ->
     R.div {
       className: "MainPlot"
       onMouseDown: @handleMouseDown
+      onMouseMove: @handleMouseMove
+      onMouseLeave: @handleMouseLeave
       onWheel: @handleWheel
       style: {cursor: @cursor()}
     },
@@ -142,6 +157,8 @@ R.create "PlotWithSpreadView",
     expr: C.Expr
 
   renderSpreads: ->
+    return if UI.hoverIsActive
+
     spreadVariable = UI.hoverData?.variable
     return unless spreadVariable
 

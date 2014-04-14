@@ -11,7 +11,7 @@ window.config = config = {
 
   # In pixels:
   minGridSpacing: 70
-  hitTolerance: 15
+  hitTolerance: 10
   snapTolerance: 5
 
   gridColor: "204,194,163"

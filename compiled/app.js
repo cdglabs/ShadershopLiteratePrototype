@@ -422,7 +422,7 @@
     resolution: 0.5,
     mainLineWidth: 1.25,
     minGridSpacing: 70,
-    hitTolerance: 15,
+    hitTolerance: 10,
     snapTolerance: 5,
     gridColor: "204,194,163",
     style: {
@@ -1659,6 +1659,7 @@
       return found;
     },
     startScrub: function(variable, e) {
+      UI.hoverIsActive = true;
       return UI.dragging = {
         cursor: this.cursor(),
         onMove: (function(_this) {
@@ -1699,11 +1700,34 @@
       }
       return config.cursor.grab;
     },
+    handleMouseMove: function() {
+      var variable;
+      if (UI.hoverIsActive) {
+        return;
+      }
+      variable = this.hitDetect();
+      if (variable) {
+        return UI.hoverData = {
+          variable: variable,
+          customFn: this.customFn
+        };
+      } else {
+        return UI.hoverData = null;
+      }
+    },
+    handleMouseLeave: function() {
+      if (UI.hoverIsActive) {
+        return;
+      }
+      return UI.hoverData = null;
+    },
     render: function() {
       var variable, _ref, _ref1;
       return R.div({
         className: "MainPlot",
         onMouseDown: this.handleMouseDown,
+        onMouseMove: this.handleMouseMove,
+        onMouseLeave: this.handleMouseLeave,
         onWheel: this.handleWheel,
         style: {
           cursor: this.cursor()
@@ -1737,6 +1761,9 @@
     },
     renderSpreads: function() {
       var compiler, customFn, fnString, i, neg, spreadDistance, spreadNum, spreadOffset, spreadValue, spreadVariable, style, view, views, xVariable, _i, _j, _len, _ref, _ref1, _ref2;
+      if (UI.hoverIsActive) {
+        return;
+      }
       spreadVariable = (_ref = UI.hoverData) != null ? _ref.variable : void 0;
       if (!spreadVariable) {
         return;
@@ -2841,9 +2868,19 @@
       return ctx.stroke();
     },
     shouldComponentUpdate: function(nextProps) {
-      return nextProps.fnString !== this.fnString || !_.isEqual(nextProps.style, this.style);
+      if (nextProps.fnString !== this.fnString) {
+        return true;
+      }
+      if (!_.isEqual(nextProps.style, this.style)) {
+        return true;
+      }
+      if (!_.isEqual(this.getBounds(), this._lastBounds)) {
+        return true;
+      }
+      return false;
     },
     componentDidUpdate: function() {
+      this._lastBounds = _.clone(this.getBounds());
       return this.refs.canvas.draw();
     },
     render: function() {
