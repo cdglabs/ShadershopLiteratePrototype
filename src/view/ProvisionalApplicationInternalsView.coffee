@@ -82,15 +82,19 @@ R.create "ApplicationAutoCompleteRowView",
 
   handleMouseEnter: ->
     @application.setStagedApplication(@possibleApplication)
+    if @application.paramExprs.length > 1
+      UI.hoverData = {variable: @application.paramExprs[1], customFn: @lookup("customFn")}
 
   handleMouseLeave: ->
     @application.clearStagedApplication()
+    UI.hoverData = null
 
   handleMouseDown: (e) ->
     e.preventDefault() # Don't steal focus from the text field
 
   handleClick: ->
     @application.commitApplication()
+    UI.hoverData = null
 
   render: ->
     R.div {

@@ -150,7 +150,7 @@ canvas {
   border-radius: 4px;
 }
 .Variable.Hovered {
-  background-color: #cfc;
+  background-color: #cdffbd;
 }
 .VariableLabel,
 .VariableValue {
@@ -216,6 +216,12 @@ canvas {
 }
 .ApplicationAutoComplete .ApplicationAutoCompleteRow {
   cursor: pointer;
+}
+.ApplicationAutoComplete .ApplicationAutoCompleteRow:hover {
+  background-color: #e5f4f9;
+}
+.ApplicationAutoComplete .ApplicationAutoCompleteRow > * {
+  pointer-events: none;
 }
 .CreateExprButton,
 .CreateRootExprButton,

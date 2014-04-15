@@ -1776,7 +1776,7 @@
       return UI.hoverData = null;
     },
     render: function() {
-      var variable, _ref, _ref1;
+      var variable, _ref, _ref1, _ref2;
       return R.div({
         className: "MainPlot",
         onMouseDown: this.handleMouseDown,
@@ -1803,7 +1803,9 @@
           }));
         }
         return _results;
-      }).call(this));
+      }).call(this), ((_ref2 = UI.hoverData) != null ? _ref2.variable : void 0) && !_.contains(this.getDisplayVariables(), UI.hoverData.variable) ? R.PlotVariableView({
+        variable: UI.hoverData.variable
+      }) : void 0);
     }
   });
 
@@ -2050,16 +2052,24 @@
       possibleApplication: C.Application
     },
     handleMouseEnter: function() {
-      return this.application.setStagedApplication(this.possibleApplication);
+      this.application.setStagedApplication(this.possibleApplication);
+      if (this.application.paramExprs.length > 1) {
+        return UI.hoverData = {
+          variable: this.application.paramExprs[1],
+          customFn: this.lookup("customFn")
+        };
+      }
     },
     handleMouseLeave: function() {
-      return this.application.clearStagedApplication();
+      this.application.clearStagedApplication();
+      return UI.hoverData = null;
     },
     handleMouseDown: function(e) {
       return e.preventDefault();
     },
     handleClick: function() {
-      return this.application.commitApplication();
+      this.application.commitApplication();
+      return UI.hoverData = null;
     },
     render: function() {
       return R.div({

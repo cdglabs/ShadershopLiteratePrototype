@@ -5,6 +5,7 @@ Priorities
     Waveforms
     Noise
   + button autofocuses
+  up down arrow keys for autocomplete
   Undo
 
 

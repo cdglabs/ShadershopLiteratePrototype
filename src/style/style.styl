@@ -4,6 +4,7 @@
 
 highlightColor = #09c
 plotBackgroundColor = #FAF8F2
+variableColor = #CDFFBD
 
 PlusButtonSize = 14px
 
@@ -175,7 +176,7 @@ canvas
   background-color #fff
   border-radius 4px
   &.Hovered
-    background-color #cfc
+    background-color variableColor
 
 .VariableLabel, .VariableValue
   inline(middle)
@@ -253,6 +254,10 @@ canvas
 
   .ApplicationAutoCompleteRow
     cursor pointer
+    &:hover
+      background-color tint(highlightColor, 90%)
+    > *
+      pointer-events none
 
 
 
