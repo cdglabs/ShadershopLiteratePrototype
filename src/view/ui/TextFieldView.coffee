@@ -6,6 +6,7 @@ R.create "TextFieldView",
     onBackSpace: Function
     onFocus: Function
     onBlur: Function
+    allowEnter: Boolean
   }
   getDefaultProps: ->
     {
@@ -16,6 +17,7 @@ R.create "TextFieldView",
       onEnter: ->
       onFocus: ->
       onBlur: ->
+      allowEnter: false
     }
 
   shouldComponentUpdate: (nextProps) ->
@@ -60,8 +62,9 @@ R.create "TextFieldView",
         @onBackSpace()
 
     else if e.keyCode == 13 # enter
-      e.preventDefault()
-      @onEnter()
+      unless @allowEnter
+        e.preventDefault()
+        @onEnter()
 
   handleFocus: ->
     @onFocus()

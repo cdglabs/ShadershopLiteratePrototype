@@ -904,17 +904,19 @@
 
   })(C.Fn);
 
-  C.Workspace = (function() {
-    function Workspace() {
-      this.customFns = [];
-      this.createCustomFn();
+  C.Paragraph = (function() {
+    function Paragraph() {
+      this.text = "";
     }
 
-    Workspace.prototype.createCustomFn = function() {
-      var customFn;
-      customFn = new C.CustomFn();
-      return this.customFns.push(customFn);
-    };
+    return Paragraph;
+
+  })();
+
+  C.Workspace = (function() {
+    function Workspace() {
+      this.workspaceEntries = [new C.CustomFn()];
+    }
 
     Workspace.prototype.getAvailableFns = function(originCustomFn) {
       var customFns, fns;
@@ -923,7 +925,12 @@
           return new C.BuiltInFn(definition.fnName);
         };
       })(this));
-      customFns = _.reject(this.customFns, (function(_this) {
+      customFns = _.filter(this.workspaceEntries, (function(_this) {
+        return function(workspaceEntry) {
+          return workspaceEntry instanceof C.CustomFn;
+        };
+      })(this));
+      customFns = _.reject(customFns, (function(_this) {
         return function(customFn) {
           var customFnDependencies;
           customFnDependencies = customFn.getCustomFnDependencies();
@@ -2879,34 +2886,82 @@
     propTypes: {
       workspace: C.Workspace
     },
-    handleCreateCustomFnClick: function() {
-      return this.workspace.createCustomFn();
-    },
     render: function() {
       return R.div({
         className: "Workspace"
-      }, R.div({
-        className: "customFns"
-      }, this.workspace.customFns.map((function(_this) {
-        return function(customFn) {
+      }, R.WorkspaceExtrasView({
+        workspace: this.workspace,
+        workspaceIndex: -1
+      }), this.workspace.workspaceEntries.map((function(_this) {
+        return function(workspaceEntry, workspaceIndex) {
           return R.div({
-            className: "WorkspaceEntry"
-          }, R.CustomFnView({
-            customFn: customFn
-          }), R.WorkspaceExtrasView({
-            workspaceEntry: customFn
+            className: "WorkspaceEntry",
+            key: C.id(workspaceEntry)
+          }, workspaceEntry instanceof C.CustomFn ? R.CustomFnView({
+            customFn: workspaceEntry
+          }) : workspaceEntry instanceof C.Paragraph ? R.ParagraphView({
+            paragraph: workspaceEntry
+          }) : void 0, R.WorkspaceExtrasView({
+            workspace: _this.workspace,
+            workspaceIndex: workspaceIndex
           }));
         };
-      })(this)), R.button({
-        className: "CreateCustomFn",
-        onClick: this.handleCreateCustomFnClick
-      })));
+      })(this)));
     }
   });
 
   R.create("WorkspaceExtrasView", {
     propTypes: {
-      workspaceEntry: [C.CustomFn]
+      workspace: C.Workspace,
+      workspaceIndex: Number
+    },
+    addEntry: function(entry) {
+      return this.workspace.workspaceEntries.splice(this.workspaceIndex + 1, 0, entry);
+    },
+    addFunction: function() {
+      return this.addEntry(new C.CustomFn());
+    },
+    addParagraph: function() {
+      return this.addEntry(new C.Paragraph());
+    },
+    remove: function() {
+      return this.workspace.workspaceEntries.splice(this.workspaceIndex, 1);
+    },
+    moveTop: function() {
+      var entry;
+      if (this.workspaceIndex === 0) {
+        return;
+      }
+      entry = this.workspace.workspaceEntries[this.workspaceIndex];
+      this.workspace.workspaceEntries.splice(this.workspaceIndex, 1);
+      return this.workspace.workspaceEntries.splice(0, 0, entry);
+    },
+    moveUp: function() {
+      var entry;
+      if (this.workspaceIndex === 0) {
+        return;
+      }
+      entry = this.workspace.workspaceEntries[this.workspaceIndex];
+      this.workspace.workspaceEntries.splice(this.workspaceIndex, 1);
+      return this.workspace.workspaceEntries.splice(this.workspaceIndex - 1, 0, entry);
+    },
+    moveDown: function() {
+      var entry;
+      if (this.workspaceIndex === this.workspace.workspaceEntries.length - 1) {
+        return;
+      }
+      entry = this.workspace.workspaceEntries[this.workspaceIndex];
+      this.workspace.workspaceEntries.splice(this.workspaceIndex, 1);
+      return this.workspace.workspaceEntries.splice(this.workspaceIndex + 1, 0, entry);
+    },
+    moveBottom: function() {
+      var entry;
+      if (this.workspaceIndex === this.workspace.workspaceEntries.length - 1) {
+        return;
+      }
+      entry = this.workspace.workspaceEntries[this.workspaceIndex];
+      this.workspace.workspaceEntries.splice(this.workspaceIndex, 1);
+      return this.workspace.workspaceEntries.splice(this.workspace.workspaceEntries.length, 0, entry);
     },
     render: function() {
       return R.div({
@@ -2916,28 +2971,52 @@
       }, R.div({
         className: "CellHorizontal TextButtonLabel"
       }, "add:"), R.div({
-        className: "CellHorizontal TextButton"
+        className: "CellHorizontal TextButton",
+        onClick: this.addFunction
       }, "function"), R.div({
-        className: "CellHorizontal TextButton"
-      }, "paragraph")), R.div({
+        className: "CellHorizontal TextButton",
+        onClick: this.addParagraph
+      }, "paragraph")), this.workspaceIndex >= 0 ? R.span({}, R.div({
         className: "CellHorizontal"
       }, R.div({
         className: "CellHorizontal TextButtonLabel"
       }, "move:"), R.div({
-        className: "CellHorizontal TextButton"
+        className: "CellHorizontal TextButton",
+        onClick: this.moveTop
       }, "top"), R.div({
-        className: "CellHorizontal TextButton"
+        className: "CellHorizontal TextButton",
+        onClick: this.moveUp
       }, "up"), R.div({
-        className: "CellHorizontal TextButton"
+        className: "CellHorizontal TextButton",
+        onClick: this.moveDown
       }, "down"), R.div({
-        className: "CellHorizontal TextButton"
+        className: "CellHorizontal TextButton",
+        onClick: this.moveBottom
       }, "bottom")), R.div({
         className: "CellHorizontal"
       }, R.div({
         className: "CellHorizontal TextButtonLabel"
       }, ""), R.div({
-        className: "CellHorizontal TextButton"
-      }, "remove")));
+        className: "CellHorizontal TextButton",
+        onClick: this.remove
+      }, "remove"))) : void 0);
+    }
+  });
+
+  R.create("ParagraphView", {
+    propTypes: {
+      paragraph: C.Paragraph
+    },
+    handleInput: function(newValue) {
+      return this.paragraph.text = newValue;
+    },
+    render: function() {
+      return R.TextFieldView({
+        className: "Paragraph",
+        value: this.paragraph.text,
+        onInput: this.handleInput,
+        allowEnter: true
+      });
     }
   });
 
@@ -3159,7 +3238,8 @@
       onInput: Function,
       onBackSpace: Function,
       onFocus: Function,
-      onBlur: Function
+      onBlur: Function,
+      allowEnter: Boolean
     },
     getDefaultProps: function() {
       return {
@@ -3169,7 +3249,8 @@
         onBackSpace: function() {},
         onEnter: function() {},
         onFocus: function() {},
-        onBlur: function() {}
+        onBlur: function() {},
+        allowEnter: false
       };
     },
     shouldComponentUpdate: function(nextProps) {
@@ -3222,8 +3303,10 @@
           return this.onBackSpace();
         }
       } else if (e.keyCode === 13) {
-        e.preventDefault();
-        return this.onEnter();
+        if (!this.allowEnter) {
+          e.preventDefault();
+          return this.onEnter();
+        }
       }
     },
     handleFocus: function() {

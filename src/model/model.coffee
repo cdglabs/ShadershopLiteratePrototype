@@ -1,6 +1,8 @@
 builtInFnDefinitions = require("./builtInFnDefinitions")
 
 
+# =============================================================================
+
 class C.Expr
   constructor: ->
 
@@ -41,6 +43,7 @@ class C.Application extends C.Expr
       expr.treeEach(iterator)
 
 
+# =============================================================================
 
 class C.Fn
   constructor: ->
@@ -92,26 +95,33 @@ class C.CustomFn extends C.Fn
     return _.unique(dependencies)
 
 
+# =============================================================================
+
+class C.Paragraph
+  constructor: ->
+    @text = ""
+
+
 class C.Workspace
   constructor: ->
-    @customFns = []
-    @createCustomFn()
-
-  createCustomFn: ->
-    customFn = new C.CustomFn()
-    @customFns.push(customFn)
+    @workspaceEntries = [new C.CustomFn()]
 
   getAvailableFns: (originCustomFn) ->
     fns = builtInFnDefinitions.map (definition) =>
       new C.BuiltInFn(definition.fnName)
 
-    customFns = _.reject @customFns, (customFn) =>
+    customFns = _.filter @workspaceEntries, (workspaceEntry) =>
+      workspaceEntry instanceof C.CustomFn
+
+    customFns = _.reject customFns, (customFn) =>
       customFnDependencies = customFn.getCustomFnDependencies()
       _.contains(customFnDependencies, originCustomFn)
 
     fns = fns.concat(customFns)
     return fns
 
+
+# =============================================================================
 
 class C.AppRoot
   constructor: ->
