@@ -262,11 +262,41 @@ R.create "ExprThumbnailView",
     R.HoverCaptureView {hoverData: {expr: @expr, customFn: @lookup("customFn")}},
       R.div {className: className, onMouseDown: @handleMouseDown},
         R.PlotWithParametersView {expr: @expr}
+        R.ExprValueView {expr: @expr}
         # R.PlotView {expr: @expr, style: "mainExpr"}
 
 
 
+Compiler = require("../compile/Compiler")
+evaluate = require("../compile/evaluate")
 
+R.create "ExprValueView",
+  propTypes:
+    expr: C.Expr
+
+  getValue: ->
+    compiler = new Compiler()
+    compiled = compiler.compile(@expr)
+    value = evaluate(compiled)
+    return util.floatToString(value, 0.001, true)
+
+  shouldRender: ->
+    customFn = @lookup("customFn")
+    xVariable = customFn.paramVariables[0]
+    return true if xVariable == UI.hoverData?.variable
+
+    foundXVariable = false
+    @expr.treeEach (expr) =>
+      foundXVariable ||= (expr == xVariable)
+
+    return true if !foundXVariable
+
+    return false
+
+  render: ->
+    R.div {className: "ExprValue"},
+      if @shouldRender()
+        @getValue()
 
 
 

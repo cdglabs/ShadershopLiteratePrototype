@@ -167,7 +167,9 @@ R.create "PlotWithSpreadView",
     xVariable = customFn.paramVariables[0]
     return if xVariable == spreadVariable
 
-    spreadDistance = 0.5
+    {largeSpacing, smallSpacing} = util.canvas.getSpacing(customFn.bounds)
+
+    spreadDistance = smallSpacing
     spreadNum = 4
     maxSpreadOffset = spreadDistance * spreadNum
 

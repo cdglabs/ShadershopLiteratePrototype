@@ -13,6 +13,8 @@ button:focus {
 }
 canvas {
   position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
 }
@@ -109,6 +111,16 @@ canvas {
   box-sizing: border-box;
   width: 50px;
   height: 50px;
+  overflow: hidden;
+}
+.ExprValue {
+  position: relative;
+  display: inline-block;
+  vertical-align: top;
+  background-color: rgba(255,255,255,0.9);
+  font-size: 0.8em;
+  line-height: 1.5em;
+  border-bottom-right-radius: 4px;
 }
 .ExprInternals {
   display: inline-block;

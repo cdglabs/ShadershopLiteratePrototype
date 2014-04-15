@@ -432,6 +432,8 @@
   window.config = config = {
     storageName: "spaceshader4",
     resolution: 0.5,
+    mainPlotWidth: 400,
+    mainPlotHeight: 400,
     mainLineWidth: 1.25,
     minGridSpacing: 70,
     hitTolerance: 10,
@@ -758,6 +760,10 @@
       return parseFloat(this.valueString);
     };
 
+    Variable.prototype.treeEach = function(iterator) {
+      return iterator(this);
+    };
+
     return Variable;
 
   })(C.Expr);
@@ -784,6 +790,18 @@
 
     Application.prototype.commitApplication = function() {
       return this.isProvisional = false;
+    };
+
+    Application.prototype.treeEach = function(iterator) {
+      var expr, _i, _len, _ref, _results;
+      iterator(this);
+      _ref = this.paramExprs;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        expr = _ref[_i];
+        _results.push(expr.treeEach(iterator));
+      }
+      return _results;
     };
 
     return Application;
@@ -904,7 +922,7 @@
 
 }).call(this);
 }, "util/canvas": function(exports, require, module) {(function() {
-  var canvasBounds, clear, drawCartesian, drawGrid, drawHorizontal, drawLine, drawVertical, lerp, setStyle, ticks,
+  var canvasBounds, clear, drawCartesian, drawGrid, drawHorizontal, drawLine, drawVertical, getSpacing, lerp, setStyle, ticks,
     __hasProp = {}.hasOwnProperty;
 
   lerp = util.lerp;
@@ -1074,13 +1092,11 @@
     return ctx.stroke();
   };
 
-  drawGrid = function(ctx, opts) {
-    var axesColor, axesOpacity, color, cx, cxMax, cxMin, cy, cyMax, cyMin, div, fromLocal, height, labelColor, labelDistance, labelOpacity, largeSpacing, majorColor, majorOpacity, minSpacing, minorColor, minorOpacity, smallSpacing, text, textHeight, toLocal, width, x, xMax, xMin, xMinSpacing, xSize, y, yMax, yMin, yMinSpacing, ySize, z, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _len5, _m, _n, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8;
-    xMin = opts.xMin;
-    xMax = opts.xMax;
-    yMin = opts.yMin;
-    yMax = opts.yMax;
-    _ref = canvasBounds(ctx), cxMin = _ref.cxMin, cxMax = _ref.cxMax, cyMin = _ref.cyMin, cyMax = _ref.cyMax, width = _ref.width, height = _ref.height;
+  getSpacing = function(opts) {
+    var div, height, largeSpacing, minSpacing, smallSpacing, width, xMax, xMin, xMinSpacing, xSize, yMax, yMin, yMinSpacing, ySize, z, _ref, _ref1;
+    xMin = opts.xMin, xMax = opts.xMax, yMin = opts.yMin, yMax = opts.yMax;
+    width = (_ref = opts.width) != null ? _ref : config.mainPlotWidth;
+    height = (_ref1 = opts.height) != null ? _ref1 : config.mainPlotHeight;
     xSize = xMax - xMin;
     ySize = yMax - yMin;
     xMinSpacing = (xSize / width) * config.minGridSpacing;
@@ -1102,6 +1118,27 @@
       div = 5;
     }
     smallSpacing = largeSpacing / div;
+    return {
+      largeSpacing: largeSpacing,
+      smallSpacing: smallSpacing
+    };
+  };
+
+  drawGrid = function(ctx, opts) {
+    var axesColor, axesOpacity, color, cx, cxMax, cxMin, cy, cyMax, cyMin, fromLocal, height, labelColor, labelDistance, labelOpacity, largeSpacing, majorColor, majorOpacity, minorColor, minorOpacity, smallSpacing, text, textHeight, toLocal, width, x, xMax, xMin, y, yMax, yMin, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _len5, _m, _n, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9;
+    xMin = opts.xMin;
+    xMax = opts.xMax;
+    yMin = opts.yMin;
+    yMax = opts.yMax;
+    _ref = canvasBounds(ctx), cxMin = _ref.cxMin, cxMax = _ref.cxMax, cyMin = _ref.cyMin, cyMax = _ref.cyMax, width = _ref.width, height = _ref.height;
+    _ref1 = getSpacing({
+      xMin: xMin,
+      xMax: xMax,
+      yMin: yMin,
+      yMax: yMax,
+      width: width,
+      height: height
+    }), largeSpacing = _ref1.largeSpacing, smallSpacing = _ref1.smallSpacing;
     toLocal = function(_arg) {
       var cx, cy;
       cx = _arg[0], cy = _arg[1];
@@ -1126,25 +1163,25 @@
     ctx.save();
     ctx.lineWidth = 1;
     ctx.strokeStyle = minorColor;
-    _ref1 = ticks(smallSpacing, xMin, xMax);
-    for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-      x = _ref1[_i];
+    _ref2 = ticks(smallSpacing, xMin, xMax);
+    for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
+      x = _ref2[_i];
       drawLine(ctx, fromLocal([x, yMin]), fromLocal([x, yMax]));
     }
-    _ref2 = ticks(smallSpacing, yMin, yMax);
-    for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
-      y = _ref2[_j];
+    _ref3 = ticks(smallSpacing, yMin, yMax);
+    for (_j = 0, _len1 = _ref3.length; _j < _len1; _j++) {
+      y = _ref3[_j];
       drawLine(ctx, fromLocal([xMin, y]), fromLocal([xMax, y]));
     }
     ctx.strokeStyle = majorColor;
-    _ref3 = ticks(largeSpacing, xMin, xMax);
-    for (_k = 0, _len2 = _ref3.length; _k < _len2; _k++) {
-      x = _ref3[_k];
+    _ref4 = ticks(largeSpacing, xMin, xMax);
+    for (_k = 0, _len2 = _ref4.length; _k < _len2; _k++) {
+      x = _ref4[_k];
       drawLine(ctx, fromLocal([x, yMin]), fromLocal([x, yMax]));
     }
-    _ref4 = ticks(largeSpacing, yMin, yMax);
-    for (_l = 0, _len3 = _ref4.length; _l < _len3; _l++) {
-      y = _ref4[_l];
+    _ref5 = ticks(largeSpacing, yMin, yMax);
+    for (_l = 0, _len3 = _ref5.length; _l < _len3; _l++) {
+      y = _ref5[_l];
       drawLine(ctx, fromLocal([xMin, y]), fromLocal([xMax, y]));
     }
     ctx.strokeStyle = axesColor;
@@ -1154,12 +1191,12 @@
     ctx.fillStyle = labelColor;
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
-    _ref5 = ticks(largeSpacing, xMin, xMax);
-    for (_m = 0, _len4 = _ref5.length; _m < _len4; _m++) {
-      x = _ref5[_m];
+    _ref6 = ticks(largeSpacing, xMin, xMax);
+    for (_m = 0, _len4 = _ref6.length; _m < _len4; _m++) {
+      x = _ref6[_m];
       if (x !== 0) {
         text = parseFloat(x.toPrecision(12)).toString();
-        _ref6 = fromLocal([x, 0]), cx = _ref6[0], cy = _ref6[1];
+        _ref7 = fromLocal([x, 0]), cx = _ref7[0], cy = _ref7[1];
         cy += labelDistance;
         if (cy < labelDistance) {
           cy = labelDistance;
@@ -1172,12 +1209,12 @@
     }
     ctx.textAlign = "left";
     ctx.textBaseline = "middle";
-    _ref7 = ticks(largeSpacing, yMin, yMax);
-    for (_n = 0, _len5 = _ref7.length; _n < _len5; _n++) {
-      y = _ref7[_n];
+    _ref8 = ticks(largeSpacing, yMin, yMax);
+    for (_n = 0, _len5 = _ref8.length; _n < _len5; _n++) {
+      y = _ref8[_n];
       if (y !== 0) {
         text = parseFloat(y.toPrecision(12)).toString();
-        _ref8 = fromLocal([0, y]), cx = _ref8[0], cy = _ref8[1];
+        _ref9 = fromLocal([0, y]), cx = _ref9[0], cy = _ref9[1];
         cx += labelDistance;
         if (cx < labelDistance) {
           cx = labelDistance;
@@ -1198,6 +1235,7 @@
     drawCartesian: drawCartesian,
     drawVertical: drawVertical,
     drawHorizontal: drawHorizontal,
+    getSpacing: getSpacing,
     drawGrid: drawGrid
   };
 
@@ -1409,16 +1447,22 @@
     return ratio * (rMax - rMin) + rMin;
   };
 
-  util.floatToString = function(value, precision) {
+  util.floatToString = function(value, precision, removeExtraZeros) {
     var digitPrecision, string;
     if (precision == null) {
       precision = 0.1;
+    }
+    if (removeExtraZeros == null) {
+      removeExtraZeros = false;
     }
     if (precision < 1) {
       digitPrecision = -Math.round(Math.log(precision) / Math.log(10));
       string = value.toFixed(digitPrecision);
     } else {
       string = value.toFixed(0);
+    }
+    if (removeExtraZeros) {
+      string = string.replace(/\.?0*$/, "");
     }
     if (/^-0(\.0*)?$/.test(string)) {
       string = string.slice(1);
@@ -1770,7 +1814,7 @@
       expr: C.Expr
     },
     renderSpreads: function() {
-      var actualSpreadOffset, compiler, customFn, fnString, i, maxSpreadOffset, roundedValue, spreadDistance, spreadNum, spreadOffset, spreadValue, spreadVariable, style, value, view, views, xVariable, _i, _ref, _ref1;
+      var actualSpreadOffset, compiler, customFn, fnString, i, largeSpacing, maxSpreadOffset, roundedValue, smallSpacing, spreadDistance, spreadNum, spreadOffset, spreadValue, spreadVariable, style, value, view, views, xVariable, _i, _ref, _ref1, _ref2;
       spreadVariable = (_ref = UI.hoverData) != null ? _ref.variable : void 0;
       if (!spreadVariable) {
         return;
@@ -1783,7 +1827,8 @@
       if (xVariable === spreadVariable) {
         return;
       }
-      spreadDistance = 0.5;
+      _ref2 = util.canvas.getSpacing(customFn.bounds), largeSpacing = _ref2.largeSpacing, smallSpacing = _ref2.smallSpacing;
+      spreadDistance = smallSpacing;
       spreadNum = 4;
       maxSpreadOffset = spreadDistance * spreadNum;
       value = spreadVariable.getValue();
@@ -2177,6 +2222,8 @@
 
 }).call(this);
 }, "view/RootExprTreeView": function(exports, require, module) {(function() {
+  var Compiler, evaluate;
+
   R.create("RootExprView", {
     propTypes: {
       rootExpr: C.Expr,
@@ -2526,7 +2573,49 @@
         onMouseDown: this.handleMouseDown
       }, R.PlotWithParametersView({
         expr: this.expr
+      }), R.ExprValueView({
+        expr: this.expr
       })));
+    }
+  });
+
+  Compiler = require("../compile/Compiler");
+
+  evaluate = require("../compile/evaluate");
+
+  R.create("ExprValueView", {
+    propTypes: {
+      expr: C.Expr
+    },
+    getValue: function() {
+      var compiled, compiler, value;
+      compiler = new Compiler();
+      compiled = compiler.compile(this.expr);
+      value = evaluate(compiled);
+      return util.floatToString(value, 0.001, true);
+    },
+    shouldRender: function() {
+      var customFn, foundXVariable, xVariable, _ref;
+      customFn = this.lookup("customFn");
+      xVariable = customFn.paramVariables[0];
+      if (xVariable === ((_ref = UI.hoverData) != null ? _ref.variable : void 0)) {
+        return true;
+      }
+      foundXVariable = false;
+      this.expr.treeEach((function(_this) {
+        return function(expr) {
+          return foundXVariable || (foundXVariable = expr === xVariable);
+        };
+      })(this));
+      if (!foundXVariable) {
+        return true;
+      }
+      return false;
+    },
+    render: function() {
+      return R.div({
+        className: "ExprValue"
+      }, this.shouldRender() ? this.getValue() : void 0);
     }
   });
 

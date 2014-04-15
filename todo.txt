@@ -6,7 +6,6 @@ Priorities
     Noise
   + button autofocuses
   Undo
-  Show number values on top of plot
 
 
 
@@ -37,7 +36,6 @@ CustomFn
 
 Plot
   Maybe show axes/grid on thumbnail plots
-  Show number values on top of plot
   Snap pan/zoom
   Snap variable scrubbing
 
@@ -50,6 +48,7 @@ Evaluation
 
 Cleanup
   Abstract all sizing variables in styl
+  Make getCustomFnDependencies, etc use Expr.treeEach
   Get rid of lookup calls and do explicit passing?
   Reordering applications could use more cleanup
   Will need to cleanup variable domain/range stuff when generalizing to more than R1 -> R1

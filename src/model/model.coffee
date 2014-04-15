@@ -9,8 +9,12 @@ class C.Variable extends C.Expr
   constructor: (@valueString="0", @label="") ->
     @domain = "range" # "domain" or "range"
     @domainCoord = 0
+
   getValue: ->
     parseFloat(@valueString)
+
+  treeEach: (iterator) ->
+    iterator(this)
 
 
 class C.Application extends C.Expr
@@ -30,6 +34,11 @@ class C.Application extends C.Expr
 
   commitApplication: ->
     @isProvisional = false
+
+  treeEach: (iterator) ->
+    iterator(this)
+    for expr in @paramExprs
+      expr.treeEach(iterator)
 
 
 

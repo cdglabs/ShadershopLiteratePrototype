@@ -146,16 +146,13 @@ drawLine = (ctx, [x1, y1], [x2, y2]) ->
   ctx.lineTo(x2, y2)
   ctx.stroke()
 
-drawGrid = (ctx, opts) ->
-  xMin = opts.xMin
-  xMax = opts.xMax
-  yMin = opts.yMin
-  yMax = opts.yMax
+getSpacing = (opts) ->
+  {xMin, xMax, yMin, yMax} = opts
+  width = opts.width ? config.mainPlotWidth
+  height = opts.height ? config.mainPlotHeight
 
-  {cxMin, cxMax, cyMin, cyMax, width, height} = canvasBounds(ctx)
-
-  xSize  = xMax - xMin
-  ySize  = yMax - yMin
+  xSize = xMax - xMin
+  ySize = yMax - yMin
 
   xMinSpacing = (xSize / width ) * config.minGridSpacing
   yMinSpacing = (ySize / height) * config.minGridSpacing
@@ -176,6 +173,18 @@ drawGrid = (ctx, opts) ->
     div = 5
   smallSpacing = largeSpacing / div
 
+  return {largeSpacing, smallSpacing}
+
+
+drawGrid = (ctx, opts) ->
+  xMin = opts.xMin
+  xMax = opts.xMax
+  yMin = opts.yMin
+  yMax = opts.yMax
+
+  {cxMin, cxMax, cyMin, cyMax, width, height} = canvasBounds(ctx)
+
+  {largeSpacing, smallSpacing} = getSpacing({xMin, xMax, yMin, yMax, width, height})
 
   toLocal = ([cx, cy]) ->
     [
@@ -259,4 +268,13 @@ drawGrid = (ctx, opts) ->
 
 
 
-util.canvas = {lerp, clear, setStyle, drawCartesian, drawVertical, drawHorizontal, drawGrid}
+util.canvas = {
+  lerp
+  clear
+  setStyle
+  drawCartesian
+  drawVertical
+  drawHorizontal
+  getSpacing
+  drawGrid
+}

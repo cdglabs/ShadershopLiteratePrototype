@@ -61,12 +61,15 @@ util.lerp = (x, dMin, dMax, rMin, rMax) ->
   return ratio * (rMax - rMin) + rMin
 
 
-util.floatToString = (value, precision = 0.1) ->
+util.floatToString = (value, precision = 0.1, removeExtraZeros = false) ->
   if precision < 1
     digitPrecision = -Math.round(Math.log(precision)/Math.log(10))
     string = value.toFixed(digitPrecision)
   else
     string = value.toFixed(0)
+
+  if removeExtraZeros
+    string = string.replace(/\.?0*$/, "")
 
   if /^-0(\.0*)?$/.test(string)
     # Remove extraneous negative sign
