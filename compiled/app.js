@@ -1843,7 +1843,7 @@
       return UI.hoverData = null;
     },
     render: function() {
-      var variable, _ref, _ref1, _ref2;
+      var variable, _ref, _ref1, _ref2, _ref3;
       return R.div({
         className: "MainPlot",
         onMouseDown: this.handleMouseDown,
@@ -1870,7 +1870,7 @@
           }));
         }
         return _results;
-      }).call(this), ((_ref2 = UI.hoverData) != null ? _ref2.variable : void 0) && !_.contains(this.getDisplayVariables(), UI.hoverData.variable) ? R.PlotVariableView({
+      }).call(this), ((_ref2 = UI.hoverData) != null ? _ref2.variable : void 0) && ((_ref3 = UI.hoverData) != null ? _ref3.customFn : void 0) === this.customFn && !_.contains(this.getDisplayVariables(), UI.hoverData.variable) ? R.PlotVariableView({
         variable: UI.hoverData.variable
       }) : void 0);
     }

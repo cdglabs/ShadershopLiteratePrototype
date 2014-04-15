@@ -149,7 +149,7 @@ R.create "MainPlotView",
       for variable in @getDisplayVariables()
         R.PlotVariableView {variable}
 
-      if UI.hoverData?.variable and !_.contains(@getDisplayVariables(), UI.hoverData.variable)
+      if UI.hoverData?.variable and UI.hoverData?.customFn == @customFn and !_.contains(@getDisplayVariables(), UI.hoverData.variable)
         R.PlotVariableView {variable: UI.hoverData.variable}
 
 
