@@ -20,12 +20,12 @@ window.reset = ->
 
 if json = window.localStorage[storageName]
   json = JSON.parse(json)
-  window.editor = editor = C.reconstruct(json)
+  window.appRoot = appRoot = C.reconstruct(json)
 else
-  window.editor = editor = new C.Editor()
+  window.appRoot = appRoot = new C.AppRoot()
 
 saveState = ->
-  json = C.deconstruct(editor)
+  json = C.deconstruct(appRoot)
   json = JSON.stringify(json)
   window.localStorage[storageName] = json
 
@@ -59,8 +59,8 @@ refresh = ->
     willRefreshNextFrame = false
 
 refreshView = ->
-  editorEl = document.querySelector("#editor")
-  React.renderComponent(R.EditorView({editor}), editorEl)
+  appRootEl = document.querySelector("#AppRoot")
+  React.renderComponent(R.AppRootView({appRoot}), appRootEl)
 
 
 

@@ -92,7 +92,7 @@ class C.CustomFn extends C.Fn
     return _.unique(dependencies)
 
 
-class C.Editor
+class C.Workspace
   constructor: ->
     @customFns = []
     @createCustomFn()
@@ -100,3 +100,21 @@ class C.Editor
   createCustomFn: ->
     customFn = new C.CustomFn()
     @customFns.push(customFn)
+
+  getAvailableFns: (originCustomFn) ->
+    fns = builtInFnDefinitions.map (definition) =>
+      new C.BuiltInFn(definition.fnName)
+
+    customFns = _.reject @customFns, (customFn) =>
+      customFnDependencies = customFn.getCustomFnDependencies()
+      _.contains(customFnDependencies, originCustomFn)
+
+    fns = fns.concat(customFns)
+    return fns
+
+
+class C.AppRoot
+  constructor: ->
+    @workspaces = [new C.Workspace()]
+
+

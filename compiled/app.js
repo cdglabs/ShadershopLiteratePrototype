@@ -477,7 +477,7 @@
 
 }).call(this);
 }, "main": function(exports, require, module) {(function() {
-  var editor, eventName, json, refresh, refreshEventNames, refreshView, saveState, storageName, willRefreshNextFrame, _i, _len;
+  var appRoot, eventName, json, refresh, refreshEventNames, refreshView, saveState, storageName, willRefreshNextFrame, _i, _len;
 
   require("./config");
 
@@ -498,13 +498,13 @@
 
   if (json = window.localStorage[storageName]) {
     json = JSON.parse(json);
-    window.editor = editor = C.reconstruct(json);
+    window.appRoot = appRoot = C.reconstruct(json);
   } else {
-    window.editor = editor = new C.Editor();
+    window.appRoot = appRoot = new C.AppRoot();
   }
 
   saveState = function() {
-    json = C.deconstruct(editor);
+    json = C.deconstruct(appRoot);
     json = JSON.stringify(json);
     return window.localStorage[storageName] = json;
   };
@@ -533,11 +533,11 @@
   };
 
   refreshView = function() {
-    var editorEl;
-    editorEl = document.querySelector("#editor");
-    return React.renderComponent(R.EditorView({
-      editor: editor
-    }), editorEl);
+    var appRootEl;
+    appRootEl = document.querySelector("#AppRoot");
+    return React.renderComponent(R.AppRootView({
+      appRoot: appRoot
+    }), appRootEl);
   };
 
   refreshEventNames = ["mousedown", "mousemove", "mouseup", "keydown", "scroll", "change", "wheel", "mousewheel"];
@@ -904,19 +904,46 @@
 
   })(C.Fn);
 
-  C.Editor = (function() {
-    function Editor() {
+  C.Workspace = (function() {
+    function Workspace() {
       this.customFns = [];
       this.createCustomFn();
     }
 
-    Editor.prototype.createCustomFn = function() {
+    Workspace.prototype.createCustomFn = function() {
       var customFn;
       customFn = new C.CustomFn();
       return this.customFns.push(customFn);
     };
 
-    return Editor;
+    Workspace.prototype.getAvailableFns = function(originCustomFn) {
+      var customFns, fns;
+      fns = builtInFnDefinitions.map((function(_this) {
+        return function(definition) {
+          return new C.BuiltInFn(definition.fnName);
+        };
+      })(this));
+      customFns = _.reject(this.customFns, (function(_this) {
+        return function(customFn) {
+          var customFnDependencies;
+          customFnDependencies = customFn.getCustomFnDependencies();
+          return _.contains(customFnDependencies, originCustomFn);
+        };
+      })(this));
+      fns = fns.concat(customFns);
+      return fns;
+    };
+
+    return Workspace;
+
+  })();
+
+  C.AppRoot = (function() {
+    function AppRoot() {
+      this.workspaces = [new C.Workspace()];
+    }
+
+    return AppRoot;
 
   })();
 
@@ -1510,6 +1537,46 @@
   require("./canvas");
 
 }).call(this);
+}, "view/AppRoot/AppRootView": function(exports, require, module) {(function() {
+  R.create("AppRootView", {
+    propTypes: {
+      appRoot: C.AppRoot
+    },
+    cursor: function() {
+      var _ref, _ref1;
+      return (_ref = (_ref1 = UI.dragging) != null ? _ref1.cursor : void 0) != null ? _ref : "";
+    },
+    render: function() {
+      return R.div({
+        style: {
+          cursor: this.cursor()
+        }
+      }, R.WorkspaceView({
+        workspace: this.appRoot.workspaces[0]
+      }), R.div({
+        className: "dragging"
+      }, R.DraggingView({})));
+    }
+  });
+
+}).call(this);
+}, "view/AppRoot/DraggingView": function(exports, require, module) {(function() {
+  R.create("DraggingView", {
+    render: function() {
+      var _ref;
+      return R.div({}, ((_ref = UI.dragging) != null ? _ref.render : void 0) ? R.div({
+        className: "draggingObject",
+        style: {
+          left: UI.mousePosition.x - UI.dragging.offset.x,
+          top: UI.mousePosition.y - UI.dragging.offset.y
+        }
+      }, UI.dragging.render()) : void 0, UI.dragging ? R.div({
+        className: "draggingOverlay"
+      }) : void 0);
+    }
+  });
+
+}).call(this);
 }, "view/CustomFnView": function(exports, require, module) {(function() {
   R.create("CustomFnView", {
     propTypes: {
@@ -1964,21 +2031,10 @@
       return this.application.label = newValue;
     },
     possibleApplications: function() {
-      var customFns, fns, possibleApplications, thisCustomFn;
-      fns = builtInFnDefinitions.map((function(_this) {
-        return function(definition) {
-          return new C.BuiltInFn(definition.fnName);
-        };
-      })(this));
-      thisCustomFn = this.lookup("customFn");
-      customFns = _.reject(editor.customFns, (function(_this) {
-        return function(customFn) {
-          var customFnDependencies;
-          customFnDependencies = customFn.getCustomFnDependencies();
-          return _.contains(customFnDependencies, thisCustomFn);
-        };
-      })(this));
-      fns = fns.concat(customFns);
+      var customFn, fns, possibleApplications, workspace;
+      customFn = this.lookup("customFn");
+      workspace = this.lookup("workspace");
+      fns = workspace.getAvailableFns(customFn);
       fns = _.filter(fns, (function(_this) {
         return function(fn) {
           return fn.getLabel().indexOf(_this.application.label) !== -1;
@@ -2208,9 +2264,11 @@
 
   require("./ui/HoverCaptureView");
 
-  require("./editor/EditorView");
+  require("./AppRoot/AppRootView");
 
-  require("./editor/DraggingView");
+  require("./AppRoot/DraggingView");
+
+  require("./Workspace/WorkspaceView");
 
   require("./CustomFnView");
 
@@ -2804,44 +2862,20 @@
   });
 
 }).call(this);
-}, "view/editor/DraggingView": function(exports, require, module) {(function() {
-  R.create("DraggingView", {
-    render: function() {
-      var _ref;
-      return R.div({}, ((_ref = UI.dragging) != null ? _ref.render : void 0) ? R.div({
-        className: "draggingObject",
-        style: {
-          left: UI.mousePosition.x - UI.dragging.offset.x,
-          top: UI.mousePosition.y - UI.dragging.offset.y
-        }
-      }, UI.dragging.render()) : void 0, UI.dragging ? R.div({
-        className: "draggingOverlay"
-      }) : void 0);
-    }
-  });
-
-}).call(this);
-}, "view/editor/EditorView": function(exports, require, module) {(function() {
-  R.create("EditorView", {
+}, "view/Workspace/WorkspaceView": function(exports, require, module) {(function() {
+  R.create("WorkspaceView", {
     propTypes: {
-      editor: C.Editor
+      workspace: C.Workspace
     },
     handleCreateCustomFnClick: function() {
-      return this.editor.createCustomFn();
-    },
-    cursor: function() {
-      var _ref, _ref1;
-      return (_ref = (_ref1 = UI.dragging) != null ? _ref1.cursor : void 0) != null ? _ref : "";
+      return this.workspace.createCustomFn();
     },
     render: function() {
       return R.div({
-        className: "editor",
-        style: {
-          cursor: this.cursor()
-        }
+        className: "Workspace"
       }, R.div({
         className: "customFns"
-      }, this.editor.customFns.map((function(_this) {
+      }, this.workspace.customFns.map((function(_this) {
         return function(customFn) {
           return R.CustomFnView({
             customFn: customFn
@@ -2850,9 +2884,7 @@
       })(this)), R.button({
         className: "CreateCustomFn",
         onClick: this.handleCreateCustomFnClick
-      })), R.div({
-        className: "dragging"
-      }, R.DraggingView({})));
+      })));
     }
   });
 

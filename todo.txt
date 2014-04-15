@@ -10,8 +10,6 @@ Priorities
 
 
 
-Find/replace references to Editor.customFns
-Change Editor to Workspace
 Workspace has a list of CustomFn's and Paragraphs
 Insert new (CustomFn or Paragraph) between any other two
 Remove

@@ -9,15 +9,9 @@ R.create "ProvisionalApplicationInternalsView",
     @application.label = newValue
 
   possibleApplications: ->
-    fns = builtInFnDefinitions.map (definition) =>
-      new C.BuiltInFn(definition.fnName)
-
-    thisCustomFn = @lookup("customFn")
-    customFns = _.reject editor.customFns, (customFn) =>
-      customFnDependencies = customFn.getCustomFnDependencies()
-      _.contains(customFnDependencies, thisCustomFn)
-
-    fns = fns.concat(customFns)
+    customFn = @lookup("customFn")
+    workspace = @lookup("workspace")
+    fns = workspace.getAvailableFns(customFn)
 
     fns = _.filter fns, (fn) =>
       fn.getLabel().indexOf(@application.label) != -1

@@ -107,8 +107,10 @@ R.create = (name, opts) ->
 require("./ui/TextFieldView")
 require("./ui/HoverCaptureView")
 
-require("./editor/EditorView")
-require("./editor/DraggingView")
+require("./AppRoot/AppRootView")
+require("./AppRoot/DraggingView")
+
+require("./Workspace/WorkspaceView")
 
 require("./CustomFnView")
 require("./MainPlotView")
