@@ -12,6 +12,8 @@ wordSpacingSize = 5px
 mainSpacingSize = 10px
 largeSpacingSize = 50px
 
+mainPlotSize = mainSpacingSize * 40
+
 
 
 
@@ -68,19 +70,44 @@ canvas
   z-index: 200
 
 
+// ============================================================================
+// Util
+// ============================================================================
+
+.CellHorizontal
+  inline(baseline)
+  margin-right mainSpacingSize
+
+.TextButton
+  inline(baseline)
+  cursor pointer
+  font-size 10px
+  &:hover
+    color highlightColor
+
+.TextButtonLabel
+  font-size 10px
+  color #ccc
 
 
 
-.CustomFn
-  margin-bottom largeSpacingSize
+.WorkspaceExtras
+  padding-left mainPlotSize + mainSpacingSize
+  height largeSpacingSize
+  opacity 0
+  &:hover
+    opacity 1
+
+
+
 
 
 
 .MainPlot
   position relative
   inline(top)
-  width mainSpacingSize * 40
-  height mainSpacingSize * 40
+  width mainPlotSize
+  height mainPlotSize
   margin-right mainSpacingSize
   background-color plotBackgroundColor
 
@@ -93,18 +120,10 @@ canvas
   &:hover
     background-color tint(highlightColor, 97%)
   .RootExprExtras
-    position relative
-    > .TranscludeLinkIndicator
-      left 21px
     .ExtrasLine
       text-align right
       margin-right wordSpacingSize
       margin-bottom wordSpacingSize
-      font-size 10px
-      .ExtrasButton
-        cursor pointer
-      .ExtrasButton:hover
-        color highlightColor
 
 .RootExprExtras
   opacity 0

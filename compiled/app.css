@@ -39,8 +39,31 @@ canvas {
   right: 0;
   z-index: 200;
 }
-.CustomFn {
-  margin-bottom: 50px;
+.CellHorizontal {
+  display: inline-block;
+  vertical-align: baseline;
+  margin-right: 10px;
+}
+.TextButton {
+  display: inline-block;
+  vertical-align: baseline;
+  cursor: pointer;
+  font-size: 10px;
+}
+.TextButton:hover {
+  color: #09c;
+}
+.TextButtonLabel {
+  font-size: 10px;
+  color: #ccc;
+}
+.WorkspaceExtras {
+  padding-left: 410px;
+  height: 50px;
+  opacity: 0;
+}
+.WorkspaceExtras:hover {
+  opacity: 1;
 }
 .MainPlot {
   position: relative;
@@ -63,23 +86,10 @@ canvas {
 .RootExpr:hover {
   background-color: #f7fbfd;
 }
-.RootExpr .RootExprExtras {
-  position: relative;
-}
-.RootExpr .RootExprExtras > .TranscludeLinkIndicator {
-  left: 21px;
-}
 .RootExpr .RootExprExtras .ExtrasLine {
   text-align: right;
   margin-right: 5px;
   margin-bottom: 5px;
-  font-size: 10px;
-}
-.RootExpr .RootExprExtras .ExtrasLine .ExtrasButton {
-  cursor: pointer;
-}
-.RootExpr .RootExprExtras .ExtrasLine .ExtrasButton:hover {
-  color: #09c;
 }
 .RootExprExtras {
   opacity: 0;

@@ -36,9 +36,9 @@ R.create "RootExprExtrasView",
   render: ->
     R.div {className: "RootExprExtras"},
       R.div {className: "ExtrasLine"},
-        R.span {className: "ExtrasButton", onClick: @remove}, "remove"
+        R.span {className: "TextButton", onClick: @remove}, "remove"
       R.div {className: "ExtrasLine"},
-        R.span {className: "ExtrasButton", onClick: @promote}, "promote"
+        R.span {className: "TextButton", onClick: @promote}, "promote"
 
 
 

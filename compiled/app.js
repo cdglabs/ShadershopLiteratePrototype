@@ -2146,7 +2146,7 @@
 
 }).call(this);
 }, "view/R": function(exports, require, module) {(function() {
-  var R, key, value, _ref,
+  var R, desugarPropType, key, value, _ref,
     __hasProp = {}.hasOwnProperty;
 
   window.R = R = {};
@@ -2214,8 +2214,44 @@
     }
   };
 
+  desugarPropType = function(propType, optional) {
+    var required;
+    if (optional == null) {
+      optional = false;
+    }
+    if (propType.optional) {
+      propType = propType.optional;
+      required = false;
+    } else if (optional) {
+      required = false;
+    } else {
+      required = true;
+    }
+    if (propType === Number) {
+      propType = React.PropTypes.number;
+    } else if (propType === String) {
+      propType = React.PropTypes.string;
+    } else if (propType === Boolean) {
+      propType = React.PropTypes.bool;
+    } else if (propType === Function) {
+      propType = React.PropTypes.func;
+    } else if (propType === Array) {
+      propType = React.PropTypes.array;
+    } else if (propType === Object) {
+      propType = React.PropTypes.object;
+    } else if (_.isArray(propType)) {
+      propType = React.PropTypes.any;
+    } else {
+      propType = React.PropTypes.instanceOf(propType);
+    }
+    if (required) {
+      propType = propType.isRequired;
+    }
+    return propType;
+  };
+
   R.create = function(name, opts) {
-    var propName, propType, required, _ref1;
+    var propName, propType, _ref1;
     opts.displayName = name;
     opts.viewName = function() {
       return name;
@@ -2227,31 +2263,7 @@
     for (propName in _ref1) {
       if (!__hasProp.call(_ref1, propName)) continue;
       propType = _ref1[propName];
-      if (propType.optional) {
-        propType = propType.optional;
-        required = false;
-      } else {
-        required = true;
-      }
-      if (propType === Number) {
-        propType = React.PropTypes.number;
-      } else if (propType === String) {
-        propType = React.PropTypes.string;
-      } else if (propType === Boolean) {
-        propType = React.PropTypes.bool;
-      } else if (propType === Function) {
-        propType = React.PropTypes.func;
-      } else if (propType === Array) {
-        propType = React.PropTypes.array;
-      } else if (propType === Object) {
-        propType = React.PropTypes.object;
-      } else {
-        propType = React.PropTypes.instanceOf(propType);
-      }
-      if (required) {
-        propType = propType.isRequired;
-      }
-      opts.propTypes[propName] = propType;
+      opts.propTypes[propName] = desugarPropType(propType);
     }
     if (opts.mixins == null) {
       opts.mixins = [];
@@ -2345,12 +2357,12 @@
       }, R.div({
         className: "ExtrasLine"
       }, R.span({
-        className: "ExtrasButton",
+        className: "TextButton",
         onClick: this.remove
       }, "remove")), R.div({
         className: "ExtrasLine"
       }, R.span({
-        className: "ExtrasButton",
+        className: "TextButton",
         onClick: this.promote
       }, "promote")));
     }
@@ -2877,14 +2889,55 @@
         className: "customFns"
       }, this.workspace.customFns.map((function(_this) {
         return function(customFn) {
-          return R.CustomFnView({
+          return R.div({
+            className: "WorkspaceEntry"
+          }, R.CustomFnView({
             customFn: customFn
-          });
+          }), R.WorkspaceExtrasView({
+            workspaceEntry: customFn
+          }));
         };
       })(this)), R.button({
         className: "CreateCustomFn",
         onClick: this.handleCreateCustomFnClick
       })));
+    }
+  });
+
+  R.create("WorkspaceExtrasView", {
+    propTypes: {
+      workspaceEntry: [C.CustomFn]
+    },
+    render: function() {
+      return R.div({
+        className: "WorkspaceExtras"
+      }, R.div({
+        className: "CellHorizontal"
+      }, R.div({
+        className: "CellHorizontal TextButtonLabel"
+      }, "add:"), R.div({
+        className: "CellHorizontal TextButton"
+      }, "function"), R.div({
+        className: "CellHorizontal TextButton"
+      }, "paragraph")), R.div({
+        className: "CellHorizontal"
+      }, R.div({
+        className: "CellHorizontal TextButtonLabel"
+      }, "move:"), R.div({
+        className: "CellHorizontal TextButton"
+      }, "top"), R.div({
+        className: "CellHorizontal TextButton"
+      }, "up"), R.div({
+        className: "CellHorizontal TextButton"
+      }, "down"), R.div({
+        className: "CellHorizontal TextButton"
+      }, "bottom")), R.div({
+        className: "CellHorizontal"
+      }, R.div({
+        className: "CellHorizontal TextButtonLabel"
+      }, ""), R.div({
+        className: "CellHorizontal TextButton"
+      }, "remove")));
     }
   });
 
