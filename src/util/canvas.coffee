@@ -79,9 +79,6 @@ drawCartesian = (ctx, opts) ->
   for piece in pieces
     lineStart = piece.start
     for i in [piece.start+1 .. piece.end]
-      if i == piece.end
-        pushLine(i)
-        continue
 
       if i - 1 == lineStart
         continue
@@ -91,6 +88,9 @@ drawCartesian = (ctx, opts) ->
 
       if Math.abs(dCy1 - dCy2) > .000001
         pushLine(i - 1)
+
+      if i == piece.end
+        pushLine(i)
 
 
 

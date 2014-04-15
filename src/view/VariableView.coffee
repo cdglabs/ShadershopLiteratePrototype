@@ -97,7 +97,8 @@ R.create "VariableValueView",
 
     precision = 0.1
 
-    UI.dragging = {
+    UI.startVariableScrub {
+      variable: @variable
       cursor: @cursor()
       onMove: (e) =>
         dx =   e.clientX - originalX
@@ -109,8 +110,7 @@ R.create "VariableValueView",
           d = dy
 
         value = originalValue + d * precision
-        @variable.valueString = util.floatToString(value, precision)
-      onUp: =>
+        return util.floatToString(value, precision)
     }
 
   cursor: ->

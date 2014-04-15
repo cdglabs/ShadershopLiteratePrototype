@@ -10,21 +10,17 @@ Priorities
 
 
 
-
-Unify scrub in VariableValueView and MainPlotView
-Have scrub save original value
-Use original value for spread
-
-
-
-
-
+Find/replace references to Editor.customFns
 Change Editor to Workspace
 Workspace has a list of CustomFn's and Paragraphs
 Insert new (CustomFn or Paragraph) between any other two
 Remove
 Move down/up
 
+
+Editor has
+  currentWorkspace
+  savedWorkspaces
 
 
 

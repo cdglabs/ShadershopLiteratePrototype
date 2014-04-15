@@ -1,5 +1,13 @@
 mainLineWidth = 1.2
 
+mainLineStyle = {
+  lineWidth: mainLineWidth
+}
+
+extend = (style) ->
+  _.defaults(style, mainLineStyle)
+
+
 
 window.config = config = {
 
@@ -17,47 +25,35 @@ window.config = config = {
   gridColor: "204,194,163"
 
   style: {
-    mainExpr: {
+    mainExpr: extend {
       strokeStyle: "#000"
-      lineWidth: mainLineWidth
-      lineCap: "round"
     }
-    hoveredExpr: {
+    hoveredExpr: extend {
       strokeStyle: "#900"
-      lineWidth: mainLineWidth
-      lineCap: "round"
     }
-    paramExpr: {
+    paramExpr: extend {
       strokeStyle: "#ccc"
-      lineWidth: mainLineWidth
-      lineCap: "round"
     }
-    spreadPositiveExpr: {
+    spreadPositiveExpr: extend {
       strokeStyle: "#900"
-      lineWidth: mainLineWidth
-      lineCap: "round"
     }
-    spreadNegativeExpr: {
+    spreadNegativeExpr: extend {
       strokeStyle: "#009"
-      lineWidth: mainLineWidth
-      lineCap: "round"
     }
-    variable: {
+    variable: extend {
       strokeStyle: "rgba(77,158,51,0.5)"
       # strokeStyle: "rgba(0,153,0,0.5)"
       lineWidth: 1
-      lineCap: "round"
     }
-    hoveredVariable: {
+    hoveredVariable: extend {
       strokeStyle: "rgba(77,158,51,1)"
       # strokeStyle: "rgba(0,153,0,1)"
       lineWidth: 2
-      lineCap: "round"
     }
   }
 
-  spreadOpacityMax: 0.2
-  spreadOpacityMin: 0.02
+  spreadOpacityMax: 0.22
+  spreadOpacityMin: 0.015
 
 
   cursor: {

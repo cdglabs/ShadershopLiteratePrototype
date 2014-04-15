@@ -119,17 +119,21 @@
       return el != null ? el.dataFor : void 0;
     };
 
-    _Class.prototype.setHoveredWord = function(word) {
-      return this.hoveredWord = word;
-    };
-
-    _Class.prototype.setActiveWord = function(word) {
-      return this.activeWord = word;
-    };
-
-    _Class.prototype.getHighlightedWord = function() {
-      var _ref;
-      return (_ref = this.activeWord) != null ? _ref : this.hoveredWord;
+    _Class.prototype.startVariableScrub = function(opts) {
+      var cursor, onMove, variable;
+      variable = opts.variable;
+      cursor = opts.cursor;
+      onMove = opts.onMove;
+      return UI.dragging = {
+        cursor: cursor,
+        onMove: (function(_this) {
+          return function(e) {
+            var newValueString;
+            newValueString = onMove(e);
+            return variable.valueString = newValueString;
+          };
+        })(this)
+      };
     };
 
     _Class.prototype.setAutoFocus = function(opts) {
@@ -413,9 +417,17 @@
 
 }).call(this);
 }, "config": function(exports, require, module) {(function() {
-  var config, mainLineWidth;
+  var config, extend, mainLineStyle, mainLineWidth;
 
   mainLineWidth = 1.2;
+
+  mainLineStyle = {
+    lineWidth: mainLineWidth
+  };
+
+  extend = function(style) {
+    return _.defaults(style, mainLineStyle);
+  };
 
   window.config = config = {
     storageName: "spaceshader4",
@@ -426,44 +438,32 @@
     snapTolerance: 5,
     gridColor: "204,194,163",
     style: {
-      mainExpr: {
-        strokeStyle: "#000",
-        lineWidth: mainLineWidth,
-        lineCap: "round"
-      },
-      hoveredExpr: {
-        strokeStyle: "#900",
-        lineWidth: mainLineWidth,
-        lineCap: "round"
-      },
-      paramExpr: {
-        strokeStyle: "#ccc",
-        lineWidth: mainLineWidth,
-        lineCap: "round"
-      },
-      spreadPositiveExpr: {
-        strokeStyle: "#900",
-        lineWidth: mainLineWidth,
-        lineCap: "round"
-      },
-      spreadNegativeExpr: {
-        strokeStyle: "#009",
-        lineWidth: mainLineWidth,
-        lineCap: "round"
-      },
-      variable: {
+      mainExpr: extend({
+        strokeStyle: "#000"
+      }),
+      hoveredExpr: extend({
+        strokeStyle: "#900"
+      }),
+      paramExpr: extend({
+        strokeStyle: "#ccc"
+      }),
+      spreadPositiveExpr: extend({
+        strokeStyle: "#900"
+      }),
+      spreadNegativeExpr: extend({
+        strokeStyle: "#009"
+      }),
+      variable: extend({
         strokeStyle: "rgba(77,158,51,0.5)",
-        lineWidth: 1,
-        lineCap: "round"
-      },
-      hoveredVariable: {
+        lineWidth: 1
+      }),
+      hoveredVariable: extend({
         strokeStyle: "rgba(77,158,51,1)",
-        lineWidth: 2,
-        lineCap: "round"
-      }
+        lineWidth: 2
+      })
     },
-    spreadOpacityMax: 0.2,
-    spreadOpacityMin: 0.02,
+    spreadOpacityMax: 0.22,
+    spreadOpacityMin: 0.015,
     cursor: {
       text: "text",
       grab: "-webkit-grab",
@@ -1000,10 +1000,6 @@
       piece = pieces[_k];
       lineStart = piece.start;
       for (i = _l = _ref2 = piece.start + 1, _ref3 = piece.end; _ref2 <= _ref3 ? _l <= _ref3 : _l >= _ref3; i = _ref2 <= _ref3 ? ++_l : --_l) {
-        if (i === piece.end) {
-          pushLine(i);
-          continue;
-        }
         if (i - 1 === lineStart) {
           continue;
         }
@@ -1011,6 +1007,9 @@
         dCy2 = samples[i - 1].cy - samples[i - 2].cy;
         if (Math.abs(dCy1 - dCy2) > .000001) {
           pushLine(i - 1);
+        }
+        if (i === piece.end) {
+          pushLine(i);
         }
       }
     }
@@ -1670,7 +1669,8 @@
     },
     startScrub: function(variable, e) {
       UI.hoverIsActive = true;
-      return UI.dragging = {
+      return UI.startVariableScrub({
+        variable: variable,
         cursor: this.cursor(),
         onMove: (function(_this) {
           return function(e) {
@@ -1682,10 +1682,10 @@
               value = y;
             }
             precision = _this.getPrecision();
-            return variable.valueString = util.floatToString(value, precision);
+            return util.floatToString(value, precision);
           };
         })(this)
-      };
+      });
     },
     getPrecision: function() {
       var bounds, digitPrecision, pixelWidth, rect;
@@ -1770,10 +1770,7 @@
       expr: C.Expr
     },
     renderSpreads: function() {
-      var compiler, customFn, fnString, i, neg, spreadDistance, spreadNum, spreadOffset, spreadValue, spreadVariable, style, view, views, xVariable, _i, _j, _len, _ref, _ref1, _ref2;
-      if (UI.hoverIsActive) {
-        return;
-      }
+      var actualSpreadOffset, compiler, customFn, fnString, i, maxSpreadOffset, roundedValue, spreadDistance, spreadNum, spreadOffset, spreadValue, spreadVariable, style, value, view, views, xVariable, _i, _ref, _ref1;
       spreadVariable = (_ref = UI.hoverData) != null ? _ref.variable : void 0;
       if (!spreadVariable) {
         return;
@@ -1787,31 +1784,31 @@
         return;
       }
       spreadDistance = 0.5;
-      spreadNum = 5;
+      spreadNum = 4;
+      maxSpreadOffset = spreadDistance * spreadNum;
+      value = spreadVariable.getValue();
+      roundedValue = Math.round(value / spreadDistance) * spreadDistance;
       views = [];
-      for (i = _i = 1; 1 <= spreadNum ? _i < spreadNum : _i > spreadNum; i = 1 <= spreadNum ? ++_i : --_i) {
-        _ref2 = [-1, 1];
-        for (_j = 0, _len = _ref2.length; _j < _len; _j++) {
-          neg = _ref2[_j];
-          if (neg === -1) {
-            style = _.clone(config.style.spreadNegativeExpr);
-          } else {
-            style = _.clone(config.style.spreadPositiveExpr);
-          }
-          style.globalAlpha = util.lerp(i, 1, spreadNum, config.spreadOpacityMax, config.spreadOpacityMin);
-          spreadOffset = spreadDistance * i * neg;
-          spreadValue = spreadVariable.getValue() + spreadOffset;
-          compiler = new Compiler();
-          compiler.substitute(xVariable, "x");
-          compiler.substitute(spreadVariable, "" + spreadValue);
-          fnString = compiler.compile(this.expr);
-          fnString = "(function (x) { return " + fnString + " ; })";
-          view = R.PlotCartesianView({
-            fnString: fnString,
-            style: style
-          });
-          views.push(view);
+      for (i = _i = -spreadNum; -spreadNum <= spreadNum ? _i <= spreadNum : _i >= spreadNum; i = -spreadNum <= spreadNum ? ++_i : --_i) {
+        spreadOffset = i * spreadDistance;
+        spreadValue = roundedValue + spreadOffset;
+        actualSpreadOffset = spreadValue - value;
+        if (actualSpreadOffset < 0) {
+          style = _.clone(config.style.spreadNegativeExpr);
+        } else {
+          style = _.clone(config.style.spreadPositiveExpr);
         }
+        style.globalAlpha = util.lerp(Math.abs(spreadOffset), 0, maxSpreadOffset, config.spreadOpacityMax, config.spreadOpacityMin);
+        compiler = new Compiler();
+        compiler.substitute(xVariable, "x");
+        compiler.substitute(spreadVariable, "" + spreadValue);
+        fnString = compiler.compile(this.expr);
+        fnString = "(function (x) { return " + fnString + " ; })";
+        view = R.PlotCartesianView({
+          fnString: fnString,
+          style: style
+        });
+        views.push(view);
       }
       return views;
     },
@@ -2661,7 +2658,8 @@
       originalY = e.clientY;
       originalValue = this.variable.getValue();
       precision = 0.1;
-      return UI.dragging = {
+      return UI.startVariableScrub({
+        variable: this.variable,
         cursor: this.cursor(),
         onMove: (function(_this) {
           return function(e) {
@@ -2674,13 +2672,10 @@
               d = dy;
             }
             value = originalValue + d * precision;
-            return _this.variable.valueString = util.floatToString(value, precision);
+            return util.floatToString(value, precision);
           };
-        })(this),
-        onUp: (function(_this) {
-          return function() {};
         })(this)
-      };
+      });
     },
     cursor: function() {
       if (this.isMounted()) {

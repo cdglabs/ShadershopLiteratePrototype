@@ -56,12 +56,22 @@ window.UI = UI = new class
 
 
   # ===========================================================================
-  # Highlighting Words
+  # Scrubbing variables
   # ===========================================================================
 
-  setHoveredWord: (word) -> @hoveredWord = word
-  setActiveWord: (word) -> @activeWord = word
-  getHighlightedWord: -> @activeWord ? @hoveredWord
+  startVariableScrub: (opts) ->
+    variable = opts.variable
+    cursor = opts.cursor
+    onMove = opts.onMove
+    # onMove should be a function which returns a valueString
+
+    UI.dragging = {
+      cursor
+      onMove: (e) =>
+        newValueString = onMove(e)
+        variable.valueString = newValueString
+    }
+
 
 
   # ===========================================================================

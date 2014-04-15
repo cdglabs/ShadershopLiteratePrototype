@@ -88,7 +88,8 @@ R.create "MainPlotView",
 
   startScrub: (variable, e) ->
     UI.hoverIsActive = true
-    UI.dragging = {
+    UI.startVariableScrub {
+      variable: variable
       cursor: @cursor()
       onMove: (e) =>
         {x, y} = @getLocalMouseCoords()
@@ -98,7 +99,7 @@ R.create "MainPlotView",
           value = y
 
         precision = @getPrecision()
-        variable.valueString = util.floatToString(value, precision)
+        return util.floatToString(value, precision)
     }
 
   getPrecision: ->
@@ -157,8 +158,6 @@ R.create "PlotWithSpreadView",
     expr: C.Expr
 
   renderSpreads: ->
-    return if UI.hoverIsActive
-
     spreadVariable = UI.hoverData?.variable
     return unless spreadVariable
 
@@ -169,33 +168,42 @@ R.create "PlotWithSpreadView",
     return if xVariable == spreadVariable
 
     spreadDistance = 0.5
-    spreadNum = 5
+    spreadNum = 4
+    maxSpreadOffset = spreadDistance * spreadNum
+
+    value = spreadVariable.getValue()
+    roundedValue = Math.round(value / spreadDistance) * spreadDistance
 
     views = []
 
-    for i in [1...spreadNum]
-      for neg in [-1, 1]
-        if neg == -1
-          style = _.clone(config.style.spreadNegativeExpr)
-        else
-          style = _.clone(config.style.spreadPositiveExpr)
-        style.globalAlpha = util.lerp(i, 1, spreadNum, config.spreadOpacityMax, config.spreadOpacityMin)
-        spreadOffset = spreadDistance * i * neg
+    for i in [-spreadNum .. spreadNum]
+      spreadOffset = i * spreadDistance
+      spreadValue = roundedValue + spreadOffset
+      actualSpreadOffset = spreadValue - value
 
-        spreadValue = spreadVariable.getValue() + spreadOffset
+      if actualSpreadOffset < 0
+        style = _.clone(config.style.spreadNegativeExpr)
+      else
+        style = _.clone(config.style.spreadPositiveExpr)
 
-        compiler = new Compiler()
+      style.globalAlpha = util.lerp(
+        Math.abs(spreadOffset),
+        0, maxSpreadOffset,
+        config.spreadOpacityMax, config.spreadOpacityMin)
 
-        compiler.substitute(xVariable, "x")
-        compiler.substitute(spreadVariable, ""+spreadValue)
+      compiler = new Compiler()
 
-        fnString = compiler.compile(@expr)
-        fnString = "(function (x) { return #{fnString} ; })"
+      compiler.substitute(xVariable, "x")
+      compiler.substitute(spreadVariable, ""+spreadValue)
 
-        view = R.PlotCartesianView {fnString, style}
-        views.push(view)
+      fnString = compiler.compile(@expr)
+      fnString = "(function (x) { return #{fnString} ; })"
+
+      view = R.PlotCartesianView {fnString, style}
+      views.push(view)
 
     return views
+
 
   render: ->
     R.span {},
