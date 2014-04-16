@@ -1,5 +1,4 @@
 Priorities
-  Comments on fn's or literate..
   Preloaded "examples"
     Blank
     Waveforms
@@ -10,13 +9,8 @@ Priorities
 
 
 
-Workspace has a list of CustomFn's and Paragraphs
-Insert new (CustomFn or Paragraph) between any other two
-Remove
-Move down/up
 
-
-Editor has
+AppRoot has
   currentWorkspace
   savedWorkspaces
 

@@ -63,7 +63,7 @@ R.create "WorkspaceExtrasView",
       R.div {className: "CellHorizontal"},
         R.div {className: "CellHorizontal TextButtonLabel"}, "add:"
         R.div {className: "CellHorizontal TextButton", onClick: @addFunction}, "function"
-        R.div {className: "CellHorizontal TextButton", onClick: @addParagraph}, "paragraph"
+        R.div {className: "CellHorizontal TextButton", onClick: @addParagraph}, "text"
 
       if @workspaceIndex >= 0
         R.span {},
@@ -86,12 +86,11 @@ R.create "ParagraphView",
     paragraph: C.Paragraph
 
   handleInput: (newValue) ->
-    @paragraph.text = newValue
+    @paragraph.html = newValue
 
   render: ->
-    R.TextFieldView {
+    R.HTMLFieldView {
       className: "Paragraph"
-      value: @paragraph.text
+      value: @paragraph.html
       onInput: @handleInput
-      allowEnter: true
     }

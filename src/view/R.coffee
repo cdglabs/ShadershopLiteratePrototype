@@ -116,6 +116,7 @@ R.create = (name, opts) ->
 # =============================================================================
 
 require("./ui/TextFieldView")
+require("./ui/HTMLFieldView")
 require("./ui/HoverCaptureView")
 
 require("./AppRoot/AppRootView")

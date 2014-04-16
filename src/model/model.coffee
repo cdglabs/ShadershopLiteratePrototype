@@ -99,7 +99,7 @@ class C.CustomFn extends C.Fn
 
 class C.Paragraph
   constructor: ->
-    @text = ""
+    @html = "<p>---</p>"
 
 
 class C.Workspace

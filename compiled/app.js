@@ -906,7 +906,7 @@
 
   C.Paragraph = (function() {
     function Paragraph() {
-      this.text = "";
+      this.html = "<p>---</p>";
     }
 
     return Paragraph;
@@ -2281,6 +2281,8 @@
 
   require("./ui/TextFieldView");
 
+  require("./ui/HTMLFieldView");
+
   require("./ui/HoverCaptureView");
 
   require("./AppRoot/AppRootView");
@@ -2976,7 +2978,7 @@
       }, "function"), R.div({
         className: "CellHorizontal TextButton",
         onClick: this.addParagraph
-      }, "paragraph")), this.workspaceIndex >= 0 ? R.span({}, R.div({
+      }, "text")), this.workspaceIndex >= 0 ? R.span({}, R.div({
         className: "CellHorizontal"
       }, R.div({
         className: "CellHorizontal TextButtonLabel"
@@ -3008,14 +3010,13 @@
       paragraph: C.Paragraph
     },
     handleInput: function(newValue) {
-      return this.paragraph.text = newValue;
+      return this.paragraph.html = newValue;
     },
     render: function() {
-      return R.TextFieldView({
+      return R.HTMLFieldView({
         className: "Paragraph",
-        value: this.paragraph.text,
-        onInput: this.handleInput,
-        allowEnter: true
+        value: this.paragraph.html,
+        onInput: this.handleInput
       });
     }
   });
@@ -3196,6 +3197,54 @@
       return R.PlotCartesianView({
         fnString: this.compile(),
         style: this.style
+      });
+    }
+  });
+
+}).call(this);
+}, "view/ui/HTMLFieldView": function(exports, require, module) {(function() {
+  R.create("HTMLFieldView", {
+    propTypes: {
+      value: String,
+      className: String,
+      onInput: Function
+    },
+    getDefaultProps: function() {
+      return {
+        value: "",
+        className: "",
+        onInput: function(newValue) {}
+      };
+    },
+    shouldComponentUpdate: function(nextProps) {
+      return this._isDirty || nextProps.value !== this.props.value;
+    },
+    refresh: function() {
+      var el;
+      el = this.getDOMNode();
+      if (el.innerHTML !== this.value) {
+        el.innerHTML = this.value;
+      }
+      return this._isDirty = false;
+    },
+    componentDidMount: function() {
+      return this.refresh();
+    },
+    componentDidUpdate: function() {
+      return this.refresh();
+    },
+    handleInput: function() {
+      var el, newValue;
+      this._isDirty = true;
+      el = this.getDOMNode();
+      newValue = el.innerHTML;
+      return this.onInput(newValue);
+    },
+    render: function() {
+      return R.div({
+        className: this.className,
+        contentEditable: true,
+        onInput: this.handleInput
       });
     }
   });
