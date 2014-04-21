@@ -120,6 +120,7 @@ require("./ui/HTMLFieldView")
 require("./ui/HoverCaptureView")
 
 require("./AppRoot/AppRootView")
+require("./AppRoot/SavedExamplesView")
 require("./AppRoot/DraggingView")
 
 require("./Workspace/WorkspaceView")

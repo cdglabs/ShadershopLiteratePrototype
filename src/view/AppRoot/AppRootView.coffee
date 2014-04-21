@@ -10,5 +10,7 @@ R.create "AppRootView",
 
       R.WorkspaceView {workspace: @appRoot.workspaces[0]}
 
+      R.SavedExamplesView {}
+
       R.div {className: "dragging"},
         R.DraggingView {}

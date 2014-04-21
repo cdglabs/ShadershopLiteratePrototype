@@ -477,7 +477,7 @@
 
 }).call(this);
 }, "main": function(exports, require, module) {(function() {
-  var appRoot, eventName, json, refresh, refreshEventNames, refreshView, saveState, storageName, willRefreshNextFrame, _i, _len;
+  var eventName, json, refresh, refreshEventNames, refreshView, saveState, storageName, willRefreshNextFrame, _i, _len;
 
   require("./config");
 
@@ -489,6 +489,8 @@
 
   require("./UI");
 
+  require("./savedExamples");
+
   storageName = config.storageName;
 
   window.reset = function() {
@@ -498,9 +500,9 @@
 
   if (json = window.localStorage[storageName]) {
     json = JSON.parse(json);
-    window.appRoot = appRoot = C.reconstruct(json);
+    window.appRoot = C.reconstruct(json);
   } else {
-    window.appRoot = appRoot = new C.AppRoot();
+    window.appRoot = new C.AppRoot();
   }
 
   saveState = function() {
@@ -514,6 +516,9 @@
   };
 
   window.restore = function(jsonString) {
+    if (!_.isString(jsonString)) {
+      jsonString = JSON.stringify(jsonString);
+    }
     window.localStorage[storageName] = jsonString;
     return location.reload();
   };
@@ -549,7 +554,9 @@
 
   refresh();
 
-  document.styleSheets.start_autoreload(1000);
+  if (location.protocol === "file:") {
+    document.styleSheets.start_autoreload(1000);
+  }
 
 }).call(this);
 }, "model/C": function(exports, require, module) {(function() {
@@ -953,6 +960,2218 @@
     return AppRoot;
 
   })();
+
+}).call(this);
+}, "savedExamples": function(exports, require, module) {(function() {
+  var savedExamples;
+
+  savedExamples = window.savedExamples = {};
+
+  savedExamples.noise = {
+    "objects": {
+      "id60621397674581882363047513": {
+        "html": "<p>In this example we'll implement <b>fractal noise</b>.</p>",
+        "__id": "id60621397674581882363047513",
+        "__className": "Paragraph"
+      },
+      "id60641397674912222468505647": {
+        "valueString": "7.32",
+        "label": "x",
+        "domain": "domain",
+        "domainCoord": 0,
+        "__id": "id60641397674912222468505647",
+        "__className": "Variable"
+      },
+      "id37631397672744985842801324": {
+        "valueString": "0",
+        "label": "x",
+        "domain": "domain",
+        "domainCoord": 0,
+        "__id": "id37631397672744985842801324",
+        "__className": "Variable"
+      },
+      "id60081397672896080202692229": {
+        "fnName": "add",
+        "__id": "id60081397672896080202692229",
+        "__className": "BuiltInFn"
+      },
+      "id55681397672852248781407171": {
+        "fnName": "add",
+        "__id": "id55681397672852248781407171",
+        "__className": "BuiltInFn"
+      },
+      "id53541397672845052963149318": {
+        "fnName": "add",
+        "__id": "id53541397672845052963149318",
+        "__className": "BuiltInFn"
+      },
+      "id51411397672838914149840812": {
+        "fnName": "add",
+        "__id": "id51411397672838914149840812",
+        "__className": "BuiltInFn"
+      },
+      "id44771397672808882694025554": {
+        "fnName": "add",
+        "__id": "id44771397672808882694025554",
+        "__className": "BuiltInFn"
+      },
+      "id44071397672808671248708599": {
+        "valueString": "0",
+        "label": "",
+        "domain": "range",
+        "domainCoord": 0,
+        "__id": "id44071397672808671248708599",
+        "__className": "Variable"
+      },
+      "id45841397672815189246173400": {
+        "fnName": "identity",
+        "__id": "id45841397672815189246173400",
+        "__className": "BuiltInFn"
+      },
+      "id17231397672626128618531094": {
+        "valueString": "0",
+        "label": "x",
+        "domain": "domain",
+        "domainCoord": 0,
+        "__id": "id17231397672626128618531094",
+        "__className": "Variable"
+      },
+      "id24381397672677656881140444": {
+        "valueString": "2",
+        "label": "octave",
+        "domain": "range",
+        "domainCoord": 0,
+        "__id": "id24381397672677656881140444",
+        "__className": "Variable"
+      },
+      "id35631397672711278426397396": {
+        "fnName": "div",
+        "__id": "id35631397672711278426397396",
+        "__className": "BuiltInFn"
+      },
+      "id8871397672552245295384721": {
+        "valueString": "0",
+        "label": "x",
+        "domain": "domain",
+        "domainCoord": 0,
+        "__id": "id8871397672552245295384721",
+        "__className": "Variable"
+      },
+      "id18521397606090181995060606": {
+        "valueString": "0",
+        "label": "x",
+        "domain": "domain",
+        "domainCoord": 0,
+        "__id": "id18521397606090181995060606",
+        "__className": "Variable"
+      },
+      "id20091397606109865982236105": {
+        "valueString": "0.96",
+        "label": "edge 0",
+        "domain": "range",
+        "domainCoord": 0,
+        "__id": "id20091397606109865982236105",
+        "__className": "Variable"
+      },
+      "id20101397606109866173217725": {
+        "valueString": "2.61",
+        "label": "edge 1",
+        "domain": "range",
+        "domainCoord": 0,
+        "__id": "id20101397606109866173217725",
+        "__className": "Variable"
+      },
+      "id21397605414806194341558": {
+        "valueString": "-0.81",
+        "label": "x",
+        "domain": "domain",
+        "domainCoord": 0,
+        "__id": "id21397605414806194341558",
+        "__className": "Variable"
+      },
+      "id2081397605673099642823816": {
+        "valueString": "0.99",
+        "label": "edge 0",
+        "domain": "range",
+        "domainCoord": 0,
+        "__id": "id2081397605673099642823816",
+        "__className": "Variable"
+      },
+      "id21397605670038186761684": {
+        "valueString": "2.46",
+        "label": "edge 1",
+        "domain": "range",
+        "domainCoord": 0,
+        "__id": "id21397605670038186761684",
+        "__className": "Variable"
+      },
+      "id6471397605719046957650591": {
+        "fnName": "add",
+        "__id": "id6471397605719046957650591",
+        "__className": "BuiltInFn"
+      },
+      "id4731397605700819168007263": {
+        "fnName": "mul",
+        "__id": "id4731397605700819168007263",
+        "__className": "BuiltInFn"
+      },
+      "id3391397605690795196264996": {
+        "fnName": "identity",
+        "__id": "id3391397605690795196264996",
+        "__className": "BuiltInFn"
+      },
+      "id2491397605673174795752112": {
+        "fnName": "sub",
+        "__id": "id2491397605673174795752112",
+        "__className": "BuiltInFn"
+      },
+      "id31397605671891668527791": {
+        "fn": {
+          "__ref": "id2491397605673174795752112"
+        },
+        "label": "",
+        "paramExprs": [
+          {
+            "__ref": "id21397605670038186761684"
+          }, {
+            "__ref": "id2081397605673099642823816"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id31397605671891668527791",
+        "__className": "Application"
+      },
+      "id3381397605690790625460566": {
+        "fn": {
+          "__ref": "id3391397605690795196264996"
+        },
+        "label": "slope",
+        "paramExprs": [
+          {
+            "__ref": "id31397605671891668527791"
+          }
+        ],
+        "isProvisional": true,
+        "__id": "id3381397605690790625460566",
+        "__className": "Application"
+      },
+      "id3851397605695560935189690": {
+        "fn": {
+          "__ref": "id4731397605700819168007263"
+        },
+        "label": "*",
+        "paramExprs": [
+          {
+            "__ref": "id21397605414806194341558"
+          }, {
+            "__ref": "id3381397605690790625460566"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id3851397605695560935189690",
+        "__className": "Application"
+      },
+      "id4901397605717196387199655": {
+        "fn": {
+          "__ref": "id6471397605719046957650591"
+        },
+        "label": "",
+        "paramExprs": [
+          {
+            "__ref": "id3851397605695560935189690"
+          }, {
+            "__ref": "id2081397605673099642823816"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id4901397605717196387199655",
+        "__className": "Application"
+      },
+      "id11397605414790587874259": {
+        "label": "mix",
+        "paramVariables": [
+          {
+            "__ref": "id21397605414806194341558"
+          }, {
+            "__ref": "id2081397605673099642823816"
+          }, {
+            "__ref": "id21397605670038186761684"
+          }
+        ],
+        "rootExprs": [
+          {
+            "__ref": "id4901397605717196387199655"
+          }, {
+            "__ref": "id3381397605690790625460566"
+          }
+        ],
+        "bounds": {
+          "xMin": -6,
+          "xMax": 6,
+          "yMin": -6,
+          "yMax": 6
+        },
+        "__id": "id11397605414790587874259",
+        "__className": "CustomFn"
+      },
+      "id7161397605984675631414022": {
+        "valueString": "0",
+        "label": "x",
+        "domain": "domain",
+        "domainCoord": 0,
+        "__id": "id7161397605984675631414022",
+        "__className": "Variable"
+      },
+      "id16431397606044491268788006": {
+        "fnName": "identity",
+        "__id": "id16431397606044491268788006",
+        "__className": "BuiltInFn"
+      },
+      "id7191397606001864212514753": {
+        "valueString": "0",
+        "label": "x",
+        "domain": "domain",
+        "domainCoord": 0,
+        "__id": "id7191397606001864212514753",
+        "__className": "Variable"
+      },
+      "id9851397606008610381570517": {
+        "fnName": "mul",
+        "__id": "id9851397606008610381570517",
+        "__className": "BuiltInFn"
+      },
+      "id7201397606006712283742655": {
+        "fn": {
+          "__ref": "id9851397606008610381570517"
+        },
+        "label": "",
+        "paramExprs": [
+          {
+            "__ref": "id7191397606001864212514753"
+          }, {
+            "__ref": "id7191397606001864212514753"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id7201397606006712283742655",
+        "__className": "Application"
+      },
+      "id7181397606001835372801593": {
+        "label": "square",
+        "paramVariables": [
+          {
+            "__ref": "id7191397606001864212514753"
+          }
+        ],
+        "rootExprs": [
+          {
+            "__ref": "id7201397606006712283742655"
+          }
+        ],
+        "bounds": {
+          "xMin": -6,
+          "xMax": 6,
+          "yMin": -6,
+          "yMax": 6
+        },
+        "__id": "id7181397606001835372801593",
+        "__className": "CustomFn"
+      },
+      "id10901397606012920754219142": {
+        "fn": {
+          "__ref": "id7181397606001835372801593"
+        },
+        "label": "sq",
+        "paramExprs": [
+          {
+            "__ref": "id7161397605984675631414022"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id10901397606012920754219142",
+        "__className": "Application"
+      },
+      "id16421397606044480564947843": {
+        "fn": {
+          "__ref": "id16431397606044491268788006"
+        },
+        "label": "parabola 0",
+        "paramExprs": [
+          {
+            "__ref": "id10901397606012920754219142"
+          }
+        ],
+        "isProvisional": true,
+        "__id": "id16421397606044480564947843",
+        "__className": "Application"
+      },
+      "id16991397606050073488603224": {
+        "fnName": "identity",
+        "__id": "id16991397606050073488603224",
+        "__className": "BuiltInFn"
+      },
+      "id14211397606025156843866812": {
+        "fnName": "sub",
+        "__id": "id14211397606025156843866812",
+        "__className": "BuiltInFn"
+      },
+      "id1372139760602502863500741": {
+        "valueString": "1",
+        "label": "",
+        "domain": "range",
+        "domainCoord": 0,
+        "__id": "id1372139760602502863500741",
+        "__className": "Variable"
+      },
+      "id11831397606023270749790135": {
+        "fn": {
+          "__ref": "id14211397606025156843866812"
+        },
+        "label": "",
+        "paramExprs": [
+          {
+            "__ref": "id7161397605984675631414022"
+          }, {
+            "__ref": "id1372139760602502863500741"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id11831397606023270749790135",
+        "__className": "Application"
+      },
+      "id1448139760602889887911835": {
+        "fn": {
+          "__ref": "id7181397606001835372801593"
+        },
+        "label": "sq",
+        "paramExprs": [
+          {
+            "__ref": "id11831397606023270749790135"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id1448139760602889887911835",
+        "__className": "Application"
+      },
+      "id1614139760603526315851766": {
+        "valueString": "1",
+        "label": "",
+        "domain": "range",
+        "domainCoord": 0,
+        "__id": "id1614139760603526315851766",
+        "__className": "Variable"
+      },
+      "id16151397606035264579519868": {
+        "valueString": "0",
+        "label": "",
+        "domain": "range",
+        "domainCoord": 0,
+        "__id": "id16151397606035264579519868",
+        "__className": "Variable"
+      },
+      "id15301397606032865945801681": {
+        "fn": {
+          "__ref": "id11397605414790587874259"
+        },
+        "label": "mi",
+        "paramExprs": [
+          {
+            "__ref": "id1448139760602889887911835"
+          }, {
+            "__ref": "id1614139760603526315851766"
+          }, {
+            "__ref": "id16151397606035264579519868"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id15301397606032865945801681",
+        "__className": "Application"
+      },
+      "id16981397606050046204370032": {
+        "fn": {
+          "__ref": "id16991397606050073488603224"
+        },
+        "label": "parabola 1",
+        "paramExprs": [
+          {
+            "__ref": "id15301397606032865945801681"
+          }
+        ],
+        "isProvisional": true,
+        "__id": "id16981397606050046204370032",
+        "__className": "Application"
+      },
+      "id17551397606060621920156318": {
+        "fn": {
+          "__ref": "id11397605414790587874259"
+        },
+        "label": "mix",
+        "paramExprs": [
+          {
+            "__ref": "id7161397605984675631414022"
+          }, {
+            "__ref": "id16421397606044480564947843"
+          }, {
+            "__ref": "id16981397606050046204370032"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id17551397606060621920156318",
+        "__className": "Application"
+      },
+      "id7151397605984654812277229": {
+        "label": "smooth cubic",
+        "paramVariables": [
+          {
+            "__ref": "id7161397605984675631414022"
+          }
+        ],
+        "rootExprs": [
+          {
+            "__ref": "id17551397606060621920156318"
+          }, {
+            "__ref": "id16421397606044480564947843"
+          }, {
+            "__ref": "id16981397606050046204370032"
+          }
+        ],
+        "bounds": {
+          "xMin": -0.5202827997589926,
+          "xMax": 1.8053975938547868,
+          "yMin": -0.7663053043076519,
+          "yMax": 1.5593750893061276
+        },
+        "__id": "id7151397605984654812277229",
+        "__className": "CustomFn"
+      },
+      "id18531397606102419671988059": {
+        "fn": {
+          "__ref": "id7151397605984654812277229"
+        },
+        "label": "smoo",
+        "paramExprs": [
+          {
+            "__ref": "id18521397606090181995060606"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id18531397606102419671988059",
+        "__className": "Application"
+      },
+      "id19281397606107278665564633": {
+        "fn": {
+          "__ref": "id11397605414790587874259"
+        },
+        "label": "mix",
+        "paramExprs": [
+          {
+            "__ref": "id18531397606102419671988059"
+          }, {
+            "__ref": "id20091397606109865982236105"
+          }, {
+            "__ref": "id20101397606109866173217725"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id19281397606107278665564633",
+        "__className": "Application"
+      },
+      "id1851139760609015539169492": {
+        "label": "smooth mix",
+        "paramVariables": [
+          {
+            "__ref": "id18521397606090181995060606"
+          }, {
+            "__ref": "id20091397606109865982236105"
+          }, {
+            "__ref": "id20101397606109866173217725"
+          }
+        ],
+        "rootExprs": [
+          {
+            "__ref": "id19281397606107278665564633"
+          }
+        ],
+        "bounds": {
+          "xMin": -2.6337037037037057,
+          "xMax": 3.1533333333333338,
+          "yMin": -1.2074768518518517,
+          "yMax": 4.579560185185186
+        },
+        "__id": "id1851139760609015539169492",
+        "__className": "CustomFn"
+      },
+      "id16031397672601632702459508": {
+        "fnName": "fract",
+        "__id": "id16031397672601632702459508",
+        "__className": "BuiltInFn"
+      },
+      "id15291397672600123697801885": {
+        "fn": {
+          "__ref": "id16031397672601632702459508"
+        },
+        "label": "fr",
+        "paramExprs": [
+          {
+            "__ref": "id8871397672552245295384721"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id15291397672600123697801885",
+        "__className": "Application"
+      },
+      "id1359139767258101656568105": {
+        "fnName": "identity",
+        "__id": "id1359139767258101656568105",
+        "__className": "BuiltInFn"
+      },
+      "id7141397672535476396812256": {
+        "valueString": "-0.60",
+        "label": "x",
+        "domain": "domain",
+        "domainCoord": 0,
+        "__id": "id7141397672535476396812256",
+        "__className": "Variable"
+      },
+      "id21397672502447168273659": {
+        "valueString": "0",
+        "label": "x",
+        "domain": "domain",
+        "domainCoord": 0,
+        "__id": "id21397672502447168273659",
+        "__className": "Variable"
+      },
+      "id7071397672518891560312329": {
+        "fnName": "fract",
+        "__id": "id7071397672518891560312329",
+        "__className": "BuiltInFn"
+      },
+      "id4251397672515148795457683": {
+        "fnName": "mul",
+        "__id": "id4251397672515148795457683",
+        "__className": "BuiltInFn"
+      },
+      "id1651397672511183894870947": {
+        "fnName": "sin",
+        "__id": "id1651397672511183894870947",
+        "__className": "BuiltInFn"
+      },
+      "id31397672508882835274063": {
+        "fn": {
+          "__ref": "id1651397672511183894870947"
+        },
+        "label": "s",
+        "paramExprs": [
+          {
+            "__ref": "id21397672502447168273659"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id31397672508882835274063",
+        "__className": "Application"
+      },
+      "id3701397672515009498690029": {
+        "valueString": "99999",
+        "label": "generator",
+        "domain": "range",
+        "domainCoord": 0,
+        "__id": "id3701397672515009498690029",
+        "__className": "Variable"
+      },
+      "id2111397672513319155541622": {
+        "fn": {
+          "__ref": "id4251397672515148795457683"
+        },
+        "label": "",
+        "paramExprs": [
+          {
+            "__ref": "id31397672508882835274063"
+          }, {
+            "__ref": "id3701397672515009498690029"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id2111397672513319155541622",
+        "__className": "Application"
+      },
+      "id5761397672516758970134017": {
+        "fn": {
+          "__ref": "id7071397672518891560312329"
+        },
+        "label": "fra",
+        "paramExprs": [
+          {
+            "__ref": "id2111397672513319155541622"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id5761397672516758970134017",
+        "__className": "Application"
+      },
+      "id11397672502440877422195": {
+        "label": "noise",
+        "paramVariables": [
+          {
+            "__ref": "id21397672502447168273659"
+          }
+        ],
+        "rootExprs": [
+          {
+            "__ref": "id5761397672516758970134017"
+          }
+        ],
+        "bounds": {
+          "xMin": -6,
+          "xMax": 6,
+          "yMin": -6,
+          "yMax": 6
+        },
+        "__id": "id11397672502440877422195",
+        "__className": "CustomFn"
+      },
+      "id8001397672543517318546580": {
+        "fnName": "floor",
+        "__id": "id8001397672543517318546580",
+        "__className": "BuiltInFn"
+      },
+      "id71513976725420822420355": {
+        "fn": {
+          "__ref": "id8001397672543517318546580"
+        },
+        "label": "f",
+        "paramExprs": [
+          {
+            "__ref": "id7141397672535476396812256"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id71513976725420822420355",
+        "__className": "Application"
+      },
+      "id8091397672545416813967240": {
+        "fn": {
+          "__ref": "id11397672502440877422195"
+        },
+        "label": "noi",
+        "paramExprs": [
+          {
+            "__ref": "id71513976725420822420355"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id8091397672545416813967240",
+        "__className": "Application"
+      },
+      "id7131397672535462674735110": {
+        "label": "step noise",
+        "paramVariables": [
+          {
+            "__ref": "id7141397672535476396812256"
+          }
+        ],
+        "rootExprs": [
+          {
+            "__ref": "id8091397672545416813967240"
+          }
+        ],
+        "bounds": {
+          "xMin": -6,
+          "xMax": 6,
+          "yMin": -6,
+          "yMax": 6
+        },
+        "__id": "id7131397672535462674735110",
+        "__className": "CustomFn"
+      },
+      "id8881397672562664611455659": {
+        "fn": {
+          "__ref": "id7131397672535462674735110"
+        },
+        "label": "st",
+        "paramExprs": [
+          {
+            "__ref": "id8871397672552245295384721"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id8881397672562664611455659",
+        "__className": "Application"
+      },
+      "id13581397672581000287260818": {
+        "fn": {
+          "__ref": "id1359139767258101656568105"
+        },
+        "label": "step noise 0",
+        "paramExprs": [
+          {
+            "__ref": "id8881397672562664611455659"
+          }
+        ],
+        "isProvisional": true,
+        "__id": "id13581397672581000287260818",
+        "__className": "Application"
+      },
+      "id14441397672585588612247866": {
+        "fnName": "identity",
+        "__id": "id14441397672585588612247866",
+        "__className": "BuiltInFn"
+      },
+      "id11401397672574694574920948": {
+        "fnName": "add",
+        "__id": "id11401397672574694574920948",
+        "__className": "BuiltInFn"
+      },
+      "id10761397672574569958331120": {
+        "valueString": "1",
+        "label": "",
+        "domain": "range",
+        "domainCoord": 0,
+        "__id": "id10761397672574569958331120",
+        "__className": "Variable"
+      },
+      "id9771397672573146817430417": {
+        "fn": {
+          "__ref": "id11401397672574694574920948"
+        },
+        "label": "",
+        "paramExprs": [
+          {
+            "__ref": "id8871397672552245295384721"
+          }, {
+            "__ref": "id10761397672574569958331120"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id9771397672573146817430417",
+        "__className": "Application"
+      },
+      "id12691397672577151581049190": {
+        "fn": {
+          "__ref": "id7131397672535462674735110"
+        },
+        "label": "st",
+        "paramExprs": [
+          {
+            "__ref": "id9771397672573146817430417"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id12691397672577151581049190",
+        "__className": "Application"
+      },
+      "id14431397672585575634747131": {
+        "fn": {
+          "__ref": "id14441397672585588612247866"
+        },
+        "label": "step noise 1",
+        "paramExprs": [
+          {
+            "__ref": "id12691397672577151581049190"
+          }
+        ],
+        "isProvisional": true,
+        "__id": "id14431397672585575634747131",
+        "__className": "Application"
+      },
+      "id16091397672603450513922751": {
+        "fn": {
+          "__ref": "id1851139760609015539169492"
+        },
+        "label": "smoo",
+        "paramExprs": [
+          {
+            "__ref": "id15291397672600123697801885"
+          }, {
+            "__ref": "id13581397672581000287260818"
+          }, {
+            "__ref": "id14431397672585575634747131"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id16091397672603450513922751",
+        "__className": "Application"
+      },
+      "id8861397672552228499661046": {
+        "label": "smooth noise",
+        "paramVariables": [
+          {
+            "__ref": "id8871397672552245295384721"
+          }
+        ],
+        "rootExprs": [
+          {
+            "__ref": "id16091397672603450513922751"
+          }, {
+            "__ref": "id13581397672581000287260818"
+          }, {
+            "__ref": "id14431397672585575634747131"
+          }
+        ],
+        "bounds": {
+          "xMin": -6,
+          "xMax": 6,
+          "yMin": -6,
+          "yMax": 6
+        },
+        "__id": "id8861397672552228499661046",
+        "__className": "CustomFn"
+      },
+      "id28291397672699562295140799": {
+        "fnName": "mul",
+        "__id": "id28291397672699562295140799",
+        "__className": "BuiltInFn"
+      },
+      "id24501397672694041220233699": {
+        "fnName": "identity",
+        "__id": "id24501397672694041220233699",
+        "__className": "BuiltInFn"
+      },
+      "id24421397672677746480660189": {
+        "fnName": "pow",
+        "__id": "id24421397672677746480660189",
+        "__className": "BuiltInFn"
+      },
+      "id23541397672669905847763568": {
+        "valueString": "2",
+        "label": "",
+        "domain": "range",
+        "domainCoord": 0,
+        "__id": "id23541397672669905847763568",
+        "__className": "Variable"
+      },
+      "id23551397672674556439946233": {
+        "fn": {
+          "__ref": "id24421397672677746480660189"
+        },
+        "label": "pow",
+        "paramExprs": [
+          {
+            "__ref": "id23541397672669905847763568"
+          }, {
+            "__ref": "id24381397672677656881140444"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id23551397672674556439946233",
+        "__className": "Application"
+      },
+      "id24491397672694034645006026": {
+        "fn": {
+          "__ref": "id24501397672694041220233699"
+        },
+        "label": "scale factor",
+        "paramExprs": [
+          {
+            "__ref": "id23551397672674556439946233"
+          }
+        ],
+        "isProvisional": true,
+        "__id": "id24491397672694034645006026",
+        "__className": "Application"
+      },
+      "id17241397672642092498872477": {
+        "fn": {
+          "__ref": "id28291397672699562295140799"
+        },
+        "label": "",
+        "paramExprs": [
+          {
+            "__ref": "id17231397672626128618531094"
+          }, {
+            "__ref": "id24491397672694034645006026"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id17241397672642092498872477",
+        "__className": "Application"
+      },
+      "id29621397672703279814642731": {
+        "fn": {
+          "__ref": "id8861397672552228499661046"
+        },
+        "label": "smoo",
+        "paramExprs": [
+          {
+            "__ref": "id17241397672642092498872477"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id29621397672703279814642731",
+        "__className": "Application"
+      },
+      "id30971397672708589256372422": {
+        "fn": {
+          "__ref": "id35631397672711278426397396"
+        },
+        "label": "",
+        "paramExprs": [
+          {
+            "__ref": "id29621397672703279814642731"
+          }, {
+            "__ref": "id24491397672694034645006026"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id30971397672708589256372422",
+        "__className": "Application"
+      },
+      "id17221397672626100341402376": {
+        "label": "noise octave",
+        "paramVariables": [
+          {
+            "__ref": "id17231397672626128618531094"
+          }, {
+            "__ref": "id24381397672677656881140444"
+          }
+        ],
+        "rootExprs": [
+          {
+            "__ref": "id30971397672708589256372422"
+          }, {
+            "__ref": "id24491397672694034645006026"
+          }
+        ],
+        "bounds": {
+          "xMin": -6,
+          "xMax": 6,
+          "yMin": -6,
+          "yMax": 6
+        },
+        "__id": "id17221397672626100341402376",
+        "__className": "CustomFn"
+      },
+      "id38581397672760642938412809": {
+        "valueString": "0",
+        "label": "",
+        "domain": "range",
+        "domainCoord": 0,
+        "__id": "id38581397672760642938412809",
+        "__className": "Variable"
+      },
+      "id37651397672757240939045609": {
+        "fn": {
+          "__ref": "id17221397672626100341402376"
+        },
+        "label": "oct",
+        "paramExprs": [
+          {
+            "__ref": "id37631397672744985842801324"
+          }, {
+            "__ref": "id38581397672760642938412809"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id37651397672757240939045609",
+        "__className": "Application"
+      },
+      "id45831397672815153458609346": {
+        "fn": {
+          "__ref": "id45841397672815189246173400"
+        },
+        "label": "octave 0",
+        "paramExprs": [
+          {
+            "__ref": "id37651397672757240939045609"
+          }
+        ],
+        "isProvisional": true,
+        "__id": "id45831397672815153458609346",
+        "__className": "Application"
+      },
+      "id42991397672807076474492207": {
+        "fn": {
+          "__ref": "id44771397672808882694025554"
+        },
+        "label": "",
+        "paramExprs": [
+          {
+            "__ref": "id44071397672808671248708599"
+          }, {
+            "__ref": "id45831397672815153458609346"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id42991397672807076474492207",
+        "__className": "Application"
+      },
+      "id46791397672821482843881502": {
+        "fnName": "identity",
+        "__id": "id46791397672821482843881502",
+        "__className": "BuiltInFn"
+      },
+      "id39831397672774956633418342": {
+        "valueString": "1",
+        "label": "",
+        "domain": "range",
+        "domainCoord": 0,
+        "__id": "id39831397672774956633418342",
+        "__className": "Variable"
+      },
+      "id38691397672771979898054729": {
+        "fn": {
+          "__ref": "id17221397672626100341402376"
+        },
+        "label": "nois",
+        "paramExprs": [
+          {
+            "__ref": "id37631397672744985842801324"
+          }, {
+            "__ref": "id39831397672774956633418342"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id38691397672771979898054729",
+        "__className": "Application"
+      },
+      "id46781397672821453891259740": {
+        "fn": {
+          "__ref": "id46791397672821482843881502"
+        },
+        "label": "octave 1",
+        "paramExprs": [
+          {
+            "__ref": "id38691397672771979898054729"
+          }
+        ],
+        "isProvisional": true,
+        "__id": "id46781397672821453891259740",
+        "__className": "Application"
+      },
+      "id49631397672837290259506201": {
+        "fn": {
+          "__ref": "id51411397672838914149840812"
+        },
+        "label": "",
+        "paramExprs": [
+          {
+            "__ref": "id42991397672807076474492207"
+          }, {
+            "__ref": "id46781397672821453891259740"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id49631397672837290259506201",
+        "__className": "Application"
+      },
+      "id47741397672825582227248003": {
+        "fnName": "identity",
+        "__id": "id47741397672825582227248003",
+        "__className": "BuiltInFn"
+      },
+      "id41351397672783434301259227": {
+        "valueString": "2",
+        "label": "",
+        "domain": "range",
+        "domainCoord": 0,
+        "__id": "id41351397672783434301259227",
+        "__className": "Variable"
+      },
+      "id40161397672780712912015904": {
+        "fn": {
+          "__ref": "id17221397672626100341402376"
+        },
+        "label": "nois",
+        "paramExprs": [
+          {
+            "__ref": "id37631397672744985842801324"
+          }, {
+            "__ref": "id41351397672783434301259227"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id40161397672780712912015904",
+        "__className": "Application"
+      },
+      "id4773139767282555159229774": {
+        "fn": {
+          "__ref": "id47741397672825582227248003"
+        },
+        "label": "octave 2",
+        "paramExprs": [
+          {
+            "__ref": "id40161397672780712912015904"
+          }
+        ],
+        "isProvisional": true,
+        "__id": "id4773139767282555159229774",
+        "__className": "Application"
+      },
+      "id52121397672843269856883959": {
+        "fn": {
+          "__ref": "id53541397672845052963149318"
+        },
+        "label": "",
+        "paramExprs": [
+          {
+            "__ref": "id49631397672837290259506201"
+          }, {
+            "__ref": "id4773139767282555159229774"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id52121397672843269856883959",
+        "__className": "Application"
+      },
+      "id48691397672829789317065491": {
+        "fnName": "identity",
+        "__id": "id48691397672829789317065491",
+        "__className": "BuiltInFn"
+      },
+      "id42771397672796938472848302": {
+        "valueString": "3",
+        "label": "",
+        "domain": "range",
+        "domainCoord": 0,
+        "__id": "id42771397672796938472848302",
+        "__className": "Variable"
+      },
+      "id41581397672793425717311336": {
+        "fn": {
+          "__ref": "id17221397672626100341402376"
+        },
+        "label": "nois",
+        "paramExprs": [
+          {
+            "__ref": "id37631397672744985842801324"
+          }, {
+            "__ref": "id42771397672796938472848302"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id41581397672793425717311336",
+        "__className": "Application"
+      },
+      "id48681397672829753333664463": {
+        "fn": {
+          "__ref": "id48691397672829789317065491"
+        },
+        "label": "octave 3",
+        "paramExprs": [
+          {
+            "__ref": "id41581397672793425717311336"
+          }
+        ],
+        "isProvisional": true,
+        "__id": "id48681397672829753333664463",
+        "__className": "Application"
+      },
+      "id5390139767285009957950373": {
+        "fn": {
+          "__ref": "id55681397672852248781407171"
+        },
+        "label": "",
+        "paramExprs": [
+          {
+            "__ref": "id52121397672843269856883959"
+          }, {
+            "__ref": "id48681397672829753333664463"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id5390139767285009957950373",
+        "__className": "Application"
+      },
+      "id57371397672887262269237275": {
+        "fnName": "identity",
+        "__id": "id57371397672887262269237275",
+        "__className": "BuiltInFn"
+      },
+      "id57191397672883241338382899": {
+        "valueString": "4",
+        "label": "",
+        "domain": "range",
+        "domainCoord": 0,
+        "__id": "id57191397672883241338382899",
+        "__className": "Variable"
+      },
+      "id56051397672879733304292238": {
+        "fn": {
+          "__ref": "id17221397672626100341402376"
+        },
+        "label": "noise",
+        "paramExprs": [
+          {
+            "__ref": "id37631397672744985842801324"
+          }, {
+            "__ref": "id57191397672883241338382899"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id56051397672879733304292238",
+        "__className": "Application"
+      },
+      "id57361397672887231983162506": {
+        "fn": {
+          "__ref": "id57371397672887262269237275"
+        },
+        "label": "octave 4",
+        "paramExprs": [
+          {
+            "__ref": "id56051397672879733304292238"
+          }
+        ],
+        "isProvisional": true,
+        "__id": "id57361397672887231983162506",
+        "__className": "Application"
+      },
+      "id58311397672894035990968903": {
+        "fn": {
+          "__ref": "id60081397672896080202692229"
+        },
+        "label": "",
+        "paramExprs": [
+          {
+            "__ref": "id5390139767285009957950373"
+          }, {
+            "__ref": "id57361397672887231983162506"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id58311397672894035990968903",
+        "__className": "Application"
+      },
+      "id37621397672744958885944092": {
+        "label": "fractal noise",
+        "paramVariables": [
+          {
+            "__ref": "id37631397672744985842801324"
+          }
+        ],
+        "rootExprs": [
+          {
+            "__ref": "id58311397672894035990968903"
+          }, {
+            "__ref": "id45831397672815153458609346"
+          }, {
+            "__ref": "id46781397672821453891259740"
+          }, {
+            "__ref": "id4773139767282555159229774"
+          }, {
+            "__ref": "id48681397672829753333664463"
+          }, {
+            "__ref": "id57361397672887231983162506"
+          }
+        ],
+        "bounds": {
+          "xMin": 2.7614506172839492,
+          "xMax": 7.583981481481481,
+          "yMin": -1.802403549382716,
+          "yMax": 3.020127314814816
+        },
+        "__id": "id37621397672744958885944092",
+        "__className": "CustomFn"
+      },
+      "id60651397674916201948514484": {
+        "fn": {
+          "__ref": "id37621397672744958885944092"
+        },
+        "label": "frac",
+        "paramExprs": [
+          {
+            "__ref": "id60641397674912222468505647"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id60651397674916201948514484",
+        "__className": "Application"
+      },
+      "id60631397674912215788185779": {
+        "label": "",
+        "paramVariables": [
+          {
+            "__ref": "id60641397674912222468505647"
+          }
+        ],
+        "rootExprs": [
+          {
+            "__ref": "id60651397674916201948514484"
+          }
+        ],
+        "bounds": {
+          "xMin": 5.220738269441747,
+          "xMax": 11.00777530647878,
+          "yMin": -2.2192232366405986,
+          "yMax": 3.56781380039644
+        },
+        "__id": "id60631397674912215788185779",
+        "__className": "CustomFn"
+      },
+      "id61751397674930552174886188": {
+        "html": "<p><b>fractal noise</b> has the characteristic that as you zoom in, the features you see resemble the shape of the function zoomed out. The graph resembles the skyline of a mountain.</p><p>The goal of this essay is to understand in a deeper way why this function looks the way it does.</p><p>In implementing it, we'll also learn how to make a rudimentary pseudorandom number generator, strategies for sampling functions, and how to use <b>mix</b> and <b>smooth mix</b> to interpolate between values.<br></p>",
+        "__id": "id61751397674930552174886188",
+        "__className": "Paragraph"
+      },
+      "id60441397673034639527574003": {
+        "html": "<p><b>noise</b> is a pseudorandom number generator. We desire a function such that as <b>x</b> varies, the result seems to vary randomly.</p><p>To see how this implementation works, try setting <b>generator</b> to <b>0</b> and then slowly increasing it. As it increases, the graph becomes more and more haphazard. When it is a very large number, we're essentially sampling floating point rounding errors.</p><p>Note: I've used this function as a pseudorandom number generator in shaders for a while. But until playing with it in this interface, I never appreciated one of its disadvantages: that it is <b>0</b> at multiples of pi, and in particular at <b>x = 0</b>, which has implications for how we use it later.</p>",
+        "__id": "id60441397673034639527574003",
+        "__className": "Paragraph"
+      },
+      "id60451397673430757425463410": {
+        "html": "<p>We'll want our noise to have a controllable characteristic frequency. Whereas <b>noise</b> varies essentially instantaneously as <b>x</b> increases, <b>step noise</b> varies at a specific rate, namely at every integer step.</p><p>To implement this, we sample <b>noise</b> only at the integers by first taking <b>floor</b> of <b>x</b> before <b>noise</b>.</p><p>If you don't see why the result has the stepped look that it does, try manipulating <b>x</b> to see how this sampling strategy works.</p>",
+        "__id": "id60451397673430757425463410",
+        "__className": "Paragraph"
+      },
+      "id60461397673699194592589865": {
+        "html": "<p>Instead of immediately jumping to the next random value when <b>x</b> crosses an integer boundary in <b>step noise</b>, <b>smooth noise</b> smoothly interpolates between the sampled values of <b>step noise</b>.</p><p>To implement this, we take the <b>step noise</b> value on either side of <b>x</b> (e.g. the <b>floor</b> of <b>x</b> and the <b>floor + 1</b> of <b>x</b>). We then use <b>fract</b> of <b>x</b> as the interpolation control for the <b>smooth mix</b> between these two sampled values.</p><p><b>smooth mix</b> is defined in the appendix.</p>",
+        "__id": "id60461397673699194592589865",
+        "__className": "Paragraph"
+      },
+      "id60471397674032308242938221": {
+        "html": "<p>Now we can make <b>fractal noise</b>!</p><p>A fractal has the characteristic that as you zoom in, the features you see seem to have the same character as the entire shape when zoomed out.</p><p>Since <b>smooth noise</b> has a definite characteristic frequency, we can build fractal noise by taking several scaled versions of <b>smooth noise</b> and adding them together.</p><p>This construction can be easily seen by inspecting the graphs down the left column to see how the shape evolves as smaller and smaller <b>smooth noise</b> is added in.</p>",
+        "__id": "id60471397674032308242938221",
+        "__className": "Paragraph"
+      },
+      "id60481397674409509319780840": {
+        "html": "<p>Here is the implementation for <b>noise octave</b>, which uniformly scales (i.e. in domain and range) the shape of <b>smooth noise</b>.</p>",
+        "__id": "id60481397674409509319780840",
+        "__className": "Paragraph"
+      },
+      "id6061139767451790339751134": {
+        "html": "<p>APPENDIX</p>",
+        "__id": "id6061139767451790339751134",
+        "__className": "Paragraph"
+      },
+      "id11397605452784514260357": {
+        "html": "<p><b>mix</b> linearly interpolates between two values.</p><p>When <b>x</b> is <b>0</b>, the result is <b>edge 0</b>. When <b>x</b> is <b>1</b>, the result is <b>edge 1</b>. When <b>x</b> is between <b>0</b> and <b>1</b>, the result is proportionally between <b>edge 0</b> and <b>edge 1</b>.</p><p><b>mix</b> is implemented by first determining the <i>slope</i> of the desired line as the difference betwen <b>edge 1</b> and <b>edge 0</b>. We then multiply <b>x</b> by this slope and add <b>edge 0</b>.</p>",
+        "__id": "id11397605452784514260357",
+        "__className": "Paragraph"
+      },
+      "id71413976057641944587366": {
+        "html": "<p><b>smooth mix</b> is a smooth interpolation between two values.</p><p>Like <b>mix</b>, when <b>x</b> is <b>0</b>, the result is <b>edge 0</b> and when <b>x</b> is <b>1</b>, the result is <b>edge 1</b>. However, interpolation is not linear in between <b>0</b> and <b>1</b>. Instead, we want the <i>derivative</i> at <b>x = 0</b> and <b>x = 1</b> to be <b>0</b>, so that the result starts horizontonal at <b>0</b>, ramps up, then ramps down to horizontal at <b>1</b>.</p><p><b>smooth mix</b> is implemented by first applying <b>smooth cubic</b> (see below) to <b>x</b> and then using the resulting smooth value in a linear <b>mix</b> between <b>edge 0</b> and <b>edge 1</b>.</p>",
+        "__id": "id71413976057641944587366",
+        "__className": "Paragraph"
+      },
+      "id2024139760615345761183924": {
+        "html": "<p>For <b>smooth cubic</b>, we desire a function which passes through <b>(0, 0)</b> and <b>(1, 1)</b> whose derivative is <b>0</b> at <b>x = 0</b> and <b>x = 1</b>.</p><p>We construct this by making two parabolas, <b>parabola 0</b> and <b>parabola 1</b>, and mixing between them.</p><p>Note: this polynomial is usually written x*x*(3 - 2*x) in graphics programming references and is derived symbolically by solving for the coefficients of the cubic equation based on the above constraints. But I feel that mixing two parabolas, is a more visual construction...</p>",
+        "__id": "id2024139760615345761183924",
+        "__className": "Paragraph"
+      },
+      "id41397605414868186858579": {
+        "workspaceEntries": [
+          {
+            "__ref": "id60621397674581882363047513"
+          }, {
+            "__ref": "id60631397674912215788185779"
+          }, {
+            "__ref": "id61751397674930552174886188"
+          }, {
+            "__ref": "id60441397673034639527574003"
+          }, {
+            "__ref": "id11397672502440877422195"
+          }, {
+            "__ref": "id60451397673430757425463410"
+          }, {
+            "__ref": "id7131397672535462674735110"
+          }, {
+            "__ref": "id60461397673699194592589865"
+          }, {
+            "__ref": "id8861397672552228499661046"
+          }, {
+            "__ref": "id60471397674032308242938221"
+          }, {
+            "__ref": "id37621397672744958885944092"
+          }, {
+            "__ref": "id60481397674409509319780840"
+          }, {
+            "__ref": "id17221397672626100341402376"
+          }, {
+            "__ref": "id6061139767451790339751134"
+          }, {
+            "__ref": "id11397605452784514260357"
+          }, {
+            "__ref": "id11397605414790587874259"
+          }, {
+            "__ref": "id71413976057641944587366"
+          }, {
+            "__ref": "id1851139760609015539169492"
+          }, {
+            "__ref": "id2024139760615345761183924"
+          }, {
+            "__ref": "id7151397605984654812277229"
+          }, {
+            "__ref": "id7181397606001835372801593"
+          }
+        ],
+        "__id": "id41397605414868186858579",
+        "__className": "Workspace"
+      },
+      "id31397605414867264503688": {
+        "workspaces": [
+          {
+            "__ref": "id41397605414868186858579"
+          }
+        ],
+        "__id": "id31397605414867264503688",
+        "__className": "AppRoot"
+      }
+    },
+    "root": {
+      "__ref": "id31397605414867264503688"
+    }
+  };
+
+  savedExamples.blank = {
+    "objects": {
+      "id2139768443678581197550": {
+        "valueString": "0",
+        "label": "x",
+        "domain": "domain",
+        "domainCoord": 0,
+        "__id": "id2139768443678581197550",
+        "__className": "Variable"
+      },
+      "id11397684436769471798380": {
+        "label": "",
+        "paramVariables": [
+          {
+            "__ref": "id2139768443678581197550"
+          }
+        ],
+        "rootExprs": [
+          {
+            "__ref": "id2139768443678581197550"
+          }
+        ],
+        "bounds": {
+          "xMin": -6,
+          "xMax": 6,
+          "yMin": -6,
+          "yMax": 6
+        },
+        "__id": "id11397684436769471798380",
+        "__className": "CustomFn"
+      },
+      "id41397684436854440944728": {
+        "workspaceEntries": [
+          {
+            "__ref": "id11397684436769471798380"
+          }
+        ],
+        "__id": "id41397684436854440944728",
+        "__className": "Workspace"
+      },
+      "id31397684436854753274288": {
+        "workspaces": [
+          {
+            "__ref": "id41397684436854440944728"
+          }
+        ],
+        "__id": "id31397684436854753274288",
+        "__className": "AppRoot"
+      }
+    },
+    "root": {
+      "__ref": "id31397684436854753274288"
+    }
+  };
+
+  savedExamples.waveforms = {
+    "objects": {
+      "id91991397685717041419512019": {
+        "html": "<p>Here are some basic wave forms.</p><p>I've normalized these to all range from <b>0</b> to <b>1</b> and have wavelength <b>1</b>.</p>",
+        "__id": "id91991397685717041419512019",
+        "__className": "Paragraph"
+      },
+      "id88251397685559642601110611": {
+        "valueString": "0",
+        "label": "x",
+        "domain": "domain",
+        "domainCoord": 0,
+        "__id": "id88251397685559642601110611",
+        "__className": "Variable"
+      },
+      "id100721397685790022183844098": {
+        "fnName": "mul",
+        "__id": "id100721397685790022183844098",
+        "__className": "BuiltInFn"
+      },
+      "id97661397685784301961487331": {
+        "fnName": "add",
+        "__id": "id97661397685784301961487331",
+        "__className": "BuiltInFn"
+      },
+      "id89991397685580567689726342": {
+        "fnName": "sin",
+        "__id": "id89991397685580567689726342",
+        "__className": "BuiltInFn"
+      },
+      "id89211397685567889246926002": {
+        "fnName": "mul",
+        "__id": "id89211397685567889246926002",
+        "__className": "BuiltInFn"
+      },
+      "id89171397685567796692214487": {
+        "valueString": "6.2832",
+        "label": "TAU",
+        "domain": "range",
+        "domainCoord": 0,
+        "__id": "id89171397685567796692214487",
+        "__className": "Variable"
+      },
+      "id88261397685565425221616330": {
+        "fn": {
+          "__ref": "id89211397685567889246926002"
+        },
+        "label": "*",
+        "paramExprs": [
+          {
+            "__ref": "id88251397685559642601110611"
+          }, {
+            "__ref": "id89171397685567796692214487"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id88261397685565425221616330",
+        "__className": "Application"
+      },
+      "id89281397685578224849468435": {
+        "fn": {
+          "__ref": "id89991397685580567689726342"
+        },
+        "label": "sin",
+        "paramExprs": [
+          {
+            "__ref": "id88261397685565425221616330"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id89281397685578224849468435",
+        "__className": "Application"
+      },
+      "id97071397685784127316020818": {
+        "valueString": "1",
+        "label": "",
+        "domain": "range",
+        "domainCoord": 0,
+        "__id": "id97071397685784127316020818",
+        "__className": "Variable"
+      },
+      "id95831397685782515901345022": {
+        "fn": {
+          "__ref": "id97661397685784301961487331"
+        },
+        "label": "",
+        "paramExprs": [
+          {
+            "__ref": "id89281397685578224849468435"
+          }, {
+            "__ref": "id97071397685784127316020818"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id95831397685782515901345022",
+        "__className": "Application"
+      },
+      "id100171397685789894316440623": {
+        "valueString": ".5",
+        "label": "",
+        "domain": "range",
+        "domainCoord": 0,
+        "__id": "id100171397685789894316440623",
+        "__className": "Variable"
+      },
+      "id97971397685787905336374163": {
+        "fn": {
+          "__ref": "id100721397685790022183844098"
+        },
+        "label": "",
+        "paramExprs": [
+          {
+            "__ref": "id95831397685782515901345022"
+          }, {
+            "__ref": "id100171397685789894316440623"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id97971397685787905336374163",
+        "__className": "Application"
+      },
+      "id88241397685559598841987922": {
+        "label": "sine wave",
+        "paramVariables": [
+          {
+            "__ref": "id88251397685559642601110611"
+          }
+        ],
+        "rootExprs": [
+          {
+            "__ref": "id97971397685787905336374163"
+          }
+        ],
+        "bounds": {
+          "xMin": -2.1984803444992527,
+          "xMax": 4.745964099945195,
+          "yMin": -2.851993546369979,
+          "yMax": 4.092450898074467
+        },
+        "__id": "id88241397685559598841987922",
+        "__className": "CustomFn"
+      },
+      "id90051397685623775723458270": {
+        "valueString": "0",
+        "label": "x",
+        "domain": "domain",
+        "domainCoord": 0,
+        "__id": "id90051397685623775723458270",
+        "__className": "Variable"
+      },
+      "id95781397685774918549297834": {
+        "fnName": "fract",
+        "__id": "id95781397685774918549297834",
+        "__className": "BuiltInFn"
+      },
+      "id95051397685772046232708418": {
+        "fn": {
+          "__ref": "id95781397685774918549297834"
+        },
+        "label": "fr",
+        "paramExprs": [
+          {
+            "__ref": "id90051397685623775723458270"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id95051397685772046232708418",
+        "__className": "Application"
+      },
+      "id90041397685623746183695973": {
+        "label": "sawtooth wave",
+        "paramVariables": [
+          {
+            "__ref": "id90051397685623775723458270"
+          }
+        ],
+        "rootExprs": [
+          {
+            "__ref": "id95051397685772046232708418"
+          }
+        ],
+        "bounds": {
+          "xMin": -1.6221509559327845,
+          "xMax": 3.2003799082647477,
+          "yMin": -1.8509811171124835,
+          "yMax": 2.9715497470850476
+        },
+        "__id": "id90041397685623746183695973",
+        "__className": "CustomFn"
+      },
+      "id85141397685487420532484404": {
+        "valueString": "0",
+        "label": "x",
+        "domain": "domain",
+        "domainCoord": 0,
+        "__id": "id85141397685487420532484404",
+        "__className": "Variable"
+      },
+      "id69041397685375693840812314": {
+        "valueString": "0",
+        "label": "x",
+        "domain": "domain",
+        "domainCoord": 0,
+        "__id": "id69041397685375693840812314",
+        "__className": "Variable"
+      },
+      "id7080139768538233192798803": {
+        "valueString": "1.62",
+        "label": "level",
+        "domain": "range",
+        "domainCoord": 0,
+        "__id": "id7080139768538233192798803",
+        "__className": "Variable"
+      },
+      "id75951397685398749881813211": {
+        "valueString": "1",
+        "label": "direction",
+        "domain": "range",
+        "domainCoord": 0,
+        "__id": "id75951397685398749881813211",
+        "__className": "Variable"
+      },
+      "id73611397685395118930048504": {
+        "fnName": "add",
+        "__id": "id73611397685395118930048504",
+        "__className": "BuiltInFn"
+      },
+      "id82601397685411125222323918": {
+        "fnName": "div",
+        "__id": "id82601397685411125222323918",
+        "__className": "BuiltInFn"
+      },
+      "id78561397685404328287943928": {
+        "fnName": "abs",
+        "__id": "id78561397685404328287943928",
+        "__className": "BuiltInFn"
+      },
+      "id76461397685398856469849693": {
+        "fnName": "mul",
+        "__id": "id76461397685398856469849693",
+        "__className": "BuiltInFn"
+      },
+      "id71331397685382462584599721": {
+        "fnName": "sub",
+        "__id": "id71331397685382462584599721",
+        "__className": "BuiltInFn"
+      },
+      "id69051397685379146166726138": {
+        "fn": {
+          "__ref": "id71331397685382462584599721"
+        },
+        "label": "",
+        "paramExprs": [
+          {
+            "__ref": "id69041397685375693840812314"
+          }, {
+            "__ref": "id7080139768538233192798803"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id69051397685379146166726138",
+        "__className": "Application"
+      },
+      "id74461397685397113944028009": {
+        "fn": {
+          "__ref": "id76461397685398856469849693"
+        },
+        "label": "",
+        "paramExprs": [
+          {
+            "__ref": "id69051397685379146166726138"
+          }, {
+            "__ref": "id75951397685398749881813211"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id74461397685397113944028009",
+        "__className": "Application"
+      },
+      "id77871397685402632125449156": {
+        "fn": {
+          "__ref": "id78561397685404328287943928"
+        },
+        "label": "abs",
+        "paramExprs": [
+          {
+            "__ref": "id74461397685397113944028009"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id77871397685402632125449156",
+        "__className": "Application"
+      },
+      "id78621397685406023687478137": {
+        "fn": {
+          "__ref": "id82601397685411125222323918"
+        },
+        "label": "",
+        "paramExprs": [
+          {
+            "__ref": "id77871397685402632125449156"
+          }, {
+            "__ref": "id75951397685398749881813211"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id78621397685406023687478137",
+        "__className": "Application"
+      },
+      "id71901397685393292854127717": {
+        "fn": {
+          "__ref": "id73611397685395118930048504"
+        },
+        "label": "",
+        "paramExprs": [
+          {
+            "__ref": "id78621397685406023687478137"
+          }, {
+            "__ref": "id7080139768538233192798803"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id71901397685393292854127717",
+        "__className": "Application"
+      },
+      "id69031397685375663487705911": {
+        "label": "reflect",
+        "paramVariables": [
+          {
+            "__ref": "id69041397685375693840812314"
+          }, {
+            "__ref": "id7080139768538233192798803"
+          }, {
+            "__ref": "id75951397685398749881813211"
+          }
+        ],
+        "rootExprs": [
+          {
+            "__ref": "id71901397685393292854127717"
+          }
+        ],
+        "bounds": {
+          "xMin": -6,
+          "xMax": 6,
+          "yMin": -6,
+          "yMax": 6
+        },
+        "__id": "id69031397685375663487705911",
+        "__className": "CustomFn"
+      },
+      "id47281397685228716604656407": {
+        "valueString": "0",
+        "label": "x",
+        "domain": "domain",
+        "domainCoord": 0,
+        "__id": "id47281397685228716604656407",
+        "__className": "Variable"
+      },
+      "id49761397685233283704187805": {
+        "valueString": "3",
+        "label": "base",
+        "domain": "range",
+        "domainCoord": 0,
+        "__id": "id49761397685233283704187805",
+        "__className": "Variable"
+      },
+      "id53911397685237407611622568": {
+        "fnName": "mul",
+        "__id": "id53911397685237407611622568",
+        "__className": "BuiltInFn"
+      },
+      "id597113976852428994469442": {
+        "fnName": "fract",
+        "__id": "id597113976852428994469442",
+        "__className": "BuiltInFn"
+      },
+      "id50211397685233385929339610": {
+        "fnName": "div",
+        "__id": "id50211397685233385929339610",
+        "__className": "BuiltInFn"
+      },
+      "id47291397685231546846500888": {
+        "fn": {
+          "__ref": "id50211397685233385929339610"
+        },
+        "label": "",
+        "paramExprs": [
+          {
+            "__ref": "id47281397685228716604656407"
+          }, {
+            "__ref": "id49761397685233283704187805"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id47291397685231546846500888",
+        "__className": "Application"
+      },
+      "id54961397685239782722896646": {
+        "fn": {
+          "__ref": "id597113976852428994469442"
+        },
+        "label": "",
+        "paramExprs": [
+          {
+            "__ref": "id47291397685231546846500888"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id54961397685239782722896646",
+        "__className": "Application"
+      },
+      "id51261397685235241557465054": {
+        "fn": {
+          "__ref": "id53911397685237407611622568"
+        },
+        "label": "",
+        "paramExprs": [
+          {
+            "__ref": "id54961397685239782722896646"
+          }, {
+            "__ref": "id49761397685233283704187805"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id51261397685235241557465054",
+        "__className": "Application"
+      },
+      "id47271397685228702618763849": {
+        "label": "mod",
+        "paramVariables": [
+          {
+            "__ref": "id47281397685228716604656407"
+          }, {
+            "__ref": "id49761397685233283704187805"
+          }
+        ],
+        "rootExprs": [
+          {
+            "__ref": "id51261397685235241557465054"
+          }
+        ],
+        "bounds": {
+          "xMin": -6,
+          "xMax": 6,
+          "yMin": -6,
+          "yMax": 6
+        },
+        "__id": "id47271397685228702618763849",
+        "__className": "CustomFn"
+      },
+      "id88171397685523952793248873": {
+        "fnName": "mul",
+        "__id": "id88171397685523952793248873",
+        "__className": "BuiltInFn"
+      },
+      "id88131397685523865133736824": {
+        "valueString": "2",
+        "label": "",
+        "domain": "range",
+        "domainCoord": 0,
+        "__id": "id88131397685523865133736824",
+        "__className": "Variable"
+      },
+      "id8708139768552146669658139": {
+        "fn": {
+          "__ref": "id88171397685523952793248873"
+        },
+        "label": "*",
+        "paramExprs": [
+          {
+            "__ref": "id85141397685487420532484404"
+          }, {
+            "__ref": "id88131397685523865133736824"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id8708139768552146669658139",
+        "__className": "Application"
+      },
+      "id85901397685499218664434190": {
+        "valueString": "2",
+        "label": "",
+        "domain": "range",
+        "domainCoord": 0,
+        "__id": "id85901397685499218664434190",
+        "__className": "Variable"
+      },
+      "id8515139768549663392305718": {
+        "fn": {
+          "__ref": "id47271397685228702618763849"
+        },
+        "label": "mo",
+        "paramExprs": [
+          {
+            "__ref": "id8708139768552146669658139"
+          }, {
+            "__ref": "id85901397685499218664434190"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id8515139768549663392305718",
+        "__className": "Application"
+      },
+      "id8687139768551002215618620": {
+        "valueString": "1",
+        "label": "",
+        "domain": "range",
+        "domainCoord": 0,
+        "__id": "id8687139768551002215618620",
+        "__className": "Variable"
+      },
+      "id86881397685510023275998615": {
+        "valueString": "-1",
+        "label": "",
+        "domain": "range",
+        "domainCoord": 0,
+        "__id": "id86881397685510023275998615",
+        "__className": "Variable"
+      },
+      "id86081397685507955455455011": {
+        "fn": {
+          "__ref": "id69031397685375663487705911"
+        },
+        "label": "ref",
+        "paramExprs": [
+          {
+            "__ref": "id8515139768549663392305718"
+          }, {
+            "__ref": "id8687139768551002215618620"
+          }, {
+            "__ref": "id86881397685510023275998615"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id86081397685507955455455011",
+        "__className": "Application"
+      },
+      "id85131397685487384915090007": {
+        "label": "triangle wave",
+        "paramVariables": [
+          {
+            "__ref": "id85141397685487420532484404"
+          }
+        ],
+        "rootExprs": [
+          {
+            "__ref": "id86081397685507955455455011"
+          }
+        ],
+        "bounds": {
+          "xMin": -0.8958980624142658,
+          "xMax": 2.453081704389575,
+          "yMin": -1.1986837705761324,
+          "yMax": 2.15029599622771
+        },
+        "__id": "id85131397685487384915090007",
+        "__className": "CustomFn"
+      },
+      "id39061397685161815180682671": {
+        "valueString": "0",
+        "label": "x",
+        "domain": "domain",
+        "domainCoord": 0,
+        "__id": "id39061397685161815180682671",
+        "__className": "Variable"
+      },
+      "id39681397685166966980687001": {
+        "fnName": "floor",
+        "__id": "id39681397685166966980687001",
+        "__className": "BuiltInFn"
+      },
+      "id67401397685336915366357938": {
+        "fnName": "mul",
+        "__id": "id67401397685336915366357938",
+        "__className": "BuiltInFn"
+      },
+      "id66911397685336815830956615": {
+        "valueString": "2",
+        "label": "",
+        "domain": "range",
+        "domainCoord": 0,
+        "__id": "id66911397685336815830956615",
+        "__className": "Variable"
+      },
+      "id65751397685335202435986140": {
+        "fn": {
+          "__ref": "id67401397685336915366357938"
+        },
+        "label": "",
+        "paramExprs": [
+          {
+            "__ref": "id39061397685161815180682671"
+          }, {
+            "__ref": "id66911397685336815830956615"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id65751397685335202435986140",
+        "__className": "Application"
+      },
+      "id39071397685164259634749789": {
+        "fn": {
+          "__ref": "id39681397685166966980687001"
+        },
+        "label": "fl",
+        "paramExprs": [
+          {
+            "__ref": "id65751397685335202435986140"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id39071397685164259634749789",
+        "__className": "Application"
+      },
+      "id6121139768526761025811830": {
+        "valueString": "2",
+        "label": "",
+        "domain": "range",
+        "domainCoord": 0,
+        "__id": "id6121139768526761025811830",
+        "__className": "Variable"
+      },
+      "id60501397685265064199658204": {
+        "fn": {
+          "__ref": "id47271397685228702618763849"
+        },
+        "label": "mo",
+        "paramExprs": [
+          {
+            "__ref": "id39071397685164259634749789"
+          }, {
+            "__ref": "id6121139768526761025811830"
+          }
+        ],
+        "isProvisional": false,
+        "__id": "id60501397685265064199658204",
+        "__className": "Application"
+      },
+      "id39051397685161790292303428": {
+        "label": "square wave",
+        "paramVariables": [
+          {
+            "__ref": "id39061397685161815180682671"
+          }
+        ],
+        "rootExprs": [
+          {
+            "__ref": "id60501397685265064199658204"
+          }
+        ],
+        "bounds": {
+          "xMin": -1.1731520061728413,
+          "xMax": 3.6493788580246913,
+          "yMin": -1.9088425925925936,
+          "yMax": 2.9136882716049386
+        },
+        "__id": "id39051397685161790292303428",
+        "__className": "CustomFn"
+      },
+      "id103131397685806285692087027": {
+        "html": "<p>APPENDIX</p>",
+        "__id": "id103131397685806285692087027",
+        "__className": "Paragraph"
+      },
+      "id41397684436854440944728": {
+        "workspaceEntries": [
+          {
+            "__ref": "id91991397685717041419512019"
+          }, {
+            "__ref": "id88241397685559598841987922"
+          }, {
+            "__ref": "id90041397685623746183695973"
+          }, {
+            "__ref": "id85131397685487384915090007"
+          }, {
+            "__ref": "id39051397685161790292303428"
+          }, {
+            "__ref": "id103131397685806285692087027"
+          }, {
+            "__ref": "id47271397685228702618763849"
+          }, {
+            "__ref": "id69031397685375663487705911"
+          }
+        ],
+        "__id": "id41397684436854440944728",
+        "__className": "Workspace"
+      },
+      "id31397684436854753274288": {
+        "workspaces": [
+          {
+            "__ref": "id41397684436854440944728"
+          }
+        ],
+        "__id": "id31397684436854753274288",
+        "__className": "AppRoot"
+      }
+    },
+    "root": {
+      "__ref": "id31397684436854753274288"
+    }
+  };
+
+  savedExamples.restore = function(name) {
+    var json;
+    json = savedExamples[name];
+    return window.appRoot = C.reconstruct(json);
+  };
 
 }).call(this);
 }, "util/canvas": function(exports, require, module) {(function() {
@@ -1560,7 +3779,7 @@
         }
       }, R.WorkspaceView({
         workspace: this.appRoot.workspaces[0]
-      }), R.div({
+      }), R.SavedExamplesView({}), R.div({
         className: "dragging"
       }, R.DraggingView({})));
     }
@@ -1580,6 +3799,35 @@
       }, UI.dragging.render()) : void 0, UI.dragging ? R.div({
         className: "draggingOverlay"
       }) : void 0);
+    }
+  });
+
+}).call(this);
+}, "view/AppRoot/SavedExamplesView": function(exports, require, module) {(function() {
+  R.create("SavedExamplesView", {
+    shouldComponentUpdate: function() {
+      return false;
+    },
+    load: function(name) {
+      return function() {
+        return savedExamples.restore(name);
+      };
+    },
+    render: function() {
+      return R.div({
+        className: "SavedExamples"
+      }, R.div({
+        className: "TextButtonLabel"
+      }, "Examples"), R.div({
+        className: "TextButton",
+        onClick: this.load("blank")
+      }, "Blank"), R.div({
+        className: "TextButton",
+        onClick: this.load("waveforms")
+      }, "Waveforms"), R.div({
+        className: "TextButton",
+        onClick: this.load("noise")
+      }, "Fractal Noise"));
     }
   });
 
@@ -2287,6 +4535,8 @@
 
   require("./AppRoot/AppRootView");
 
+  require("./AppRoot/SavedExamplesView");
+
   require("./AppRoot/DraggingView");
 
   require("./Workspace/WorkspaceView");
@@ -2916,6 +5166,9 @@
     propTypes: {
       workspace: C.Workspace,
       workspaceIndex: Number
+    },
+    shouldComponentUpdate: function(nextProps) {
+      return nextProps.workspace !== this.workspace || nextProps.workspaceIndex !== this.workspaceIndex;
     },
     addEntry: function(entry) {
       return this.workspace.workspaceEntries.splice(this.workspaceIndex + 1, 0, entry);

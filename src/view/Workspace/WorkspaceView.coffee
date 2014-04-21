@@ -22,6 +22,9 @@ R.create "WorkspaceExtrasView",
     workspace: C.Workspace
     workspaceIndex: Number
 
+  shouldComponentUpdate: (nextProps) ->
+    nextProps.workspace != @workspace or nextProps.workspaceIndex != @workspaceIndex
+
   addEntry: (entry) ->
     @workspace.workspaceEntries.splice(@workspaceIndex+1, 0, entry)
 

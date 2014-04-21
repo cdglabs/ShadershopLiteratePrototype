@@ -1,3 +1,16 @@
+Make a hardcoded switcher for examples
+  blank
+  noise
+
+
+Finish writing noise example
+
+
+
+
+
+
+
 Priorities
   Preloaded "examples"
     Blank

@@ -8,6 +8,7 @@ require("./util/util")
 require("./model/C")
 require("./view/R")
 require("./UI")
+require("./savedExamples")
 
 
 
@@ -20,9 +21,9 @@ window.reset = ->
 
 if json = window.localStorage[storageName]
   json = JSON.parse(json)
-  window.appRoot = appRoot = C.reconstruct(json)
+  window.appRoot = C.reconstruct(json)
 else
-  window.appRoot = appRoot = new C.AppRoot()
+  window.appRoot = new C.AppRoot()
 
 saveState = ->
   json = C.deconstruct(appRoot)
@@ -34,10 +35,10 @@ window.save = ->
   window.localStorage[storageName]
 
 window.restore = (jsonString) ->
+  if !_.isString(jsonString)
+    jsonString = JSON.stringify(jsonString)
   window.localStorage[storageName] = jsonString
   location.reload()
-
-
 
 
 
@@ -83,5 +84,5 @@ refresh()
 
 
 
-
-document.styleSheets.start_autoreload(1000)
+if location.protocol == "file:"
+  document.styleSheets.start_autoreload(1000)
