@@ -9,4 +9,10 @@ savedExamples.waveforms = {"objects":{"id91991397685717041419512019":{"html":"<p
 
 savedExamples.restore = (name) ->
   json = savedExamples[name]
+
+  # HACK: There's some sort of weird leak where the json gets mutated if I
+  # don't deep clone it...
+  jsonString = JSON.stringify(json)
+  json = JSON.parse(jsonString)
+
   window.appRoot = C.reconstruct(json)

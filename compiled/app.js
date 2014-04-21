@@ -3168,8 +3168,10 @@
   };
 
   savedExamples.restore = function(name) {
-    var json;
+    var json, jsonString;
     json = savedExamples[name];
+    jsonString = JSON.stringify(json);
+    json = JSON.parse(jsonString);
     return window.appRoot = C.reconstruct(json);
   };
 
