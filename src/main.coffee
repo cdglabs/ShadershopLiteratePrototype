@@ -19,7 +19,11 @@ window.reset = ->
   delete window.localStorage[storageName]
   location.reload()
 
-if json = window.localStorage[storageName]
+if location.hash?.length > 1
+  hash = location.hash.substr(1)
+  savedExamples.restore(hash)
+  location.hash = ""
+else if json = window.localStorage[storageName]
   json = JSON.parse(json)
   window.appRoot = C.reconstruct(json)
 else

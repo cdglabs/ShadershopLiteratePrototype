@@ -477,7 +477,7 @@
 
 }).call(this);
 }, "main": function(exports, require, module) {(function() {
-  var eventName, json, refresh, refreshEventNames, refreshView, saveState, storageName, willRefreshNextFrame, _i, _len;
+  var eventName, hash, json, refresh, refreshEventNames, refreshView, saveState, storageName, willRefreshNextFrame, _i, _len, _ref;
 
   require("./config");
 
@@ -498,7 +498,11 @@
     return location.reload();
   };
 
-  if (json = window.localStorage[storageName]) {
+  if (((_ref = location.hash) != null ? _ref.length : void 0) > 1) {
+    hash = location.hash.substr(1);
+    savedExamples.restore(hash);
+    location.hash = "";
+  } else if (json = window.localStorage[storageName]) {
     json = JSON.parse(json);
     window.appRoot = C.reconstruct(json);
   } else {
